@@ -16,12 +16,11 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   Wire.setClock(400000);
-  gpsSetup();
   keypadSetup();
   displaySetup();
+  gpsSetup();
   storageSetup();
-  //timerSetup();
-  while(1);
+  timerSetup();
 }
 
 void loop() {
