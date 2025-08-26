@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "race_computer_proto-eagle-import")(type "KiCad")(uri "${KIPRJMOD}/race_computer_proto-eagle-import.kicad_sym")(options "")(descr ""))
+  (lib (name "race_computer")(type "KiCad")(uri "${KIPRJMOD}/race_computer.kicad_sym")(options "")(descr ""))
+)

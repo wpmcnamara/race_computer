@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "race_computer")(type "KiCad")(uri "${KIPRJMOD}/race_computer.pretty")(options "")(descr ""))
+)
