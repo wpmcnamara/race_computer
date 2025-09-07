@@ -3,7 +3,7 @@
 
 volatile bool timer_run=false;
 volatile bool refresh=false;
-unsigned long tick=0;
+unsigned long tick=0;  //millisecond tick count
 unsigned long tickHold;
 int cntHold;
 
@@ -43,4 +43,5 @@ void timerUpdate(void) {
 }
 
 unsigned long getTick(void) { return tickHold; };
+double getTime(void) { return ((double)tickHold+(double(cntHold)/1000.0));}
 int getCnt(void) { return cntHold; };

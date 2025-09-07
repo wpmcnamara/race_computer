@@ -41,12 +41,12 @@
 #define OLED_DISP3_CS 6
 #define OLED_DISP4_CS 4
 #define OLED_DISP_DC 16
-#define OLED_DISP1_RESET 9
+#define OLED_DISP1_RESET 0
 #define OLED_DISP2_RESET 7
 #define OLED_DISP3_RESET 5
 #define OLED_DISP4_RESET 3
 
-#define GPS_PPS 0
+#define GPS_PPS 9
 #define GPS_RESET 23
 #define GPS_INT 20
 #define GPS_CS 17

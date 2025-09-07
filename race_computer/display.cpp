@@ -64,7 +64,7 @@ void displayUpdate() {
   int cntHold=getCnt();
   struct gpsDataStruct *gpsData=getGpsData();
   UBX_TIM_TM2_data_t *gpsTimeStamp=getGpsTimestamp();
-
+  double time=getTime();
   oledDisp1.clearBuffer();					// clear the internal memory
   oledDisp1.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
   sprintf(buffer, "%02d:%02d:%02d", gpsData->hour, gpsData->minute, gpsData->second);
@@ -87,6 +87,7 @@ void displayUpdate() {
   oledDisp1.sendBuffer();					// transfer internal memory to the display
 
   oledDisp2.clearBuffer();
+  /*
   oledDisp2.setFont(u8g2_font_spleen6x12_mf);	// choose a suitable font
   sprintf(buffer, "speed: %09.4f", gpsData->speed*0.00223693629);
   oledDisp2.drawStr(0,12,buffer);	// write something to the internal memory  
@@ -108,19 +109,87 @@ void displayUpdate() {
     gpsTimeStamp->flags.bits.newRisingEdge
   );
   oledDisp2.drawStr(0,48,buffer);
+  */  
+  oledDisp2.setFont(u8g2_font_spleen8x16_mf);
+  sprintf(buffer, " time  :");
+  oledDisp2.drawStr(37,26,buffer);
+  oledDisp2.drawLine(83,26,88,15);
+  oledDisp2.drawLine(84,25,88,16); 
 
+  oledDisp2.drawLine(88,15,93,26);
+  oledDisp2.drawLine(88,16,92,25);
+ 
+  oledDisp2.drawLine(83,26,93,26);
+  oledDisp2.drawLine(84,25,92,25);
+
+  sprintf(buffer, "speed  :");
+  oledDisp2.drawStr(37,58,buffer);
+  oledDisp2.drawLine(83,58,88,47);
+  oledDisp2.drawLine(84,57,88,48);
+
+  oledDisp2.drawLine(88,47,93,58);
+  oledDisp2.drawLine(88,48,92,57);
+
+  oledDisp2.drawLine(83,58,93,58);
+  oledDisp2.drawLine(84,57,92,57);
+
+  oledDisp2.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
+
+  //gps averqge speed is in meters per second.  Convert to miles per second
+  double avgMps=gpsData->avgSpeed*0.000621371;
+  //calculate our target speed in miles per second
+  double targetMps=31.9/3600.0;
+  //ticks are milliseconds, convert to seconds.  Multiply target speed by running time
+  //to figure out how far we should have gone.
+  double targetDistance=targetMps*time;
+  //gps distance is in meters.  Convert to miles traveled.  
+  //figure out the difference between how far we've actually gone and how
+  //far we should have gone.
+  double deltaDistance=(gpsData->distance*0.000621371)-targetDistance;
+  //how long would it take to cover the distance delta at our target speed?
+  double deltaTime=deltaDistance/targetMps;
+
+
+  sprintf(buffer, "%8.3f", deltaTime);
+  oledDisp2.drawStr(128,26, buffer);
+  sprintf(buffer, "%8.3f", (gpsData->avgSpeed*0.00223693629)-31.9);
+  oledDisp2.drawStr(128,58,buffer);
   oledDisp2.sendBuffer();					// transfer internal memory to the display
 
   oledDisp3.clearBuffer();
-  oledDisp3.setFont(u8g2_font_spleen32x64_mf);	// choose a suitable font
-  sprintf(buffer, " %7.3f", gpsData->speed*0.00223693629);
-  oledDisp3.drawStr(0,53,buffer);	// write something to the internal memory  
+  oledDisp3.setFont(u8g2_font_spleen8x16_mf);	// choose a suitable font
+  sprintf(buffer, "dist rem: ");
+  oledDisp3.drawStr(17,26,buffer);	// write something to the internal memory  
+  sprintf(buffer, "distance: ");
+  oledDisp3.drawStr(17,58,buffer);	// write something to the internal memory   
+  oledDisp3.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
+  sprintf(buffer, "%8.3f", 6.4-(gpsData->distance*0.000621371));
+  oledDisp3.drawStr(97,26,buffer);	// write something to the internal memory  
+  sprintf(buffer, "%8.3f", gpsData->distance*0.000621371);
+  oledDisp3.drawStr(97,58,buffer);	// write something to the internal memory  
+  oledDisp3.setFont(u8g2_font_spleen6x12_mf);	// choose a suitable font
+  sprintf(buffer, "miles");
+  oledDisp3.drawStr(225,58,buffer);	// write something to the internal memory  1
   oledDisp3.sendBuffer();
 
   oledDisp4.clearBuffer();
-  oledDisp4.setFont(u8g2_font_spleen32x64_mf);	// choose a suitable font
-  sprintf(buffer, " %7.3f", gpsData->avgSpeed*0.00223693629);
-  oledDisp4.drawStr(0,53,buffer);	// write something to the internal memory  
+  oledDisp4.setFont(u8g2_font_spleen8x16_mf);	// choose a suitable font
+  sprintf(buffer, "speed: ");
+  oledDisp4.drawStr(69,26,buffer);	// write something to the internal memory  
+  sprintf(buffer, "avg speed: ");
+  oledDisp4.drawStr(37,58,buffer);	// write something to the internal memory  
+
+  oledDisp4.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
+  sprintf(buffer, "%7.3f", gpsData->speed*0.00223693629);
+  oledDisp4.drawStr(125,26,buffer);	// write something to the internal memory  
+
+  sprintf(buffer, "%7.3f", gpsData->avgSpeed*0.00223693629);
+  oledDisp4.drawStr(125,58,buffer);	// write something to the internal memory  
+
+  oledDisp4.setFont(u8g2_font_spleen6x12_mf);	// choose a suitable font
+  sprintf(buffer, "mph");
+  oledDisp4.drawStr(237,58,buffer);	// write something to the internal memory  1
+  oledDisp4.drawStr(237,26,buffer);	// write something to the internal memory  1
   oledDisp4.sendBuffer();
 }
 

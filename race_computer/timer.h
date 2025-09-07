@@ -15,5 +15,6 @@ void timerSetup(void);
 void timerUpdate(void);
 unsigned long getTick(void);
 int getCnt(void);
+double getTime(void);
 
 #endif

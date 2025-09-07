@@ -21,6 +21,7 @@ struct gpsDataStruct {
   int second;
   long speed;
   double avgSpeed;
+  unsigned long distance;
 };
 
 void gpsSetup(void);
@@ -28,5 +29,7 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *);
 void gpsUpdate(void);
 struct gpsDataStruct *getGpsData(void);
 UBX_TIM_TM2_data_t *getGpsTimestamp(void);
+void gpsODOcallback(UBX_NAV_ODO_data_t *);
+void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct);
 
 #endif

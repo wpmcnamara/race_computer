@@ -1,4 +1,5 @@
 #include "keypad.h"
+#include "gps.h"
 
 Adafruit_NeoKey_1x4 keypad;
 volatile bool keyPress=false;
@@ -43,6 +44,7 @@ void startPressInt() {
     tick=0;
     TMRx->CH[2].CTRL = TMR_CTRL_CM(1) | TMR_CTRL_PCS(2) | TMR_CTRL_LENGTH;
     digitalWriteFast(GPS_INT, LOW);
+    gps.resetOdometer(); //Uncomment this line to reset the odometer
   } else {
     timer_run=false;
     TMRx->CH[2].CTRL = 0;
