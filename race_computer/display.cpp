@@ -1,6 +1,9 @@
 #include "display.h"
 #include "timer.h"
 #include "gps.h"
+#include "agr_logo_bottom.h"
+#include "agr_logo_top.h"
+#include "event.h"
 
 //8 digit LED display
 CK_MAX ledDisp(LED_DISP_LOAD);
@@ -57,6 +60,32 @@ void displaySetup(void) {
   oledDisp4.drawStr(0,53,buffer);	// write something to the internal memory  
   oledDisp4.sendBuffer();
 
+  delay(1000);
+  oledDisp1.clearBuffer();
+  oledDisp1.drawXBM(0,2,agr_top_width, agr_top_height, agr_logo_top);
+  oledDisp1.sendBuffer();
+  oledDisp2.clearBuffer();
+  oledDisp2.drawXBM(0,0,agr_bottom_width, agr_bottom_height, agr_logo_bottom);
+  oledDisp2.sendBuffer();
+  oledDisp3.clearBuffer();
+  oledDisp3.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
+  sprintf(buffer, "Open Race");
+  oledDisp3.drawStr(64,20,buffer);	// write something to the internal memory
+  sprintf(buffer, "Computer");
+  oledDisp3.drawStr(56,52,buffer);	// write something to the internal memory
+  oledDisp3.sendBuffer();
+  oledDisp4.clearBuffer();
+  oledDisp4.setFont(u8g2_font_spleen12x24_mf);
+  sprintf(buffer, "%cPatrick McNamara",169);
+  oledDisp4.drawStr(0,20,buffer);	// write something to the internal memory
+  sprintf(buffer, "firmware: 0.1.0");
+  oledDisp4.drawStr(8,52,buffer);	// write something to the internal memory
+  oledDisp4.sendBuffer();
+  delay(10000);
+
+  new event_t(displayUpdateFast, eventRepeat, true, 0, 1, &Serial, "displayUpdateFast");
+  new event_t(displayUpdate, eventRepeat, true, 0, 10, &Serial, "displayUpdate");
+
 }
 
 void displayUpdate() {
@@ -87,29 +116,7 @@ void displayUpdate() {
   oledDisp1.sendBuffer();					// transfer internal memory to the display
 
   oledDisp2.clearBuffer();
-  /*
-  oledDisp2.setFont(u8g2_font_spleen6x12_mf);	// choose a suitable font
-  sprintf(buffer, "speed: %09.4f", gpsData->speed*0.00223693629);
-  oledDisp2.drawStr(0,12,buffer);	// write something to the internal memory  
 
-  sprintf(buffer, "avg speed: %09.4f", gpsData->avgSpeed*0.00223693629);
-  oledDisp2.drawStr(102,12,buffer);	// write something to the internal memory  
-  sprintf(buffer, "%08ld.%1d", tickHold, cntHold/100);
-  oledDisp2.drawStr(0,24,buffer);	// write something to the internal memory
-
-  sprintf(buffer, "rcount=%d", gpsTimeStamp->count);  
-  oledDisp2.drawStr(0,36,buffer);
-  sprintf(buffer, "m:%d r:%d fe:%d tb:%d u:%d t:%d re:%d",
-    gpsTimeStamp->flags.bits.mode,
-    gpsTimeStamp->flags.bits.run,
-    gpsTimeStamp->flags.bits.newFallingEdge,
-    gpsTimeStamp->flags.bits.timeBase,
-    gpsTimeStamp->flags.bits.utc,
-    gpsTimeStamp->flags.bits.time,
-    gpsTimeStamp->flags.bits.newRisingEdge
-  );
-  oledDisp2.drawStr(0,48,buffer);
-  */  
   oledDisp2.setFont(u8g2_font_spleen8x16_mf);
   sprintf(buffer, " time  :");
   oledDisp2.drawStr(37,26,buffer);
@@ -163,9 +170,9 @@ void displayUpdate() {
   sprintf(buffer, "distance: ");
   oledDisp3.drawStr(17,58,buffer);	// write something to the internal memory   
   oledDisp3.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
-  sprintf(buffer, "%8.3f", 6.4-(gpsData->distance*0.000621371));
+  sprintf(buffer, "%8.3f", 6.4-((gpsData->distance-gpsData->distanceOffset)*0.000621371));
   oledDisp3.drawStr(97,26,buffer);	// write something to the internal memory  
-  sprintf(buffer, "%8.3f", gpsData->distance*0.000621371);
+  sprintf(buffer, "%8.3f", (gpsData->distance-gpsData->distanceOffset)*0.000621371);
   oledDisp3.drawStr(97,58,buffer);	// write something to the internal memory  
   oledDisp3.setFont(u8g2_font_spleen6x12_mf);	// choose a suitable font
   sprintf(buffer, "miles");

@@ -4,17 +4,18 @@
 #include <IntervalTimer.h>
 #include "bsp.h"
 #include "helpers.h"
+#include "event.h"
 
 extern volatile bool timer_run;
-extern volatile bool refresh;
 extern unsigned long tick;
-extern IntervalTimer it1;
 extern IMXRT_TMR_t * TMRx;
 
+
 void timerSetup(void);
-void timerUpdate(void);
 unsigned long getTick(void);
 int getCnt(void);
 double getTime(void);
+void intervalTimerAddCallback(event_t *eventPtr);
+void intervalTimerDelCallback(event_t *eventPtr);
 
 #endif

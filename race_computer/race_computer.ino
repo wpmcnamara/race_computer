@@ -7,13 +7,12 @@
 #include "gps.h"
 #include "timer.h"
 #include "storage.h"
-
-
+#include <IntervalTimer.h>
 
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(1000000);
   Wire.begin();
   Wire.setClock(400000);
   keypadSetup();
@@ -24,28 +23,46 @@ void setup() {
 }
 
 void loop() {
-  static int loops=0;
+  /*
+  struct gpsDataStruct *gpsData=getGpsData();
+  if(timer_run && startStopIsBreathing()) {
+    startStopStopBreath();
+  }
+  if(!timer_run && !startStopIsBreathing()) {
+    startStopStartBreath();
+  }
+  if(gpsData->fix>=3 && !startStopIsBreathing()) {
+    startStopStartBreath();
+  }
+  if(gpsData->fix<2 && startStopIsBreathing()) {
+    startStopStopBreath();
+  }
+  
+  if(timer_run) {
+    if(((gpsData->avgSpeed*0.00223693629)-31.9)<-0.1) {
+      keypad.pixels.setPixelColor(0,0xFF0000);
+      //keypad.pixels.setPixelColor(1,0xFF0000);
+      //keypad.pixels.setPixelColor(2,0xFF0000);
+      //keypad.pixels.setPixelColor(3,0xFF0000);
+    } else if (((gpsData->avgSpeed*0.00223693629)-31.9)>0.1) {
+      keypad.pixels.setPixelColor(0,0xFFFF00);
+      keypad.pixels.setPixelColor(1,0xFFFF00);
+      keypad.pixels.setPixelColor(2,0xFFFF00);
+      keypad.pixels.setPixelColor(3,0xFFFF00);      
+    } else {
+      keypad.pixels.setPixelColor(0,0x00FF00);
+      keypad.pixels.setPixelColor(1,0x00FF00);
+      keypad.pixels.setPixelColor(2,0x00FF00);
+      keypad.pixels.setPixelColor(3,0x00FF00);
 
-  if (!refresh) {
-    return;
-  }
-  refresh=false;
-  loops++;
-
-  timerUpdate();
-  keypadUpdate();
-  if(loops==10) {
-    gpsUpdate();
-    displayUpdate();
-  }
-  displayUpdateFast();
-  if(loops%2==0) {
-    readKeypad();
-  }
-  if(loops%2==0) {
-    readKeypad();
-  }
-  if(loops==10) { 
-    loops=0;
-  }
+    }
+    //keypad.pixels.show();
+  } else {
+      keypad.pixels.setPixelColor(0,0x000000);
+      //keypad.pixels.setPixelColor(1,0x000000);
+      //keypad.pixels.setPixelColor(2,0x000000);
+      //keypad.pixels.setPixelColor(3,0x000000);
+      //keypad.pixels.show();     
+  }*/
+  
 }

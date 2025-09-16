@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include "gps.h"
 #include "timer.h"
+#include "event.h"
 
 //GPS
 SFE_UBLOX_GNSS gps;
@@ -13,6 +14,7 @@ unsigned int speedSamples=0;
 unsigned long speedSum=0;
 
 struct gpsDataStruct gpsData;
+//event_t gpsUpdateEvent(gpsUpdate, eventRepeat, false, 0, 10);
 
 void gpsSetup(void) {
   uint8_t flags;        // Odometer/Low-speed COG filter flags
@@ -33,6 +35,7 @@ void gpsSetup(void) {
   gpsData.speed=0;
   gpsData.avgSpeed=0;
   gpsData.distance=0;
+  gpsData.distanceOffset=0;
 
   pinMode(GPS_INT, OUTPUT);
   digitalWrite(GPS_INT, HIGH);
@@ -134,7 +137,8 @@ void gpsSetup(void) {
 
   gps.setAutoPVTcallbackPtr(&gpsNAVcallback); 
   gps.setAutoPVT(true); //Tell the GNSS to "send" each solution
-  
+  new event_t(gpsUpdate, eventRepeat, true, 0, 10, &Serial, "gpsUpdate");
+  //gpsUpdateEvent.active=true;
 }
 
 void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct)
@@ -178,5 +182,6 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
   gpsData.speed = ubxDataStruct->gSpeed;
 }
 
+void gpsZeroDistance(void) { gpsData.distanceOffset = gpsData.distance;}
 struct gpsDataStruct *getGpsData(void) { return(&gpsData); }
 UBX_TIM_TM2_data_t *getGpsTimestamp(void) { return(&timeStamp); }
