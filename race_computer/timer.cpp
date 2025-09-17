@@ -59,7 +59,7 @@ void timerSetup(void) {
   NVIC_ENABLE_IRQ(IRQ_QTIMER4);
   //TMRx->CH[2].CTRL = TMR_CTRL_CM(1) | TMR_CTRL_PCS(2) | TMR_CTRL_LENGTH;
   it1.begin(it1cb, 10000);  // microseconds
-  new event_t (timerUpdate, eventRepeat, true, 0, 1, &Serial, "timerUpdate");
+  new event_t (timerUpdate, eventRepeat, true, false, 0, 1, &Serial, "timerUpdate");
 }
 
 void timerUpdate(void) {

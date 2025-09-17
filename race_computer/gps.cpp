@@ -137,8 +137,7 @@ void gpsSetup(void) {
 
   gps.setAutoPVTcallbackPtr(&gpsNAVcallback); 
   gps.setAutoPVT(true); //Tell the GNSS to "send" each solution
-  new event_t(gpsUpdate, eventRepeat, true, 0, 10, &Serial, "gpsUpdate");
-  //gpsUpdateEvent.active=true;
+  new event_t(gpsUpdate, eventRepeat, true, false, 0, 10, &Serial, "gpsUpdate");
 }
 
 void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct)

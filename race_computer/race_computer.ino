@@ -23,15 +23,8 @@ void setup() {
 }
 
 void loop() {
-  /*
   struct gpsDataStruct *gpsData=getGpsData();
-  if(timer_run && startStopIsBreathing()) {
-    startStopStopBreath();
-  }
-  if(!timer_run && !startStopIsBreathing()) {
-    startStopStartBreath();
-  }
-  if(gpsData->fix>=3 && !startStopIsBreathing()) {
+  if(gpsData->fix>=3 && !startStopIsBreathing() && !timer_run) {
     startStopStartBreath();
   }
   if(gpsData->fix<2 && startStopIsBreathing()) {
@@ -41,9 +34,9 @@ void loop() {
   if(timer_run) {
     if(((gpsData->avgSpeed*0.00223693629)-31.9)<-0.1) {
       keypad.pixels.setPixelColor(0,0xFF0000);
-      //keypad.pixels.setPixelColor(1,0xFF0000);
-      //keypad.pixels.setPixelColor(2,0xFF0000);
-      //keypad.pixels.setPixelColor(3,0xFF0000);
+      keypad.pixels.setPixelColor(1,0xFF0000);
+      keypad.pixels.setPixelColor(2,0xFF0000);
+      keypad.pixels.setPixelColor(3,0xFF0000);
     } else if (((gpsData->avgSpeed*0.00223693629)-31.9)>0.1) {
       keypad.pixels.setPixelColor(0,0xFFFF00);
       keypad.pixels.setPixelColor(1,0xFFFF00);
@@ -56,13 +49,13 @@ void loop() {
       keypad.pixels.setPixelColor(3,0x00FF00);
 
     }
-    //keypad.pixels.show();
+    keypad.pixels.show();
   } else {
       keypad.pixels.setPixelColor(0,0x000000);
-      //keypad.pixels.setPixelColor(1,0x000000);
-      //keypad.pixels.setPixelColor(2,0x000000);
-      //keypad.pixels.setPixelColor(3,0x000000);
-      //keypad.pixels.show();     
-  }*/
+      keypad.pixels.setPixelColor(1,0x000000);
+      keypad.pixels.setPixelColor(2,0x000000);
+      keypad.pixels.setPixelColor(3,0x000000);
+      keypad.pixels.show();     
+  }
   
 }

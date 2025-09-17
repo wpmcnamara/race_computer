@@ -5,21 +5,32 @@
 #include "event.h"
 
 void startStopBreath(void);
+void startStopOff();
+void keyDebounce();
 
 Adafruit_NeoKey_1x4 keypad;
 volatile bool keyPress=false;
 volatile bool startStopKeyPress=false;
-volatile bool startDebounce=false;
-int debounceCount=0;
+//volatile bool startDebounce=false;
+//int debounceCount=0;
 int startStopBreathColor=0;
 int startStopBreathCount=0;
 int startStopBreathDir=1;
 bool startStopBreathActive=false;
+uint8_t buttonState=0;
+bool startStopState=false;
 std::list<uint8_t> keyPresses;
-//event_t breathEvent(startStopBreath, eventRepeat, false, 0, 1);
-
+//event_t breathEvent(startStopBreath, eventRepeat, false, false, 0, 1);
+event_t *breathEvent;
+event_t *startStopOffEvent;
+event_t *keyDebounceEvent;
+//event_t startStopOffEvent(startStopOff , eventSingle, false, false, 0, 10);
 Adafruit_NeoPixel startStop = Adafruit_NeoPixel(1, KEYPAD_LED, NEO_GRB + NEO_KHZ800);
 
+void startStopOff(void) {
+  startStop.setPixelColor(0, 0);
+  startStop.show(); 
+}
 void startStopBreath(void) {
   if(startStopBreathDir==1) {
     if(startStopBreathColor<250) {
@@ -51,17 +62,16 @@ void startStopBreath(void) {
 }
 
 void startStopStartBreath(void) {
-  //breathEvent.active=true;
+  breathEvent->active=true;
 }
 
 void startStopStopBreath(void) {
-  //breathEvent.active=false;
-  startStop.setPixelColor(0, 0);
-  startStop.show();
+  breathEvent->active=false;
+  startStopOffEvent->active=true;
 }
 
 bool startStopIsBreathing(void) {
-  return startStopBreathActive;
+  return breathEvent->active;
 }
 void keypadSetup(void) {
   pinMode(KEYPAD_START, INPUT_PULLUP);
@@ -97,9 +107,11 @@ void keypadSetup(void) {
 
   attachInterrupt(digitalPinToInterrupt(KEYPAD_START),startPressInt, FALLING);
   attachInterrupt(digitalPinToInterrupt(KEYPAD_INT),keyPressInt, FALLING); 
-  new event_t(keypadUpdate, eventRepeat, true, 0, 1, &Serial, "keypadUpdate");
-  new event_t(readKeypad, eventRepeat, true, 0, 2, &Serial, "readKeypad");
-  new event_t(startStopBreath, eventRepeat, false, 0, 1, &Serial, "startStopBreath");
+  //new event_t(keypadUpdate, eventRepeat, true, false, 0, 1, &Serial, "keypadUpdate");
+  new event_t(readKeypad, eventRepeat, true, false, 0, 2, &Serial, "readKeypad");
+  breathEvent=new event_t(startStopBreath, eventRepeat, false, false, 0, 1);
+  startStopOffEvent=new event_t(startStopOff , eventSingle, false, false, 0, 10);
+  keyDebounceEvent=new event_t(keyDebounce, eventSingle, false, false, 0, 15);
   startStopStartBreath();
 }
 
@@ -108,22 +120,22 @@ void keyPressInt() {
 }
 
 void startPressInt() {
-  if(!timer_run) {
-    timer_run=true;
-    TMRx->CH[2].CNTR = 0;
-    tick=0;
-    TMRx->CH[2].CTRL = TMR_CTRL_CM(1) | TMR_CTRL_PCS(2) | TMR_CTRL_LENGTH;
-    digitalWriteFast(GPS_INT, LOW);
-    gpsZeroDistance();
-  } else {
-    timer_run=false;
-    TMRx->CH[2].CTRL = 0;
-    digitalWriteFast(GPS_INT, LOW);
+  if(startStopState==1) {
+    if(!timer_run) {
+      timer_run=true;
+      TMRx->CH[2].CNTR = 0;
+      tick=0;
+      TMRx->CH[2].CTRL = TMR_CTRL_CM(1) | TMR_CTRL_PCS(2) | TMR_CTRL_LENGTH;
+      digitalWriteFast(GPS_INT, LOW);
+      gpsZeroDistance();
+    } else {
+      timer_run=false;
+      TMRx->CH[2].CTRL = 0;
+      digitalWriteFast(GPS_INT, LOW);
+    }
   }
   disableInterrupt(KEYPAD_START);
-  startDebounce=true;
-  debounceCount=0;
-  startStopKeyPress=true;
+  keyDebounceEvent->active=true;
 }
 
 void readKeypad(void) {
@@ -153,32 +165,35 @@ void readKeypad(void) {
     }  
     keypad.pixels.show();
   } 
-  if(startStopKeyPress) {
-    buttons|=(KEY_START_STOP);
-    startStopKeyPress=false;
-    startStop.setPixelColor(0, 0x808080);
-    startStop.show();
+  startStopState=digitalReadFast(KEYPAD_START);
+  if(startStopState==0) {
+      buttons|=(1<<KEY_START_STOP);
+      breathEvent->active=false;
+      startStop.setPixelColor(0, 0x808080);
+      startStop.show();
+  } else {
+    if(timer_run) {
+      startStop.setPixelColor(0, 0x00FF00);
+      startStop.show();  
+    } else {
+      if(breathEvent->active==false) {
+        startStop.setPixelColor(0, 0x000000);
+        startStop.show();   
+      }
+    }
+     
   }
   if(buttons) {
     keyPresses.push_back(buttons);
   }   
 }
 
-void keypadUpdate(void) {
-  if(startDebounce) {
-    debounceCount++;
-    if(debounceCount==25) {
+void keyDebounce(void) {
       digitalWriteFast(GPS_INT, HIGH);
-      startDebounce=false;
       enableInterrupt(KEYPAD_START);
-    }
-    if(debounceCount == 5) {
-      startStop.setPixelColor(0, 0);
-      startStop.show();
-    }
-  }
 }
-uint8_t getKeyEvent(void) {
+
+uint8_t getKeyPress(void) {
   uint8_t keys;
   if (keyPresses.empty()) {
     return 0;

@@ -61,30 +61,33 @@ void displaySetup(void) {
   oledDisp4.sendBuffer();
 
   delay(1000);
+  sprintf(buffer, "--------");
+  ledDisp.ShowMe(buffer);
+  ledDisp.Set_Position(0);
   oledDisp1.clearBuffer();
-  oledDisp1.drawXBM(0,2,agr_top_width, agr_top_height, agr_logo_top);
+  oledDisp1.drawXBM(18,2,agr_top_width, agr_top_height, agr_logo_top);
   oledDisp1.sendBuffer();
   oledDisp2.clearBuffer();
-  oledDisp2.drawXBM(0,0,agr_bottom_width, agr_bottom_height, agr_logo_bottom);
+  oledDisp2.drawXBM(18,0,agr_bottom_width, agr_bottom_height, agr_logo_bottom);
   oledDisp2.sendBuffer();
   oledDisp3.clearBuffer();
   oledDisp3.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
   sprintf(buffer, "Open Race");
-  oledDisp3.drawStr(64,20,buffer);	// write something to the internal memory
+  oledDisp3.drawStr(55,20,buffer);	// write something to the internal memory
   sprintf(buffer, "Computer");
-  oledDisp3.drawStr(56,52,buffer);	// write something to the internal memory
+  oledDisp3.drawStr(63,52,buffer);	// write something to the internal memory
   oledDisp3.sendBuffer();
   oledDisp4.clearBuffer();
   oledDisp4.setFont(u8g2_font_spleen12x24_mf);
-  sprintf(buffer, "%cPatrick McNamara",169);
-  oledDisp4.drawStr(0,20,buffer);	// write something to the internal memory
-  sprintf(buffer, "firmware: 0.1.0");
-  oledDisp4.drawStr(8,52,buffer);	// write something to the internal memory
+  sprintf(buffer, "%c Patrick McNamara",169);
+  oledDisp4.drawStr(20,20,buffer);	// write something to the internal memory
+  sprintf(buffer, "firmware: 0.0.1");
+  oledDisp4.drawStr(38,52,buffer);	// write something to the internal memory
   oledDisp4.sendBuffer();
-  delay(10000);
+  delay(5000);
 
-  new event_t(displayUpdateFast, eventRepeat, true, 0, 1, &Serial, "displayUpdateFast");
-  new event_t(displayUpdate, eventRepeat, true, 0, 10, &Serial, "displayUpdate");
+  new event_t(displayUpdateFast, eventRepeat, true, false, 0, 1, &Serial, "displayUpdateFast");
+  new event_t(displayUpdate, eventRepeat, true, false, 0, 10, &Serial, "displayUpdate");
 
 }
 
