@@ -6,10 +6,10 @@
 void timerUpdate(void);
 
 volatile bool timer_run=false;
-unsigned long tick=0;  //millisecond tick count
-unsigned long tickHold;
-unsigned long intervalTimerCount=0;
-int cntHold;
+timeStamp_t timerVal;
+timeStamp_t timerTs;
+//unsigned long intervalTimerCount=0;
+
 IntervalTimer it1;
 //event_t timerUpdateEvent(timerUpdate, eventRepeat, false, 0, 1);
 
@@ -42,10 +42,14 @@ void intervalTimerDelCallback(event_t *eventPtr) {
 void ppsInterrupt() {
   TMRx->CH[2].SCTRL  &= ~(TMR_SCTRL_TCF);  // clear
   TMRx->CH[2].CSCTRL &= ~(TMR_CSCTRL_TCF1);
-  tick++;
+  timerVal.seconds++;
 }
 
 void timerSetup(void) {
+  timerTs.millis=0;
+  timerTs.seconds=0;
+  timerVal.millis=0;
+  timerVal.seconds=0;
   *(portConfigRegister(GPS_PPS)) = 1;  // ALT 1
   CCM_CCGR6 |= CCM_CCGR6_QTIMER3(CCM_CCGR_ON);
   TMRx->CH[2].CTRL = 0x000; 
@@ -63,10 +67,11 @@ void timerSetup(void) {
 }
 
 void timerUpdate(void) {
-  cntHold=TMRx->CH[2].CNTR;
-  tickHold=tick;
+  timerTs.millis=TMRx->CH[2].CNTR;
+  timerTs.seconds=timerVal.seconds;
 }
 
-unsigned long getTick(void) { return tickHold; };
-double getTime(void) { return ((double)tickHold+(double(cntHold)/1000.0));}
-int getCnt(void) { return cntHold; };
+unsigned long getTick(void) { return timerTs.seconds; };
+timeStamp_t * getTimeStamp(void) { return &timerTs; };
+double getTime(void) { return ((double)timerTs.seconds+((double)timerTs.millis/1000.0));}
+int getCnt(void) { return timerTs.millis; };

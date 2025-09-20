@@ -3,6 +3,8 @@
 #include "timer.h"
 #include <list>
 #include "event.h"
+#include "race.h"
+#include "gps.h"
 
 void startStopBreath(void);
 void startStopOff();
@@ -121,17 +123,22 @@ void keyPressInt() {
 
 void startPressInt() {
   if(startStopState==1) {
-    if(!timer_run) {
-      timer_run=true;
+    if(!race.legData->inProgress) {
       TMRx->CH[2].CNTR = 0;
-      tick=0;
       TMRx->CH[2].CTRL = TMR_CTRL_CM(1) | TMR_CTRL_PCS(2) | TMR_CTRL_LENGTH;
       digitalWriteFast(GPS_INT, LOW);
-      gpsZeroDistance();
+      timerVal.seconds=0;
+      timer_run=true;
+      race.legData->inProgress=true;
+      race.distanceOffset=gpsData.distance;
+      if(!race.inProgress) {
+        race.inProgress=true;
+      }
     } else {
-      timer_run=false;
       TMRx->CH[2].CTRL = 0;
       digitalWriteFast(GPS_INT, LOW);
+      timer_run=false;
+      race.legData->inProgress=false;
     }
   }
   disableInterrupt(KEYPAD_START);
@@ -172,7 +179,7 @@ void readKeypad(void) {
       startStop.setPixelColor(0, 0x808080);
       startStop.show();
   } else {
-    if(timer_run) {
+    if(race.legData->inProgress) {
       startStop.setPixelColor(0, 0x00FF00);
       startStop.show();  
     } else {

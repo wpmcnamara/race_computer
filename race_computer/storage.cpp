@@ -60,3 +60,5 @@ if (!sdCard.init(1000000, SDCARD_CS)) {
 
 
 }
+
+void getRaces () {}

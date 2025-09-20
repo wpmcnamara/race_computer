@@ -6,8 +6,7 @@
 enum eventTypeEnum {
   eventSingle,
   eventMultiple,
-  eventRepeat,
-  eventOneShot
+  eventRepeat
 };
 
 typedef enum eventTypeEnum eventType_t;

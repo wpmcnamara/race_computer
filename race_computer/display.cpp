@@ -4,6 +4,7 @@
 #include "agr_logo_bottom.h"
 #include "agr_logo_top.h"
 #include "event.h"
+#include "race.h"
 
 //8 digit LED display
 CK_MAX ledDisp(LED_DISP_LOAD);
@@ -92,14 +93,11 @@ void displaySetup(void) {
 }
 
 void displayUpdate() {
-  unsigned long tickHold=getTick();
-  int cntHold=getCnt();
   struct gpsDataStruct *gpsData=getGpsData();
-  UBX_TIM_TM2_data_t *gpsTimeStamp=getGpsTimestamp();
-  double time=getTime();
+  orcTime_t *gpsTime=getGpsTime();
   oledDisp1.clearBuffer();					// clear the internal memory
   oledDisp1.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
-  sprintf(buffer, "%02d:%02d:%02d", gpsData->hour, gpsData->minute, gpsData->second);
+  sprintf(buffer, "%02d:%02d:%02d", gpsTime->hour, gpsTime->minute, gpsTime->second);
   oledDisp1.drawStr(64,20,buffer);	// write something to the internal memory
   oledDisp1.setFont(u8g2_font_spleen6x12_mf);
   oledDisp1.drawStr(194,20,"GMT");
@@ -145,25 +143,15 @@ void displayUpdate() {
 
   oledDisp2.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
 
-  //gps averqge speed is in meters per second.  Convert to miles per second
-  double avgMps=gpsData->avgSpeed*0.000621371;
-  //calculate our target speed in miles per second
-  double targetMps=31.9/3600.0;
-  //ticks are milliseconds, convert to seconds.  Multiply target speed by running time
-  //to figure out how far we should have gone.
-  double targetDistance=targetMps*time;
-  //gps distance is in meters.  Convert to miles traveled.  
-  //figure out the difference between how far we've actually gone and how
-  //far we should have gone.
-  double deltaDistance=(gpsData->distance*0.000621371)-targetDistance;
-  //how long would it take to cover the distance delta at our target speed?
-  double deltaTime=deltaDistance/targetMps;
+  sprintf(buffer, "%7.3f", race.legData->timeDelta);
+  oledDisp2.drawStr(125,26, buffer);
+  sprintf(buffer, "%7.3f", race.legData->speedDelta*2.23694);
+  oledDisp2.drawStr(125,58,buffer);
 
-
-  sprintf(buffer, "%8.3f", deltaTime);
-  oledDisp2.drawStr(128,26, buffer);
-  sprintf(buffer, "%8.3f", (gpsData->avgSpeed*0.00223693629)-31.9);
-  oledDisp2.drawStr(128,58,buffer);
+  sprintf(buffer, "sec");
+  oledDisp4.drawStr(237,26,buffer);	// write something to the internal memory
+  sprintf(buffer, "mph");
+  oledDisp4.drawStr(237,58,buffer);	// write something to the internal memory
   oledDisp2.sendBuffer();					// transfer internal memory to the display
 
   oledDisp3.clearBuffer();
@@ -173,12 +161,13 @@ void displayUpdate() {
   sprintf(buffer, "distance: ");
   oledDisp3.drawStr(17,58,buffer);	// write something to the internal memory   
   oledDisp3.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
-  sprintf(buffer, "%8.3f", 6.4-((gpsData->distance-gpsData->distanceOffset)*0.000621371));
+  sprintf(buffer, "%8.3f", race.legData->distanceRemaining*0.000621372);
   oledDisp3.drawStr(97,26,buffer);	// write something to the internal memory  
-  sprintf(buffer, "%8.3f", (gpsData->distance-gpsData->distanceOffset)*0.000621371);
+  sprintf(buffer, "%8.3f", race.legData->distance*0.000621372);
   oledDisp3.drawStr(97,58,buffer);	// write something to the internal memory  
   oledDisp3.setFont(u8g2_font_spleen6x12_mf);	// choose a suitable font
   sprintf(buffer, "miles");
+  oledDisp3.drawStr(225,26,buffer);	// write something to the internal memory  1
   oledDisp3.drawStr(225,58,buffer);	// write something to the internal memory  1
   oledDisp3.sendBuffer();
 
@@ -190,10 +179,10 @@ void displayUpdate() {
   oledDisp4.drawStr(37,58,buffer);	// write something to the internal memory  
 
   oledDisp4.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
-  sprintf(buffer, "%7.3f", gpsData->speed*0.00223693629);
+  sprintf(buffer, "%7.3f", gpsData->speed*2.23694);
   oledDisp4.drawStr(125,26,buffer);	// write something to the internal memory  
 
-  sprintf(buffer, "%7.3f", gpsData->avgSpeed*0.00223693629);
+  sprintf(buffer, "%7.3f", race.legData->averageSpeed*2.23694);
   oledDisp4.drawStr(125,58,buffer);	// write something to the internal memory  
 
   oledDisp4.setFont(u8g2_font_spleen6x12_mf);	// choose a suitable font

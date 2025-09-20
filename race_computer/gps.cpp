@@ -2,6 +2,7 @@
 #include "gps.h"
 #include "timer.h"
 #include "event.h"
+#include "race.h"
 
 //GPS
 SFE_UBLOX_GNSS gps;
@@ -29,13 +30,11 @@ void gpsSetup(void) {
   gpsData.lon=0;
   gpsData.siv=0;
   gpsData.fix=0;
-  gpsData.hour=0;
-  gpsData.minute=0;
-  gpsData.second=0;
+  gpsData.gpsTime.hour=0;
+  gpsData.gpsTime.minute=0;
+  gpsData.gpsTime.second=0;
   gpsData.speed=0;
-  gpsData.avgSpeed=0;
   gpsData.distance=0;
-  gpsData.distanceOffset=0;
 
   pinMode(GPS_INT, OUTPUT);
   digitalWrite(GPS_INT, HIGH);
@@ -67,7 +66,7 @@ void gpsSetup(void) {
   gps.setPortOutput(COM_PORT_SPI, COM_TYPE_UBX); //Set the SPI port to output UBX only (turn off NMEA noise)
   gps.setNavigationFrequency(20); //Set output to 20 times a second
   gps.setAutoTIMTM2callbackPtr(&TIMTM2dataCallback);
-  gps.logTIMTM2(); // Enable TIM TM2 data logging
+  //gps.logTIMTM2(); // Enable TIM TM2 data logging
 
   // Create storage for the time pulse parameters
   UBX_CFG_TP5_data_t timePulseParameters;
@@ -125,6 +124,7 @@ void gpsSetup(void) {
   timePulseParameters.flags.bits.isLength = 0; // Tell the module that pulseLenRatio is a ratio / duty cycle (* 2^-32) - not a length (in us)
   timePulseParameters.flags.bits.polarity = 1; // Tell the module that we want the rising edge at the top of second. (Set to 0 for falling edge.)
   timePulseParameters.flags.bits.lockGnssFreq =1;
+  timePulseParameters.flags.bits.gridUtcGnss = 0;  //Time pulse timestamps on UTC timegrid;
   // Now set the time pulse parameters
   if (gps.setTimePulseParameters(&timePulseParameters) == false)
   {
@@ -142,45 +142,67 @@ void gpsSetup(void) {
 
 void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct)
 {
-  //startStopTimeStamp=ubxDataStruct;
-  memcpy(&startStopTimeStamp, ubxDataStruct, sizeof(UBX_TIM_TM2_data_t));
+  if (ubxDataStruct->flags.bits.newFallingEdge) {
+    if(race.legData->inProgress) {
+      race.startTs.seconds=(ubxDataStruct->wnF*604800)+(ubxDataStruct->towMsF/1000);
+      race.startTs.millis=ubxDataStruct->towMsF%1000;
+    } else {
+      race.endTs.seconds=(ubxDataStruct->wnF*604800)+(ubxDataStruct->towMsF/1000);
+      race.endTs.millis=ubxDataStruct->towMsF%1000;      
+    }
+  }
 }
 
 void gpsUpdate(void) {
   gps.checkUblox();
   gps.checkCallbacks();
-  if (gps.getPVT())
-  {
-
-    gpsData.siv = gps.getSIV();
-    gpsData.fix = gps.getFixType();
-
-    memcpy(&timeStamp,&gps.packetUBXTIMTM2->data,sizeof(UBX_TIM_TM2_data_t));
-  }
 }
 
 void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
-  double tickHold;
+  double elapsedTime;
+  double targetDistance;
+  double deltaDistance;
+
   gpsData.distance = ubxDataStruct->distance; 
-  //Since we have an updated difference, if we have a running timer, then we should update 
+  //Since we have an updated difference, if we have a race in progress, then we should update 
   //the average speed.
-  //we want ticks in seconds rather than milliseconds since distance is in meters and we 
-  //can calculate speed in m/s then convert to mph.
-  tickHold=(double)getTick()/1000.0;
-  if(tickHold!=0) {
-    gpsData.avgSpeed=(double)gpsData.distance/tickHold;
+  //distance is in meters.  Time is in seconds.
+  if(race.legData->inProgress) {
+    race.legData->distance = gpsData.distance-race.distanceOffset;
+    race.legData->distanceRemaining = race.legData->totalDistance-race.legData->distance;
+    race.distance=race.distanceComplete+race.legData->distance;
+    race.distanceRemaining = race.totalDistance-race.distance;
+
+    elapsedTime=TSPTR_TO_FLOAT(getTimeStamp())-TS_TO_FLOAT(race.legData->startTs);
+    race.legData->averageSpeed =(double)race.legData->distance/elapsedTime;
+    race.legData->speedDelta=race.legData->averageSpeed-race.legData->targetSpeed;
+    race.averageSpeed=(double)(race.distanceComplete+race.legData->distance)/(race.timeComplete+elapsedTime);
+    race.speedDelta=race.averageSpeed-race.targetSpeed;
+
+    targetDistance=race.legData->targetSpeed*elapsedTime;
+    deltaDistance=race.legData->distance-targetDistance;
+    race.legData->timeDelta=deltaDistance/race.legData->targetSpeed;
+  
+    targetDistance=race.targetSpeed*(race.timeComplete+elapsedTime);
+    deltaDistance=race.distance-targetDistance;
+    race.timeDelta=deltaDistance/race.targetSpeed;
+
   }
 }
 
 void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
+  gpsData.fix=ubxDataStruct->fixType;
+  gpsData.siv=ubxDataStruct->numSV;
   gpsData.lat=ubxDataStruct->lat/10000000.0;
   gpsData.lon=ubxDataStruct->lon/10000000.0;
-  gpsData.hour = ubxDataStruct->hour;
-  gpsData.minute = ubxDataStruct->min;
-  gpsData.second = ubxDataStruct->sec;
-  gpsData.speed = ubxDataStruct->gSpeed;
+  gpsData.gpsTime.hour = ubxDataStruct->hour;
+  gpsData.gpsTime.minute = ubxDataStruct->min;
+  gpsData.gpsTime.second = ubxDataStruct->sec;
+  gpsData.gpsTime.millis = ubxDataStruct->nano/1000000;
+  //speed is reported in mm/s.  We are going to store in m/s to make things a bit more logical
+  //elsewhere.
+  gpsData.speed = (double)ubxDataStruct->gSpeed/1000.0;
 }
 
-void gpsZeroDistance(void) { gpsData.distanceOffset = gpsData.distance;}
 struct gpsDataStruct *getGpsData(void) { return(&gpsData); }
-UBX_TIM_TM2_data_t *getGpsTimestamp(void) { return(&timeStamp); }
+orcTime_t *getGpsTime(void) { return(&gpsData.gpsTime); }

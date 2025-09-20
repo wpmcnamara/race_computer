@@ -8,6 +8,7 @@
 #include "timer.h"
 #include "storage.h"
 #include <IntervalTimer.h>
+#include "race.h"
 
 
 void setup() {
@@ -20,28 +21,29 @@ void setup() {
   gpsSetup();
   storageSetup();
   timerSetup();
+  raceSetup();
 }
 
 void loop() {
   struct gpsDataStruct *gpsData=getGpsData();
-  if(gpsData->fix>=3 && !startStopIsBreathing() && !timer_run) {
+  if(gpsData->fix>=3 && !startStopIsBreathing() && !race.legData->inProgress) {
     startStopStartBreath();
   }
   if(gpsData->fix<2 && startStopIsBreathing()) {
     startStopStopBreath();
   }
   
-  if(timer_run) {
-    if(((gpsData->avgSpeed*0.00223693629)-31.9)<-0.1) {
+  if(race.legData->inProgress) {
+    if((race.legData->speedDelta)<(race.legData->speedTargetBand*-1.0)) {
       keypad.pixels.setPixelColor(0,0xFF0000);
       keypad.pixels.setPixelColor(1,0xFF0000);
       keypad.pixels.setPixelColor(2,0xFF0000);
       keypad.pixels.setPixelColor(3,0xFF0000);
-    } else if (((gpsData->avgSpeed*0.00223693629)-31.9)>0.1) {
-      keypad.pixels.setPixelColor(0,0xFFFF00);
-      keypad.pixels.setPixelColor(1,0xFFFF00);
-      keypad.pixels.setPixelColor(2,0xFFFF00);
-      keypad.pixels.setPixelColor(3,0xFFFF00);      
+    } else if ((race.legData->speedDelta)>race.legData->speedTargetBand) {
+      keypad.pixels.setPixelColor(0,0x0000FF);
+      keypad.pixels.setPixelColor(1,0x0000FF);
+      keypad.pixels.setPixelColor(2,0x0000FF);
+      keypad.pixels.setPixelColor(3,0x0000FF);      
     } else {
       keypad.pixels.setPixelColor(0,0x00FF00);
       keypad.pixels.setPixelColor(1,0x00FF00);
