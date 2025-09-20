@@ -3,6 +3,7 @@
 #include "timer.h"
 #include "event.h"
 #include "race.h"
+#include "keypad.h"
 
 //GPS
 SFE_UBLOX_GNSS gps;
@@ -164,8 +165,8 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   double deltaDistance;
 
   gpsData.distance = ubxDataStruct->distance; 
-  //Since we have an updated difference, if we have a race in progress, then we should update 
-  //the average speed.
+  //Since we have an updated distamce, if we have a race in progress, then we should update 
+  //the average race stats since everything is based on time and distance travelled.
   //distance is in meters.  Time is in seconds.
   if(race.legData->inProgress) {
     race.legData->distance = gpsData.distance-race.distanceOffset;
@@ -187,6 +188,10 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     deltaDistance=race.distance-targetDistance;
     race.timeDelta=deltaDistance/race.targetSpeed;
 
+    //If we reached the end of the leg, then stop the leg, just as if the start/stop button had been pressed.
+    if(race.legData->distanceRemaining<=0) {
+      startPressInt();
+    }
   }
 }
 
@@ -200,8 +205,13 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
   gpsData.gpsTime.second = ubxDataStruct->sec;
   gpsData.gpsTime.millis = ubxDataStruct->nano/1000000;
   //speed is reported in mm/s.  We are going to store in m/s to make things a bit more logical
-  //elsewhere.
-  gpsData.speed = (double)ubxDataStruct->gSpeed/1000.0;
+  //elsewhere.  If we aren't actively tracking a leg, then force the speed to zero.  This keeps
+  //the speed display from bouncing around at small values due to GPS wander.
+  if(race.legData->inProgress) {
+    gpsData.speed = (double)ubxDataStruct->gSpeed/1000.0;
+  } else {
+    gpsData.speed = 0;
+  }
 }
 
 struct gpsDataStruct *getGpsData(void) { return(&gpsData); }
