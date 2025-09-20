@@ -119,47 +119,47 @@ void displayUpdate() {
   oledDisp2.clearBuffer();
 
   oledDisp2.setFont(u8g2_font_spleen8x16_mf);
-  sprintf(buffer, " time  :");
-  oledDisp2.drawStr(37,26,buffer);
-  oledDisp2.drawLine(83,26,88,15);
-  oledDisp2.drawLine(84,25,88,16); 
+  sprintf(buffer, "   time  :");
+  oledDisp2.drawStr(0,26,buffer);
+  oledDisp2.drawLine(61,26,66,15);
+  oledDisp2.drawLine(62,25,66,16); 
 
-  oledDisp2.drawLine(88,15,93,26);
-  oledDisp2.drawLine(88,16,92,25);
+  oledDisp2.drawLine(66,15,71,26);
+  oledDisp2.drawLine(66,16,70,25);
  
-  oledDisp2.drawLine(83,26,93,26);
-  oledDisp2.drawLine(84,25,92,25);
+  oledDisp2.drawLine(61,26,71,26);
+  oledDisp2.drawLine(62,25,70,25);
 
-  sprintf(buffer, "speed  :");
-  oledDisp2.drawStr(37,58,buffer);
-  oledDisp2.drawLine(83,58,88,47);
-  oledDisp2.drawLine(84,57,88,48);
+  sprintf(buffer, "  speed  :");
+  oledDisp2.drawStr(0,58,buffer);
+  oledDisp2.drawLine(61,58,66,47);
+  oledDisp2.drawLine(62,57,66,48);
 
-  oledDisp2.drawLine(88,47,93,58);
-  oledDisp2.drawLine(88,48,92,57);
+  oledDisp2.drawLine(66,47,71,58);
+  oledDisp2.drawLine(66,48,70,57);
 
-  oledDisp2.drawLine(83,58,93,58);
-  oledDisp2.drawLine(84,57,92,57);
+  oledDisp2.drawLine(61,58,71,58);
+  oledDisp2.drawLine(62,57,70,57);
 
   oledDisp2.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
 
-  sprintf(buffer, "%7.3f", race.legData->timeDelta);
-  oledDisp2.drawStr(125,26, buffer);
-  sprintf(buffer, "%7.3f", race.legData->speedDelta*2.23694);
-  oledDisp2.drawStr(125,58,buffer);
+  sprintf(buffer, "%9.3f", race.legData->timeDelta);
+  oledDisp2.drawStr(81,26, buffer);
+  sprintf(buffer, "%8.3f", race.legData->speedDelta*2.23694);
+  oledDisp2.drawStr(97,58,buffer);
 
   sprintf(buffer, "sec");
-  oledDisp4.drawStr(237,26,buffer);	// write something to the internal memory
+  oledDisp4.drawStr(225,26,buffer);	// write something to the internal memory
   sprintf(buffer, "mph");
-  oledDisp4.drawStr(237,58,buffer);	// write something to the internal memory
+  oledDisp4.drawStr(225,58,buffer);	// write something to the internal memory
   oledDisp2.sendBuffer();					// transfer internal memory to the display
 
   oledDisp3.clearBuffer();
   oledDisp3.setFont(u8g2_font_spleen8x16_mf);	// choose a suitable font
-  sprintf(buffer, "dist rem: ");
-  oledDisp3.drawStr(17,26,buffer);	// write something to the internal memory  
-  sprintf(buffer, "distance: ");
-  oledDisp3.drawStr(17,58,buffer);	// write something to the internal memory   
+  sprintf(buffer, " dist rem:");
+  oledDisp3.drawStr(0,26,buffer);	// write something to the internal memory  
+  sprintf(buffer, " distance:");
+  oledDisp3.drawStr(0,58,buffer);	// write something to the internal memory   
   oledDisp3.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
   sprintf(buffer, "%8.3f", race.legData->distanceRemaining*0.000621372);
   oledDisp3.drawStr(97,26,buffer);	// write something to the internal memory  
@@ -173,22 +173,22 @@ void displayUpdate() {
 
   oledDisp4.clearBuffer();
   oledDisp4.setFont(u8g2_font_spleen8x16_mf);	// choose a suitable font
-  sprintf(buffer, "speed: ");
-  oledDisp4.drawStr(69,26,buffer);	// write something to the internal memory  
-  sprintf(buffer, "avg speed: ");
-  oledDisp4.drawStr(37,58,buffer);	// write something to the internal memory  
+  sprintf(buffer, "    speed:");
+  oledDisp4.drawStr(0,26,buffer);	// write something to the internal memory  
+  sprintf(buffer, "avg speed:");
+  oledDisp4.drawStr(0,58,buffer);	// write something to the internal memory  
 
   oledDisp4.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
-  sprintf(buffer, "%7.3f", gpsData->speed*2.23694);
-  oledDisp4.drawStr(125,26,buffer);	// write something to the internal memory  
+  sprintf(buffer, "%8.3f", gpsData->speed*2.23694);
+  oledDisp4.drawStr(97,26,buffer);	// write something to the internal memory  
 
-  sprintf(buffer, "%7.3f", race.legData->averageSpeed*2.23694);
-  oledDisp4.drawStr(125,58,buffer);	// write something to the internal memory  
+  sprintf(buffer, "%8.3f", race.legData->averageSpeed*2.23694);
+  oledDisp4.drawStr(97,58,buffer);	// write something to the internal memory  
 
   oledDisp4.setFont(u8g2_font_spleen6x12_mf);	// choose a suitable font
   sprintf(buffer, "mph");
-  oledDisp4.drawStr(237,58,buffer);	// write something to the internal memory  1
-  oledDisp4.drawStr(237,26,buffer);	// write something to the internal memory  1
+  oledDisp4.drawStr(225,58,buffer);	// write something to the internal memory  1
+  oledDisp4.drawStr(225,26,buffer);	// write something to the internal memory  1
   oledDisp4.sendBuffer();
 }
 
