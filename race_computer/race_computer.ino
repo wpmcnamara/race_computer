@@ -26,7 +26,7 @@ void setup() {
 
 void loop() {
   struct gpsDataStruct *gpsData=getGpsData();
-  if(gpsData->fix>=3 && !startStopIsBreathing() && !race.legData->inProgress) {
+  if(gpsData->fix>=3 && !startStopIsBreathing() && !race.legData->inProgress && !race.legData->delayedStart) {
     startStopStartBreath();
   }
   if(gpsData->fix<2 && startStopIsBreathing()) {

@@ -17,6 +17,7 @@ class event {
     event(void (*eventAction)(void), eventType_t eventType, bool active, bool eventRemove, unsigned long eventRepeat, unsigned long eventDelay, class usb_serial_class * serialPortPtr=NULL, const char *namePtr=NULL);
     ~event();
     void exec(void);
+    void setDelay(unsigned long newDelay);
     bool active;
   private:
     void (*action)(void);

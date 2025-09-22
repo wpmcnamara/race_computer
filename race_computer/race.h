@@ -5,6 +5,10 @@
 #include <list>
 
 void raceSetup(void);
+void raceLegStart(void);
+void raceLegStop(void);
+
+extern event_t *delayedStartEvent;
 
 typedef class racePoint racePoint_t;
 typedef class raceLeg raceLeg_t;
@@ -80,6 +84,13 @@ class raceData {
     //start and end GPS timestamps for the leg.  Not used in the race context
     timeStamp_t startTs;
     timeStamp_t endTs;
+    //Holds the modulus value for the start time.  If set, will delay start of race time after 
+    //button press until the next startMark second mark.  Allows precise alignment of race timing.
+    unsigned int startMark;
+    bool delayedStart;
+    //When we have a delayed start, there will be an offset between the internal timer and the 
+    //start of timing that we need to account for.
+    timeStamp_t timerOffset;
     //difference between target time and current time, based on distance traveled.  Like speedDelta
     //we calculate when GPS data changes and save, rather than calculating every time it is 
     //used.

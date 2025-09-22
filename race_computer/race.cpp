@@ -1,6 +1,10 @@
 #include "race.h"
+#include "event.h"
+#include "gps.h"
+#include "keypad.h"
 
 raceData_t race;
+event_t *delayedStartEvent;
 
 void raceSetup(void) {
   race.activeRace=new race_t;
@@ -27,6 +31,8 @@ void raceSetup(void) {
   race.startTs.millis=0;
   race.endTs.seconds=0;
   race.endTs.millis=0;
+  race.startMark=0;
+  race.delayedStart=false;
   race.inProgress=false;
 
 
@@ -47,6 +53,24 @@ void raceSetup(void) {
   race.legData->startTs.millis=0;
   race.legData->endTs.seconds=0;
   race.legData->endTs.millis=0;
+  race.legData->startMark=5;
+  race.delayedStart=true;
   race.legData->timeDelta=0;
 
+  delayedStartEvent=new event_t(raceLegStart, eventSingle, false, false, 0, 0, &Serial, "delayedStartEvent");
+
+}
+
+void raceLegStart(void) {
+  race.legData->inProgress=true;
+  race.legData->delayedStart=false;
+  race.distanceOffset=gpsData.distance;
+  if(!race.inProgress) {
+    race.inProgress=true;
+  }
+  startPressInt();
+}
+
+void raceLegStop() {
+  race.legData->inProgress=false;
 }

@@ -72,3 +72,8 @@ void event::exec(void) {
     }
   }
 }
+
+void event::setDelay(unsigned long newDelay) {
+  delay=newDelay;
+  delayReload=newDelay;
+}

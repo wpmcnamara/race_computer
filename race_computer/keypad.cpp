@@ -19,6 +19,9 @@ int startStopBreathColor=0;
 int startStopBreathCount=0;
 int startStopBreathDir=1;
 bool startStopBreathActive=false;
+int startStopBlinkColor=0;
+bool startStopBlinkState=false;
+bool startStopBlinkActive=false;
 uint8_t buttonState=0;
 bool startStopState=false;
 std::list<uint8_t> keyPresses;
@@ -36,7 +39,7 @@ void startStopOff(void) {
 void startStopBreath(void) {
   if(startStopBreathDir==1) {
     if(startStopBreathColor<250) {
-      startStopBreathColor+=10;
+      startStopBreathColor+=5;
       startStop.setPixelColor(0, 0, startStopBreathColor, 0);
       startStop.show();
     } else {
@@ -49,7 +52,7 @@ void startStopBreath(void) {
     }
   } else {
     if(startStopBreathColor>10) {
-      startStopBreathColor-=10;
+      startStopBreathColor-=5;
       startStop.setPixelColor(0, 0, startStopBreathColor, 0);
       startStop.show();
     } else {
@@ -61,6 +64,10 @@ void startStopBreath(void) {
       }      
     }
   }
+}
+
+void startStopFastBlink(void) {
+
 }
 
 void startStopStartBreath(void) {
@@ -129,16 +136,19 @@ void startPressInt() {
       digitalWriteFast(GPS_INT, LOW);
       timerVal.seconds=0;
       timer_run=true;
+      //Moved to GPS TIMTM2 callback
+      /*
       race.legData->inProgress=true;
       race.distanceOffset=gpsData.distance;
       if(!race.inProgress) {
         race.inProgress=true;
       }
+      */
     } else {
       TMRx->CH[2].CTRL = 0;
       digitalWriteFast(GPS_INT, LOW);
       timer_run=false;
-      race.legData->inProgress=false;
+      //race.legData->inProgress=false;
     }
   }
   disableInterrupt(KEYPAD_START);

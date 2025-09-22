@@ -141,13 +141,50 @@ void gpsSetup(void) {
   new event_t(gpsUpdate, eventRepeat, true, false, 0, 10, &Serial, "gpsUpdate");
 }
 
-void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct)
-{
+void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
+  timeStamp_t ts;
+  unsigned int startDelay;
+  unsigned int mark;
+  ts.seconds=(ubxDataStruct->wnF*604800)+(ubxDataStruct->towMsF/1000);
+  ts.millis=ubxDataStruct->towMsF%1000;
+
   if (ubxDataStruct->flags.bits.newFallingEdge) {
-    if(race.legData->inProgress) {
-      race.startTs.seconds=(ubxDataStruct->wnF*604800)+(ubxDataStruct->towMsF/1000);
-      race.startTs.millis=ubxDataStruct->towMsF%1000;
+    if(!race.legData->inProgress) {
+      //save the start time stamp.  We may adjust this later if we are delaying start to
+      //align with a timing mark.
+      race.legData->startTs.seconds=ts.seconds;
+      race.legData->startTs.millis=ts.millis;
+      //check to see if we are aligning the start to a timing mark.
+      //if not then we just start the race timing on button push.  If we
+      //are aligning timing the we have to check the various scenarios to
+      //figure out how long to wait before beginning timing.
+      if(race.legData->startMark==0) {
+        raceLegStart();
+      } else {
+        mark=ts.seconds%race.legData->startMark;
+        //calculate the possible timing delay based on whether the button push was
+        //exactly on the second or not.
+        if(ts.millis==0) {
+          startDelay=(race.legData->startMark-mark)*100;
+        } else {
+          startDelay=((race.legData->startMark-mark-1)*100)+((1000-ts.millis)/10);
+        }
+        if(mark==0 && ts.millis==0) {
+          //We managed to push the start button exactly on the timing mark, so start
+          //the race.
+          raceLegStart();
+        } else {
+          //delay the start of timing until the next timing mark.  Adjust the start timestamp
+          //to align with that mark;
+          race.legData->startTs.millis=0;
+          race.legData->startTs.seconds+=(race.startMark-mark);
+          race.legData->delayedStart=true;
+          delayedStartEvent->setDelay(startDelay);
+          delayedStartEvent->active=true;
+        }
+      }
     } else {
+      raceLegStop();
       race.endTs.seconds=(ubxDataStruct->wnF*604800)+(ubxDataStruct->towMsF/1000);
       race.endTs.millis=ubxDataStruct->towMsF%1000;      
     }
