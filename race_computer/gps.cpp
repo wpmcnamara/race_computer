@@ -12,30 +12,30 @@ SFE_UBLOX_GNSS gps;
 UBX_TIM_TM2_data_t startStopTimeStamp;
 UBX_TIM_TM2_data_t timeStamp;
 
-unsigned int speedSamples=0;
-unsigned long speedSum=0;
+unsigned int speedSamples = 0;
+unsigned long speedSum = 0;
 
 struct gpsDataStruct gpsData;
 //event_t gpsUpdateEvent(gpsUpdate, eventRepeat, false, 0, 10);
 
 void gpsSetup(void) {
-  uint8_t flags;        // Odometer/Low-speed COG filter flags
-  uint8_t odoCfg;       // Odometer filter settings
-  uint8_t cogMaxSpeed;  // Speed below which course-over-ground (COG) is computed with the low-speed COG filter : m/s * 0.1
-  uint8_t cogMaxPosAcc; // Maximum acceptable position accuracy for computing COG with the low-speed COG filter
-  uint8_t velLpGain;    // Velocity low-pass filter level
-  uint8_t cogLpGain;    // COG low-pass filter level
+  uint8_t flags;         // Odometer/Low-speed COG filter flags
+  uint8_t odoCfg;        // Odometer filter settings
+  uint8_t cogMaxSpeed;   // Speed below which course-over-ground (COG) is computed with the low-speed COG filter : m/s * 0.1
+  uint8_t cogMaxPosAcc;  // Maximum acceptable position accuracy for computing COG with the low-speed COG filter
+  uint8_t velLpGain;     // Velocity low-pass filter level
+  uint8_t cogLpGain;     // COG low-pass filter level
 
   //Initialize the global GPS data structure to known values
-  gpsData.lat=0;
-  gpsData.lon=0;
-  gpsData.siv=0;
-  gpsData.fix=0;
-  gpsData.gpsTime.hour=0;
-  gpsData.gpsTime.minute=0;
-  gpsData.gpsTime.second=0;
-  gpsData.speed=0;
-  gpsData.distance=0;
+  gpsData.lat = 0;
+  gpsData.lon = 0;
+  gpsData.siv = 0;
+  gpsData.fix = 0;
+  gpsData.gpsTime.hour = 0;
+  gpsData.gpsTime.minute = 0;
+  gpsData.gpsTime.second = 0;
+  gpsData.speed = 0;
+  gpsData.distance = 0;
 
   pinMode(GPS_INT, OUTPUT);
   digitalWrite(GPS_INT, HIGH);
@@ -47,7 +47,7 @@ void gpsSetup(void) {
   digitalWrite(GPS_RESET, HIGH);
   delay(250);
 
-  if (gps.begin(SPI, GPS_CS, 1000000) == false) //Connect to the u-blox module using Wire port
+  if (gps.begin(SPI, GPS_CS, 4000000) == false)  //Connect to the u-blox module using Wire port
   {
     Serial.println(F("u-blox GNSS not detected on SPI bus. Please check wiring. Freezing."));
     while (1);
@@ -60,12 +60,12 @@ void gpsSetup(void) {
   Serial.println(gps.getProtocolVersionLow());
 
   gps.getPowerSaveMode();
-  
+
   gps.enableGNSS(true, SFE_UBLOX_GNSS_ID_GPS);
   gps.enableGNSS(true, SFE_UBLOX_GNSS_ID_SBAS);
   gps.enableGNSS(true, SFE_UBLOX_GNSS_ID_GLONASS);
-  gps.setPortOutput(COM_PORT_SPI, COM_TYPE_UBX); //Set the SPI port to output UBX only (turn off NMEA noise)
-  gps.setNavigationFrequency(20); //Set output to 20 times a second
+  gps.setPortOutput(COM_PORT_SPI, COM_TYPE_UBX);  //Set the SPI port to output UBX only (turn off NMEA noise)
+  gps.setNavigationFrequency(20);                 //Set output to 20 times a second
   gps.setAutoTIMTM2callbackPtr(&TIMTM2dataCallback);
   //gps.logTIMTM2(); // Enable TIM TM2 data logging
 
@@ -73,21 +73,18 @@ void gpsSetup(void) {
   UBX_CFG_TP5_data_t timePulseParameters;
 
   // Get the time pulse parameters
-  if (gps.getTimePulseParameters(&timePulseParameters) == false)
-  {
+  if (gps.getTimePulseParameters(&timePulseParameters) == false) {
     Serial.println(F("getTimePulseParameters failed! Freezing..."));
-    while (1) ; // Do nothing more
+    while (1);  // Do nothing more
   }
 
   // Print the CFG TP5 version
   Serial.print(F("UBX_CFG_TP5 version: "));
   Serial.println(timePulseParameters.version);
-  if (gps.setDynamicModel(DYN_MODEL_AUTOMOTIVE) == false) // Set the dynamic model to PORTABLE
+  if (gps.setDynamicModel(DYN_MODEL_AUTOMOTIVE) == false)  // Set the dynamic model to PORTABLE
   {
     Serial.println(F("*** Warning: setDynamicModel failed ***"));
-  }
-  else
-  {
+  } else {
     Serial.println(F("Dynamic platform model changed successfully!"));
   }
 
@@ -96,48 +93,45 @@ void gpsSetup(void) {
   gps.enableOdometer();
 
   if (gps.getOdometerConfig(&flags, &odoCfg, &cogMaxSpeed, &cogMaxPosAcc, &velLpGain, &cogLpGain)) {
-    flags = UBX_CFG_ODO_USE_ODO; // Enable the odometer
-    odoCfg = UBX_CFG_ODO_CAR; // Use the car profile (others are RUN, CYCLE, SWIM, CUSTOM)
-    gps.setOdometerConfig(flags, odoCfg, cogMaxSpeed, cogMaxPosAcc, velLpGain, cogLpGain); // Set the configuration
+    flags = UBX_CFG_ODO_USE_ODO;                                                            // Enable the odometer
+    odoCfg = UBX_CFG_ODO_CAR;                                                               // Use the car profile (others are RUN, CYCLE, SWIM, CUSTOM)
+    gps.setOdometerConfig(flags, odoCfg, cogMaxSpeed, cogMaxPosAcc, velLpGain, cogLpGain);  // Set the configuration
   } else {
     Serial.println("Could not read odometer config!");
   }
-  gps.resetOdometer(); 
-  gps.setAutoNAVODOcallbackPtr(&gpsODOcallback); // Enable automatic NAV ODO messages with callback to printODOdata
+  gps.resetOdometer();
+  gps.setAutoNAVODOcallbackPtr(&gpsODOcallback);  // Enable automatic NAV ODO messages with callback to printODOdata
 
 
-  timePulseParameters.tpIdx = 1; // Or we could select the TIMEPULSE2 pin instead, if the module has one
+  timePulseParameters.tpIdx = 1;  // Or we could select the TIMEPULSE2 pin instead, if the module has one
 
   // We can configure the time pulse pin to produce a defined frequency or period
   // Here is how to set the frequency:
 
   // While the module is _locking_ to GNSS time, turn off output
-  timePulseParameters.freqPeriod = 0; // Set the frequency/period to 0Hz
-  timePulseParameters.pulseLenRatio = 0x55555555; // Set the pulse ratio to 1/3 * 2^32 to produce 33:67 mark:space
+  timePulseParameters.freqPeriod = 0;              // Set the frequency/period to 0Hz
+  timePulseParameters.pulseLenRatio = 0x55555555;  // Set the pulse ratio to 1/3 * 2^32 to produce 33:67 mark:space
 
   // When the module is _locked_ to GNSS time, make it generate 1kHz
-  timePulseParameters.freqPeriodLock = PPS_FREQUENCY; // Set the frequency/period to 1kHz
-  timePulseParameters.pulseLenRatioLock = 0x80000000; // Set the pulse ratio to 1/2 * 2^32 to produce 50:50 mark:space
+  timePulseParameters.freqPeriodLock = PPS_FREQUENCY;  // Set the frequency/period to 1kHz
+  timePulseParameters.pulseLenRatioLock = 0x80000000;  // Set the pulse ratio to 1/2 * 2^32 to produce 50:50 mark:space
 
-  timePulseParameters.flags.bits.active = 1; // Make sure the active flag is set to enable the time pulse. (Set to 0 to disable.)
-  timePulseParameters.flags.bits.lockedOtherSet = 1; // Tell the module to use freqPeriod while locking and freqPeriodLock when locked to GNSS time
-  timePulseParameters.flags.bits.isFreq = 1; // Tell the module that we want to set the frequency (not the period)
-  timePulseParameters.flags.bits.isLength = 0; // Tell the module that pulseLenRatio is a ratio / duty cycle (* 2^-32) - not a length (in us)
-  timePulseParameters.flags.bits.polarity = 1; // Tell the module that we want the rising edge at the top of second. (Set to 0 for falling edge.)
-  timePulseParameters.flags.bits.lockGnssFreq =1;
+  timePulseParameters.flags.bits.active = 1;          // Make sure the active flag is set to enable the time pulse. (Set to 0 to disable.)
+  timePulseParameters.flags.bits.lockedOtherSet = 1;  // Tell the module to use freqPeriod while locking and freqPeriodLock when locked to GNSS time
+  timePulseParameters.flags.bits.isFreq = 1;          // Tell the module that we want to set the frequency (not the period)
+  timePulseParameters.flags.bits.isLength = 0;        // Tell the module that pulseLenRatio is a ratio / duty cycle (* 2^-32) - not a length (in us)
+  timePulseParameters.flags.bits.polarity = 1;        // Tell the module that we want the rising edge at the top of second. (Set to 0 for falling edge.)
+  timePulseParameters.flags.bits.lockGnssFreq = 1;
   timePulseParameters.flags.bits.gridUtcGnss = 0;  //Time pulse timestamps on UTC timegrid;
   // Now set the time pulse parameters
-  if (gps.setTimePulseParameters(&timePulseParameters) == false)
-  {
+  if (gps.setTimePulseParameters(&timePulseParameters) == false) {
     Serial.println(F("setTimePulseParameters failed!"));
-  }
-  else
-  {
+  } else {
     Serial.println(F("Success!"));
   }
 
-  gps.setAutoPVTcallbackPtr(&gpsNAVcallback); 
-  gps.setAutoPVT(true); //Tell the GNSS to "send" each solution
+  gps.setAutoPVTcallbackPtr(&gpsNAVcallback);
+  gps.setAutoPVT(true);  //Tell the GNSS to "send" each solution
   new event_t(gpsUpdate, eventRepeat, true, false, 0, 10, &Serial, "gpsUpdate");
 }
 
@@ -145,48 +139,58 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
   timeStamp_t ts;
   unsigned int startDelay;
   unsigned int mark;
-  ts.seconds=(ubxDataStruct->wnF*604800)+(ubxDataStruct->towMsF/1000);
-  ts.millis=ubxDataStruct->towMsF%1000;
-
+  ts.seconds = (ubxDataStruct->wnF * 604800) + (ubxDataStruct->towMsF / 1000);
+  ts.millis = ubxDataStruct->towMsF % 1000;
   if (ubxDataStruct->flags.bits.newFallingEdge) {
-    if(!race.legData->inProgress) {
+    if (!race.legData->inProgress) {
+      Serial.printf("TIMTM2 ts: %ds  %dms\n", ts.seconds, ts.millis);
+      Serial.printf("clock:  %02d:%02d:%02d.%03d\n", gpsData.gpsTime.hour, gpsData.gpsTime.minute, gpsData.gpsTime.second, gpsData.gpsTime.millis);
       //save the start time stamp.  We may adjust this later if we are delaying start to
       //align with a timing mark.
-      race.legData->startTs.seconds=ts.seconds;
-      race.legData->startTs.millis=ts.millis;
+      race.legData->startTs.seconds = ts.seconds;
+      race.legData->startTs.millis = ts.millis;
       //check to see if we are aligning the start to a timing mark.
       //if not then we just start the race timing on button push.  If we
       //are aligning timing the we have to check the various scenarios to
       //figure out how long to wait before beginning timing.
-      if(race.legData->startMark==0) {
+      if (race.legData->startMark == 0) {
+        race.legData->timerOffset.seconds = 0;
+        race.legData->timerOffset.millis = 0;
         raceLegStart();
       } else {
-        mark=ts.seconds%race.legData->startMark;
+        mark = ts.seconds % race.legData->startMark;
+        Serial.printf("mark: %d\n", mark);
+        //calculate the delay before next starting mark, in milliseconds.  This will be invalid if the button
+        //was pushed exactly on the current starting mark, but that will be handled in a special case.
+        startDelay = ((race.legData->startMark - mark) * 1000) - ts.millis;
         //calculate the possible timing delay based on whether the button push was
         //exactly on the second or not.
-        if(ts.millis==0) {
-          startDelay=(race.legData->startMark-mark)*100;
-        } else {
-          startDelay=((race.legData->startMark-mark-1)*100)+((1000-ts.millis)/10);
-        }
-        if(mark==0 && ts.millis==0) {
+        if (mark == 0 && ts.millis == 0) {
           //We managed to push the start button exactly on the timing mark, so start
           //the race.
           raceLegStart();
         } else {
           //delay the start of timing until the next timing mark.  Adjust the start timestamp
           //to align with that mark;
-          race.legData->startTs.millis=0;
-          race.legData->startTs.seconds+=(race.startMark-mark);
-          race.legData->delayedStart=true;
-          delayedStartEvent->setDelay(startDelay);
-          delayedStartEvent->active=true;
+          race.legData->startTs.millis = 0;
+          race.legData->startTs.seconds += (race.legData->startMark - mark);
+          race.legData->delayedStart = true;
+          race.legData->timerOffset.seconds = startDelay / 1000;
+          race.legData->timerOffset.millis = startDelay % 1000;
+          Serial.printf("startDelay: %d\n", startDelay);
+          //delay routine seems to run about 1.3 to 1.4x slow due to things being done in it.  We scale the
+          //start delay appropriately, to get it close to correct.  Actual timing will be correct, we just
+          //want the display to look right-ish
+          delayedStartEvent->setDelay(startDelay / 12);
+          delayedStartEvent->active = true;
+          Serial.printf("startTS:  %ds  %dms\n", race.legData->startTs.seconds, race.legData->startTs.millis);
         }
       }
     } else {
       raceLegStop();
-      race.endTs.seconds=(ubxDataStruct->wnF*604800)+(ubxDataStruct->towMsF/1000);
-      race.endTs.millis=ubxDataStruct->towMsF%1000;      
+      race.legData->endTs.seconds = (ubxDataStruct->wnF * 604800) + (ubxDataStruct->towMsF / 1000);
+      race.legData->endTs.millis = ubxDataStruct->towMsF % 1000;
+      Serial.printf("stopTS:  %ds  %dms\n\n\n", race.legData->endTs.seconds, race.legData->endTs.millis);
     }
   }
 }
@@ -201,55 +205,59 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   double targetDistance;
   double deltaDistance;
 
-  gpsData.distance = ubxDataStruct->distance; 
-  //Since we have an updated distamce, if we have a race in progress, then we should update 
+  gpsData.distance = ubxDataStruct->distance;
+  //Since we have an updated distamce, if we have a race in progress, then we should update
   //the average race stats since everything is based on time and distance travelled.
   //distance is in meters.  Time is in seconds.
-  if(race.legData->inProgress) {
-    race.legData->distance = gpsData.distance-race.distanceOffset;
-    race.legData->distanceRemaining = race.legData->totalDistance-race.legData->distance;
-    race.distance=race.distanceComplete+race.legData->distance;
-    race.distanceRemaining = race.totalDistance-race.distance;
+  if (race.legData->inProgress) {
+    race.legData->distance = gpsData.distance - race.legData->distanceOffset;
+    race.legData->distanceRemaining = race.legData->totalDistance - race.legData->distance;
+    race.distance = race.distanceComplete + race.legData->distance;
+    race.distanceRemaining = race.totalDistance - race.distance;
 
-    elapsedTime=TSPTR_TO_FLOAT(getTimeStamp())-TS_TO_FLOAT(race.legData->startTs);
-    race.legData->averageSpeed =(double)race.legData->distance/elapsedTime;
-    race.legData->speedDelta=race.legData->averageSpeed-race.legData->targetSpeed;
-    race.averageSpeed=(double)(race.distanceComplete+race.legData->distance)/(race.timeComplete+elapsedTime);
-    race.speedDelta=race.averageSpeed-race.targetSpeed;
+    elapsedTime = TSPTR_TO_FLOAT(getTimeStamp()) - TS_TO_FLOAT(race.legData->timerOffset);
+    race.legData->averageSpeed = (double)race.legData->distance / elapsedTime;
+    race.legData->speedDelta = race.legData->averageSpeed - race.legData->targetSpeed;
+    race.averageSpeed = (double)(race.distanceComplete + race.legData->distance) / (race.timeComplete + elapsedTime);
+    race.speedDelta = race.averageSpeed - race.targetSpeed;
 
-    targetDistance=race.legData->targetSpeed*elapsedTime;
-    deltaDistance=race.legData->distance-targetDistance;
-    race.legData->timeDelta=deltaDistance/race.legData->targetSpeed;
-  
-    targetDistance=race.targetSpeed*(race.timeComplete+elapsedTime);
-    deltaDistance=race.distance-targetDistance;
-    race.timeDelta=deltaDistance/race.targetSpeed;
+    targetDistance = race.legData->targetSpeed * elapsedTime;
+    deltaDistance = race.legData->distance - targetDistance;
+    race.legData->timeDelta = deltaDistance / race.legData->targetSpeed;
+
+    targetDistance = race.targetSpeed * (race.timeComplete + elapsedTime);
+    deltaDistance = race.distance - targetDistance;
+    race.timeDelta = deltaDistance / race.targetSpeed;
 
     //If we reached the end of the leg, then stop the leg, just as if the start/stop button had been pressed.
-    if(race.legData->distanceRemaining<=0) {
+    if (race.legData->distanceRemaining <= 0) {
       startPressInt();
     }
   }
 }
 
 void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
-  gpsData.fix=ubxDataStruct->fixType;
-  gpsData.siv=ubxDataStruct->numSV;
-  gpsData.lat=ubxDataStruct->lat/10000000.0;
-  gpsData.lon=ubxDataStruct->lon/10000000.0;
+  gpsData.fix = ubxDataStruct->fixType;
+  gpsData.siv = ubxDataStruct->numSV;
+  gpsData.lat = ubxDataStruct->lat / 10000000.0;
+  gpsData.lon = ubxDataStruct->lon / 10000000.0;
   gpsData.gpsTime.hour = ubxDataStruct->hour;
   gpsData.gpsTime.minute = ubxDataStruct->min;
   gpsData.gpsTime.second = ubxDataStruct->sec;
-  gpsData.gpsTime.millis = ubxDataStruct->nano/1000000;
+  gpsData.gpsTime.millis = ubxDataStruct->nano / 1000000;
   //speed is reported in mm/s.  We are going to store in m/s to make things a bit more logical
   //elsewhere.  If we aren't actively tracking a leg, then force the speed to zero.  This keeps
   //the speed display from bouncing around at small values due to GPS wander.
-  if(race.legData->inProgress) {
-    gpsData.speed = (double)ubxDataStruct->gSpeed/1000.0;
+  if (race.legData->inProgress) {
+    gpsData.speed = (double)ubxDataStruct->gSpeed / 1000.0;
   } else {
     gpsData.speed = 0;
   }
 }
 
-struct gpsDataStruct *getGpsData(void) { return(&gpsData); }
-orcTime_t *getGpsTime(void) { return(&gpsData.gpsTime); }
+struct gpsDataStruct *getGpsData(void) {
+  return (&gpsData);
+}
+orcTime_t *getGpsTime(void) {
+  return (&gpsData.gpsTime);
+}

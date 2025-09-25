@@ -26,5 +26,8 @@ void keypadUpdate(void);
 void startStopStopBreath(void);
 void startStopStartBreath(void);
 bool startStopIsBreathing(void);
+void startStopStopBlink(void);
+void startStopStartBlink(void);
+bool startStopIsBlinking(void);
 uint8_t getKeyPress(void);
 #endif

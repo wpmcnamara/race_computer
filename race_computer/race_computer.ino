@@ -29,8 +29,17 @@ void loop() {
   if(gpsData->fix>=3 && !startStopIsBreathing() && !race.legData->inProgress && !race.legData->delayedStart) {
     startStopStartBreath();
   }
-  if(gpsData->fix<2 && startStopIsBreathing()) {
+  if(gpsData->fix>=3 && !startStopIsBlinking() && race.legData->delayedStart) {
     startStopStopBreath();
+    startStopStartBlink();
+  }
+  if(gpsData->fix<2) {
+    if(startStopIsBreathing()) {
+      startStopStopBreath();
+    }
+    if(startStopIsBlinking()) {
+      startStopStopBlink();
+    }
   }
   
   if(race.legData->inProgress) {

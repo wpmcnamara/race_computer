@@ -43,6 +43,8 @@ void ppsInterrupt() {
   TMRx->CH[2].SCTRL  &= ~(TMR_SCTRL_TCF);  // clear
   TMRx->CH[2].CSCTRL &= ~(TMR_CSCTRL_TCF1);
   timerVal.seconds++;
+  timerTs.seconds=timerVal.seconds;
+  timerTs.millis=0;
 }
 
 void timerSetup(void) {

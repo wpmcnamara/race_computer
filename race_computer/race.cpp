@@ -54,6 +54,7 @@ void raceSetup(void) {
   race.legData->endTs.seconds=0;
   race.legData->endTs.millis=0;
   race.legData->startMark=5;
+  race.legData->delayedStart=false;
   race.delayedStart=true;
   race.legData->timeDelta=0;
 
@@ -64,11 +65,13 @@ void raceSetup(void) {
 void raceLegStart(void) {
   race.legData->inProgress=true;
   race.legData->delayedStart=false;
-  race.distanceOffset=gpsData.distance;
+  race.legData->distanceOffset=gpsData.distance;
   if(!race.inProgress) {
     race.inProgress=true;
   }
-  startPressInt();
+  startStopStopBlink();
+  Serial.printf("start clock:  %02d:%02d:%02d.%03d\n", gpsData.gpsTime.hour, gpsData.gpsTime.minute, gpsData.gpsTime.second, gpsData.gpsTime.millis);
+  //startPressInt();
 }
 
 void raceLegStop() {

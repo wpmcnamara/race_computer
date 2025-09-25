@@ -19,7 +19,7 @@ int startStopBreathColor=0;
 int startStopBreathCount=0;
 int startStopBreathDir=1;
 bool startStopBreathActive=false;
-int startStopBlinkColor=0;
+int startStopBlinkColor=0x00FF00;
 bool startStopBlinkState=false;
 bool startStopBlinkActive=false;
 uint8_t buttonState=0;
@@ -27,6 +27,7 @@ bool startStopState=false;
 std::list<uint8_t> keyPresses;
 //event_t breathEvent(startStopBreath, eventRepeat, false, false, 0, 1);
 event_t *breathEvent;
+event_t *blinkEvent;
 event_t *startStopOffEvent;
 event_t *keyDebounceEvent;
 //event_t startStopOffEvent(startStopOff , eventSingle, false, false, 0, 10);
@@ -67,7 +68,14 @@ void startStopBreath(void) {
 }
 
 void startStopFastBlink(void) {
-
+  startStopBlinkState=!startStopBlinkState;
+  if(startStopBlinkState) {
+    startStop.setPixelColor(0, startStopBlinkColor);    
+  } else {
+    startStop.setPixelColor(0, 0); 
+  }
+  startStop.show();
+  return;
 }
 
 void startStopStartBreath(void) {
@@ -82,6 +90,20 @@ void startStopStopBreath(void) {
 bool startStopIsBreathing(void) {
   return breathEvent->active;
 }
+
+void startStopStartBlink(void) {
+  blinkEvent->active=true;
+}
+
+void startStopStopBlink(void) {
+  blinkEvent->active=false;
+  startStopOffEvent->active=true;
+}
+
+bool startStopIsBlinking(void) {
+  return blinkEvent->active;
+}
+
 void keypadSetup(void) {
   pinMode(KEYPAD_START, INPUT_PULLUP);
   pinMode(KEYPAD_INT, INPUT_PULLUP);
@@ -118,9 +140,10 @@ void keypadSetup(void) {
   attachInterrupt(digitalPinToInterrupt(KEYPAD_INT),keyPressInt, FALLING); 
   //new event_t(keypadUpdate, eventRepeat, true, false, 0, 1, &Serial, "keypadUpdate");
   new event_t(readKeypad, eventRepeat, true, false, 0, 2, &Serial, "readKeypad");
-  breathEvent=new event_t(startStopBreath, eventRepeat, false, false, 0, 1);
-  startStopOffEvent=new event_t(startStopOff , eventSingle, false, false, 0, 10);
-  keyDebounceEvent=new event_t(keyDebounce, eventSingle, false, false, 0, 15);
+  breathEvent=new event_t(startStopBreath, eventRepeat, false, false, 0, 1, &Serial, "breathEvent");
+  blinkEvent=new event_t(startStopFastBlink, eventRepeat, false, false, 0, 20, &Serial, "blinkEvent");
+  startStopOffEvent=new event_t(startStopOff , eventSingle, false, false, 0, 10, &Serial, "startStopOffEvent");
+  keyDebounceEvent=new event_t(keyDebounce, eventSingle, false, false, 0, 15, &Serial, "keyDebounceEvent");
   startStopStartBreath();
 }
 
@@ -136,19 +159,10 @@ void startPressInt() {
       digitalWriteFast(GPS_INT, LOW);
       timerVal.seconds=0;
       timer_run=true;
-      //Moved to GPS TIMTM2 callback
-      /*
-      race.legData->inProgress=true;
-      race.distanceOffset=gpsData.distance;
-      if(!race.inProgress) {
-        race.inProgress=true;
-      }
-      */
     } else {
       TMRx->CH[2].CTRL = 0;
       digitalWriteFast(GPS_INT, LOW);
       timer_run=false;
-      //race.legData->inProgress=false;
     }
   }
   disableInterrupt(KEYPAD_START);
@@ -186,6 +200,7 @@ void readKeypad(void) {
   if(startStopState==0) {
       buttons|=(1<<KEY_START_STOP);
       breathEvent->active=false;
+      blinkEvent->active=false;
       startStop.setPixelColor(0, 0x808080);
       startStop.show();
   } else {
@@ -193,7 +208,7 @@ void readKeypad(void) {
       startStop.setPixelColor(0, 0x00FF00);
       startStop.show();  
     } else {
-      if(breathEvent->active==false) {
+      if(!breathEvent->active && !blinkEvent->active) {
         startStop.setPixelColor(0, 0x000000);
         startStop.show();   
       }
