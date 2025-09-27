@@ -59,15 +59,36 @@ void gpsSetup(void) {
   Serial.print(F("."));
   Serial.println(gps.getProtocolVersionLow());
 
-  gps.getPowerSaveMode();
-
+  gps.getPowerSaveMode(false);
   gps.enableGNSS(true, SFE_UBLOX_GNSS_ID_GPS);
   gps.enableGNSS(true, SFE_UBLOX_GNSS_ID_SBAS);
   gps.enableGNSS(true, SFE_UBLOX_GNSS_ID_GLONASS);
   gps.setPortOutput(COM_PORT_SPI, COM_TYPE_UBX);  //Set the SPI port to output UBX only (turn off NMEA noise)
   gps.setNavigationFrequency(20);                 //Set output to 20 times a second
+  gps.setDynamicModel(DYN_MODEL_AUTOMOTIVE);
   gps.setAutoTIMTM2callbackPtr(&TIMTM2dataCallback);
-  //gps.logTIMTM2(); // Enable TIM TM2 data logging
+
+
+    // Disable the jamming / interference monitor
+  UBX_CFG_ITFM_data_t jammingConfig; // Create storage for the jamming configuration
+  if (gps.getJammingConfiguration(&jammingConfig)) // Read the jamming configuration
+  {
+    Serial.print(F("The jamming / interference monitor is "));
+    if (jammingConfig.config.bits.enable == 0) // Check if the monitor is already enabled
+      Serial.print(F("not "));
+    Serial.println(F("enabled"));
+
+    if (jammingConfig.config.bits.enable == 1) // Check if the monitor is already enabled
+    {
+      Serial.print(F("Disabling the jamming / interference monitor: "));
+      (jammingConfig.config.bits.enable = 0); // Enable the monitor
+      if (gps.setJammingConfiguration(&jammingConfig)) // Set the jamming configuration
+        Serial.println(F("success"));
+      else
+        Serial.println(F("failed!"));
+    }
+  }
+
 
   // Create storage for the time pulse parameters
   UBX_CFG_TP5_data_t timePulseParameters;
@@ -95,6 +116,8 @@ void gpsSetup(void) {
   if (gps.getOdometerConfig(&flags, &odoCfg, &cogMaxSpeed, &cogMaxPosAcc, &velLpGain, &cogLpGain)) {
     flags = UBX_CFG_ODO_USE_ODO;                                                            // Enable the odometer
     odoCfg = UBX_CFG_ODO_CAR;                                                               // Use the car profile (others are RUN, CYCLE, SWIM, CUSTOM)
+    Serial.print(F("cogMaxSpeed: "));
+    Serial.println(cogMaxSpeed);
     gps.setOdometerConfig(flags, odoCfg, cogMaxSpeed, cogMaxPosAcc, velLpGain, cogLpGain);  // Set the configuration
   } else {
     Serial.println("Could not read odometer config!");
@@ -218,14 +241,14 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     elapsedTime = TSPTR_TO_FLOAT(getTimeStamp()) - TS_TO_FLOAT(race.legData->timerOffset);
     race.legData->averageSpeed = (double)race.legData->distance / elapsedTime;
     race.legData->speedDelta = race.legData->averageSpeed - race.legData->targetSpeed;
-    race.averageSpeed = (double)(race.distanceComplete + race.legData->distance) / (race.timeComplete + elapsedTime);
+    race.averageSpeed = (double)race.distance / (TS_TO_FLOAT(race.timeComplete) + elapsedTime);
     race.speedDelta = race.averageSpeed - race.targetSpeed;
 
     targetDistance = race.legData->targetSpeed * elapsedTime;
     deltaDistance = race.legData->distance - targetDistance;
     race.legData->timeDelta = deltaDistance / race.legData->targetSpeed;
 
-    targetDistance = race.targetSpeed * (race.timeComplete + elapsedTime);
+    targetDistance = race.targetSpeed * (TS_TO_FLOAT(race.timeComplete) + elapsedTime);
     deltaDistance = race.distance - targetDistance;
     race.timeDelta = deltaDistance / race.targetSpeed;
 

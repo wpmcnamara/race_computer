@@ -7,6 +7,7 @@
 void raceSetup(void);
 void raceLegStart(void);
 void raceLegStop(void);
+void loadRaces(void);
 
 extern event_t *delayedStartEvent;
 
@@ -14,6 +15,8 @@ typedef class racePoint racePoint_t;
 typedef class raceLeg raceLeg_t;
 typedef class race race_t;
 typedef class raceData raceData_t;
+
+extern std::list<race_t *> races; 
 
 class racePoint {
   public:
@@ -31,8 +34,9 @@ class raceLeg {
     float distance;
     unsigned int id;
     char *descr;
-    unsigned int start;
+    unsigned int mark;
     bool inProgress;
+    bool complete;
   private:
     std::list<racePoint_t *> points;
 };
@@ -43,6 +47,7 @@ class race {
     float speed;
     float distance;
     bool inProgress;
+    unsigned int mark;
   private:
     std::list<raceLeg_t *> raceLegs;
 
@@ -73,7 +78,7 @@ class raceData {
     unsigned int distanceComplete;
     //zero for a race leg.  For the active race, this is the sum of the times for all
     //completed legs.  Needed to calculate the whole race average speed.
-    float timeComplete;
+    timeStamp_t timeComplete;
     //distance traveled for the race/leg.  For a race, this will be the sum of distanceComplete
     //and the distance traveled in the current leg.
     unsigned int distance;

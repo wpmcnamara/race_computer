@@ -2,9 +2,11 @@
 #include "event.h"
 #include "gps.h"
 #include "keypad.h"
+#include  "storage.h"
 
 raceData_t race;
 event_t *delayedStartEvent;
+std::list<race_t *> races; 
 
 void raceSetup(void) {
   race.activeRace=new race_t;
@@ -55,17 +57,16 @@ void raceSetup(void) {
   race.legData->endTs.millis=0;
   race.legData->startMark=5;
   race.legData->delayedStart=false;
-  race.delayedStart=true;
   race.legData->timeDelta=0;
 
   delayedStartEvent=new event_t(raceLegStart, eventSingle, false, false, 0, 0, &Serial, "delayedStartEvent");
-
+  loadRaces();
 }
 
 void raceLegStart(void) {
   race.legData->inProgress=true;
   race.legData->delayedStart=false;
-  race.legData->distanceOffset=gpsData.distance;
+  race.distanceOffset=gpsData.distance;
   if(!race.inProgress) {
     race.inProgress=true;
   }
@@ -77,3 +78,36 @@ void raceLegStart(void) {
 void raceLegStop() {
   race.legData->inProgress=false;
 }
+
+void loadRaces() {
+  //race data files will be stored in a directory called "orc"
+  //if it doesn't exist, then we've got races to load.
+  if(!SD.exists("orc")) {
+    return;
+  }
+  File orcDir=SD.open("orc");
+  //process the orc directory.  Anything that ends in .csv will be considered a race file.
+  while (true) {
+    File entry =  orcDir.openNextFile();
+    if (! entry) {
+      return;
+    }
+    //We are looking for files right now, so skip directories.
+    if(entry.isDirectory()) {
+      continue;
+    }
+    if(strstr(entry.name(), ".csv")==NULL) {
+      continue;
+    }
+    Serial.printf("Found race file: %s\n", entry.name());
+    Serial.println("Contents:");
+    while(entry.available()) {
+      Serial.write(entry.read());
+    }
+    entry.close();
+  }
+}
+
+    
+
+

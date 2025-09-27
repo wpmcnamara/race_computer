@@ -6,10 +6,10 @@
 #include "helpers.h"
 #include "event.h"
 
-typedef struct timeStamp timeStamp_t;
 
 #define TS_TO_FLOAT(ts) ((float)ts.seconds+((float)ts.millis/1000.0))
 #define TSPTR_TO_FLOAT(ts) ((float)ts->seconds+((float)ts->millis/1000.0))
+typedef struct timeStamp timeStamp_t;
 
 extern volatile bool timer_run;
 extern timeStamp_t timerVal;
@@ -19,7 +19,7 @@ struct timeStamp {
   unsigned long seconds;
   unsigned int millis;
 };
-typedef struct timeStamp timeStamp_t;
+
 
 struct orcTime {
   int hour;

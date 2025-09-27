@@ -4,10 +4,9 @@
 // set up variables using the SD utility library functions:
 Sd2Card sdCard;
 SdVolume volume;
-SdFile root;
 
 void storageSetup(void) {
-if (!sdCard.init(1000000, SDCARD_CS)) {    
+  if (!sdCard.init(4000000, SDCARD_CS)) {    
     Serial.println("initialization failed. Things to check:");
     Serial.println("* is a card inserted?");
     Serial.println("* is your wiring correct?");
@@ -57,8 +56,5 @@ if (!sdCard.init(1000000, SDCARD_CS)) {
     volumesize /= 1024;
     Serial.println(volumesize);
   }
-
-
 }
 
-void getRaces () {}
