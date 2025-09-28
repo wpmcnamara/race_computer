@@ -4,7 +4,7 @@
 #include "event.h"
 #include "race.h"
 #include "keypad.h"
-
+#include "state_machine.h"
 //GPS
 SFE_UBLOX_GNSS gps;
 
@@ -166,8 +166,9 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
   ts.millis = ubxDataStruct->towMsF % 1000;
   if (ubxDataStruct->flags.bits.newFallingEdge) {
     if (!race.legData->inProgress) {
-      Serial.printf("TIMTM2 ts: %ds  %dms\n", ts.seconds, ts.millis);
-      Serial.printf("clock:  %02d:%02d:%02d.%03d\n", gpsData.gpsTime.hour, gpsData.gpsTime.minute, gpsData.gpsTime.second, gpsData.gpsTime.millis);
+      keysLocked=true;
+      //Serial.printf("TIMTM2 ts: %ds  %dms\n", ts.seconds, ts.millis);
+      //Serial.printf("clock:  %02d:%02d:%02d.%03d\n", gpsData.gpsTime.hour, gpsData.gpsTime.minute, gpsData.gpsTime.second, gpsData.gpsTime.millis);
       //save the start time stamp.  We may adjust this later if we are delaying start to
       //align with a timing mark.
       race.legData->startTs.seconds = ts.seconds;
@@ -182,7 +183,6 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
         raceLegStart();
       } else {
         mark = ts.seconds % race.legData->startMark;
-        Serial.printf("mark: %d\n", mark);
         //calculate the delay before next starting mark, in milliseconds.  This will be invalid if the button
         //was pushed exactly on the current starting mark, but that will be handled in a special case.
         startDelay = ((race.legData->startMark - mark) * 1000) - ts.millis;
@@ -198,6 +198,7 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
           race.legData->startTs.millis = 0;
           race.legData->startTs.seconds += (race.legData->startMark - mark);
           race.legData->delayedStart = true;
+          stateMachine.status.flags.delayedStart=true;
           race.legData->timerOffset.seconds = startDelay / 1000;
           race.legData->timerOffset.millis = startDelay % 1000;
           Serial.printf("startDelay: %d\n", startDelay);
@@ -206,14 +207,13 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
           //want the display to look right-ish
           delayedStartEvent->setDelay(startDelay / 12);
           delayedStartEvent->active = true;
-          Serial.printf("startTS:  %ds  %dms\n", race.legData->startTs.seconds, race.legData->startTs.millis);
         }
       }
     } else {
       raceLegStop();
       race.legData->endTs.seconds = (ubxDataStruct->wnF * 604800) + (ubxDataStruct->towMsF / 1000);
       race.legData->endTs.millis = ubxDataStruct->towMsF % 1000;
-      Serial.printf("stopTS:  %ds  %dms\n\n\n", race.legData->endTs.seconds, race.legData->endTs.millis);
+      keysLocked=false;
     }
   }
 }
@@ -252,6 +252,14 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     deltaDistance = race.distance - targetDistance;
     race.timeDelta = deltaDistance / race.targetSpeed;
 
+    if((race.legData->speedDelta)<(race.legData->speedTargetBand*-1.0)) {
+      stateMachine.status.flags.buttonColor=1;
+    } else if ((race.legData->speedDelta)>race.legData->speedTargetBand) {
+      stateMachine.status.flags.buttonColor=2;
+    } else {
+      stateMachine.status.flags.buttonColor=3;
+    }
+
     //If we reached the end of the leg, then stop the leg, just as if the start/stop button had been pressed.
     if (race.legData->distanceRemaining <= 0) {
       startPressInt();
@@ -275,6 +283,11 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
     gpsData.speed = (double)ubxDataStruct->gSpeed / 1000.0;
   } else {
     gpsData.speed = 0;
+  }
+  if(gpsData.fix==3 || gpsData.fix==4) {
+    stateMachine.status.flags.gpsReady=true;
+  } else {
+    stateMachine.status.flags.gpsReady=false;
   }
 }
 

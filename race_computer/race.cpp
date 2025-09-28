@@ -3,6 +3,7 @@
 #include "gps.h"
 #include "keypad.h"
 #include  "storage.h"
+#include "state_machine.h"
 
 raceData_t race;
 event_t *delayedStartEvent;
@@ -66,17 +67,17 @@ void raceSetup(void) {
 void raceLegStart(void) {
   race.legData->inProgress=true;
   race.legData->delayedStart=false;
+  stateMachine.status.flags.delayedStart=false;
   race.distanceOffset=gpsData.distance;
   if(!race.inProgress) {
     race.inProgress=true;
   }
-  startStopStopBlink();
-  Serial.printf("start clock:  %02d:%02d:%02d.%03d\n", gpsData.gpsTime.hour, gpsData.gpsTime.minute, gpsData.gpsTime.second, gpsData.gpsTime.millis);
-  //startPressInt();
+  stateMachine.status.flags.legActive=true;
 }
 
 void raceLegStop() {
   race.legData->inProgress=false;
+  stateMachine.status.flags.legActive=false;
 }
 
 void loadRaces() {

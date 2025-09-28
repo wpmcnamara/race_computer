@@ -5,6 +5,7 @@
 #include "event.h"
 #include "race.h"
 #include "gps.h"
+#include "state_machine.h"
 
 void startStopBreath(void);
 void startStopOff();
@@ -24,6 +25,9 @@ bool startStopBlinkState=false;
 bool startStopBlinkActive=false;
 uint8_t buttonState=0;
 bool startStopState=false;
+bool lastStartStopState=false;
+bool keysLocked=false;
+bool startStopStartsRace=false;
 std::list<uint8_t> keyPresses;
 //event_t breathEvent(startStopBreath, eventRepeat, false, false, 0, 1);
 event_t *breathEvent;
@@ -84,7 +88,7 @@ void startStopStartBreath(void) {
 
 void startStopStopBreath(void) {
   breathEvent->active=false;
-  startStopOffEvent->active=true;
+  //startStopOffEvent->active=true;
 }
 
 bool startStopIsBreathing(void) {
@@ -97,7 +101,7 @@ void startStopStartBlink(void) {
 
 void startStopStopBlink(void) {
   blinkEvent->active=false;
-  startStopOffEvent->active=true;
+  //startStopOffEvent->active=true;
 }
 
 bool startStopIsBlinking(void) {
@@ -138,13 +142,11 @@ void keypadSetup(void) {
 
   attachInterrupt(digitalPinToInterrupt(KEYPAD_START),startPressInt, FALLING);
   attachInterrupt(digitalPinToInterrupt(KEYPAD_INT),keyPressInt, FALLING); 
-  //new event_t(keypadUpdate, eventRepeat, true, false, 0, 1, &Serial, "keypadUpdate");
   new event_t(readKeypad, eventRepeat, true, false, 0, 2, &Serial, "readKeypad");
   breathEvent=new event_t(startStopBreath, eventRepeat, false, false, 0, 1, &Serial, "breathEvent");
   blinkEvent=new event_t(startStopFastBlink, eventRepeat, false, false, 0, 20, &Serial, "blinkEvent");
   startStopOffEvent=new event_t(startStopOff , eventSingle, false, false, 0, 10, &Serial, "startStopOffEvent");
   keyDebounceEvent=new event_t(keyDebounce, eventSingle, false, false, 0, 15, &Serial, "keyDebounceEvent");
-  startStopStartBreath();
 }
 
 void keyPressInt() {
@@ -152,17 +154,20 @@ void keyPressInt() {
 }
 
 void startPressInt() {
-  if(startStopState==1) {
-    if(!race.legData->inProgress) {
-      TMRx->CH[2].CNTR = 0;
-      TMRx->CH[2].CTRL = TMR_CTRL_CM(1) | TMR_CTRL_PCS(2) | TMR_CTRL_LENGTH;
-      digitalWriteFast(GPS_INT, LOW);
-      timerVal.seconds=0;
-      timer_run=true;
-    } else {
-      TMRx->CH[2].CTRL = 0;
-      digitalWriteFast(GPS_INT, LOW);
-      timer_run=false;
+  keyPress=true;
+  if(startStopStartsRace) {
+    if(startStopState==1) {
+      if(!race.legData->inProgress) {
+        TMRx->CH[2].CNTR = 0;
+        TMRx->CH[2].CTRL = TMR_CTRL_CM(1) | TMR_CTRL_PCS(2) | TMR_CTRL_LENGTH;
+        digitalWriteFast(GPS_INT, LOW);
+        timerVal.seconds=0;
+        timer_run=true;
+      } else {
+        TMRx->CH[2].CTRL = 0;
+        digitalWriteFast(GPS_INT, LOW);
+        timer_run=false;
+      }
     }
   }
   disableInterrupt(KEYPAD_START);
@@ -174,48 +179,45 @@ void readKeypad(void) {
   if(keyPress) {
     keyPress=false;
     buttons = keypad.read();
-    if (buttons & KEY_ENTER) {
-      keypad.pixels.setPixelColor(0, 0xFFFFFF); // red
-    } else {
-      keypad.pixels.setPixelColor(0, 0);
-    }
-    if (buttons & KEY_DOWN) {
-      keypad.pixels.setPixelColor(1, 0xFFFFFF); // yellow
-    } else {
-      keypad.pixels.setPixelColor(1, 0);
-    }
-    if (buttons & KEY_UP) {
-      keypad.pixels.setPixelColor(2, 0xFFFFFF); // green
-    } else {
-      keypad.pixels.setPixelColor(2, 0);
-    }
-    if (buttons & KEY_ESC) {
-      keypad.pixels.setPixelColor(3, 0xFFFFFF); // blue
-    } else {
-      keypad.pixels.setPixelColor(3, 0);
-    }  
-    keypad.pixels.show();
-  } 
-  startStopState=digitalReadFast(KEYPAD_START);
-  if(startStopState==0) {
-      buttons|=(1<<KEY_START_STOP);
-      breathEvent->active=false;
-      blinkEvent->active=false;
-      startStop.setPixelColor(0, 0x808080);
-      startStop.show();
-  } else {
-    if(race.legData->inProgress) {
-      startStop.setPixelColor(0, 0x00FF00);
-      startStop.show();  
-    } else {
-      if(!breathEvent->active && !blinkEvent->active) {
-        startStop.setPixelColor(0, 0x000000);
-        startStop.show();   
+    if(!keysLocked) {
+      if (buttons & KEYPAD_KEY_ENTER) {
+        keypad.pixels.setPixelColor(0, 0xFFFFFF); // red
+      } else {
+        keypad.pixels.setPixelColor(0, 0);
       }
+      if (buttons & KEYPAD_KEY_DOWN) {
+        keypad.pixels.setPixelColor(1, 0xFFFFFF); // yellow
+      } else {
+        keypad.pixels.setPixelColor(1, 0);
+      }
+      if (buttons & KEYPAD_KEY_UP) {
+        keypad.pixels.setPixelColor(2, 0xFFFFFF); // green
+      } else {
+        keypad.pixels.setPixelColor(2, 0);
+      }
+      if (buttons & KEYPAD_KEY_ESC) {
+        keypad.pixels.setPixelColor(3, 0xFFFFFF); // blue
+      } else {
+        keypad.pixels.setPixelColor(3, 0);
+      }  
+      keypad.pixels.show();
+    } else {
+      buttons=0;
     }
-     
+  } 
+  lastStartStopState=startStopState;
+  startStopState=digitalReadFast(KEYPAD_START);
+  if(lastStartStopState!=startStopState) {
+    if(startStopState==0 ) {
+        buttons|=(1<<KEYPAD_KEY_START_STOP);
+        stateMachine.startStopColor=COLOR_WHITE;
+        stateMachine.status.flags.startStopState=stateOn;
+    } else {
+      stateMachine.status.flags.startStopState=stateOff; 
+    }
   }
   if(buttons) {
+    Serial.printf("buttons: %d\n", buttons);
     keyPresses.push_back(buttons);
   }   
 }
@@ -234,6 +236,17 @@ uint8_t getKeyPress(void) {
     keyPresses.pop_front();
     return keys;
   }
+}
 
+void setAllButtonColor(uint32_t color) {
+  keypad.pixels.setPixelColor(0,color);
+  keypad.pixels.setPixelColor(1,color);
+  keypad.pixels.setPixelColor(2,color);
+  keypad.pixels.setPixelColor(3,color);
+  keypad.pixels.show();  
+}
 
+void startStopOn(uint32_t color) {
+  startStop.setPixelColor(0, color);
+  startStop.show(); 
 }
