@@ -35,6 +35,9 @@ orcTime_t *gpsTimePtr;
 uint8_t menuItem=0;
 race_t *dispRace;
 raceLeg_t *dispRaceLeg;
+bool raceSelectHighlight=false;
+bool raceLegSelectHighlight=false;
+void (*ledDispFunc)(void)=NULL;
 
 std::list<displayContent_t*> displayList;
 
@@ -166,7 +169,7 @@ void displayGPSInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX
       display.drawStr(128,56, "fix: Time");
       break;
     default:
-      sprintf(buffer, "fix: none");
+      display.drawStr(128,56, "fix: None");
       break;
   }
 }
@@ -434,16 +437,24 @@ void displayRaceInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t pos
   display.drawStr(0,12,"Race Selected");
   if(dispRace!=NULL) {
     sprintf(buffer, "race: %s", dispRace->descr.c_str());
-    display.drawStr(0,24,buffer);
+    if(raceSelectHighlight) {
+      display.drawButtonUTF8(1, 24, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, buffer );
+    } else {
+      display.drawButtonUTF8(1, 24, U8G2_BTN_BW0, 255,  0,  0, buffer );
+    }
     sprintf(buffer, "dist: %8.3f  speed: %07.3f  timing: %ds", dispRace->distance, dispRace->speed, dispRace->mark);
-    display.drawStr(0,36,buffer);
+    display.drawStr(1,36,buffer);
     sprintf(buffer, "leg: %s", dispRaceLeg->descr.c_str());
-    display.drawStr(0,48,buffer);
+    if(raceLegSelectHighlight) {
+      display.drawButtonUTF8(1, 48, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, buffer );
+    } else {
+      display.drawButtonUTF8(1, 48, U8G2_BTN_BW0, 255,  0,  0, buffer );
+    }
     sprintf(buffer, "dist: %8.3f  speed: %07.3f  timing: %ds", dispRaceLeg->distance, dispRaceLeg->speed, dispRaceLeg->mark);
-    display.drawStr(0,60,buffer);
+    display.drawStr(1,60,buffer);
   } else {
-    display.drawStr(0,24,"race: none");
-    display.drawStr(0,48,"leg: none");
+    display.drawStr(1,24,"race: none");
+    display.drawStr(1,48,"leg: none");
   }
 
 }
@@ -466,21 +477,23 @@ void displayMenu(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, d
   }
 }
 void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
- display.setFont(u8g2_font_spleen16x32_mf);	
- display.drawStr(56,20,"Main Menu");
+  display.setFont(u8g2_font_spleen16x32_mf);	
+  display.drawStr(56,20,"Main Menu");
+  if(race.inProgress) {
+    display.setFont(u8g2_font_spleen6x12_mf);
+    display.drawStr(80,36,"Race In Progress"); 
+  }
 }
 
 void displayRaceSelectTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
- display.setFont(u8g2_font_spleen16x32_mf);	
- display.drawStr(40,20,"Race Select");
+  display.setFont(u8g2_font_spleen16x32_mf);	
+  display.drawStr(40,20,"Race Select");
 }
 
 void displayRaceLegSelectTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
  display.setFont(u8g2_font_spleen16x32_mf);	
  display.drawStr(8,20,"Race Leg Select");
 }
-
-
 
 void displayLegSummaryTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
  display.setFont(u8g2_font_spleen16x32_mf);	
@@ -493,7 +506,10 @@ void displayLegSummary(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t p
 
 
 void displayUpdateFast(void) {
-  ledDispLegTime();  
+  if(ledDispFunc!=NULL) {
+    ledDispFunc();
+  }
+  //ledDispLegTime();  
   //ledDispRaceDeltaSpeed();
 }
 
@@ -554,4 +570,9 @@ void ledDispRaceDeltaSpeed(void) {
   sprintf(buffer, "%9.3f", race.speedDelta*2.23694);
   ledDisp.Set_Position(0);
   ledDisp.ShowMe(buffer); 
+}
+
+void ledDispDashes(void) {
+  ledDisp.ShowMe("--------");
+  ledDisp.Set_Position(0);
 }

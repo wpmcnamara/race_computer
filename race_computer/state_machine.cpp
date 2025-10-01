@@ -68,6 +68,9 @@ void stateMachine::run(void) {
         dispRace=race.activeRace;
         dispRaceLeg=race.activeLeg;
         menuItem=0;
+        raceSelectHighlight=false;
+        raceLegSelectHighlight=false;
+        ledDispFunc=ledDispDashes;
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
@@ -79,6 +82,7 @@ void stateMachine::run(void) {
         status.flags.startStopState=stateBreath;
         prepRace();
         startStopStartsRace=true;
+        ledDispFunc=ledDispRaceDeltaSpeed;
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayDeltaSpeedLarge));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayDeltaTimeLarge));
@@ -95,6 +99,7 @@ void stateMachine::run(void) {
         Serial.println("  to: stateLegComplete");
         startStopStartsRace=false;
         updateRace();
+        ledDispFunc=ledDispDashes;
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayLegSummaryTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayLegSummary));
@@ -111,6 +116,7 @@ void stateMachine::run(void) {
       case stateSelectRace:
         Serial.println("  to: stateSelectRace");
         menuItem=255;
+        raceSelectHighlight=true;
         selectedRaceSave=selectedRace;
         selectedRace=races.begin();
         selectedRaceLeg=(*selectedRace)->raceLegs.begin();
@@ -125,6 +131,7 @@ void stateMachine::run(void) {
       case stateSelectRaceLeg:
         Serial.println("  to: stateSelectRaceLeg");
         menuItem=255;
+        raceLegSelectHighlight=true;
         selectedRaceLeg=race.activeRace->raceLegs.begin();
         dispRace=(race.activeRace);
         dispRaceLeg=(*selectedRaceLeg);

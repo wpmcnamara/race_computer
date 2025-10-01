@@ -38,6 +38,9 @@ extern std::list<displayContent_t*> displayList;
 extern uint8_t menuItem;
 extern race_t *dispRace;
 extern raceLeg_t *dispRaceLeg;
+extern bool raceSelectHighlight;
+extern bool raceLegSelectHighlight;
+extern void (*ledDispFunc)(void);
 
 
 class displayContent {
@@ -87,6 +90,7 @@ void ledDispLegTime(void);
 void ledDispRaceTime(void);
 void ledDispLegDeltaSpeed(void);
 void ledDispRaceDeltaSpeed(void);
+void ledDispDashes(void);
 
 
 #endif
