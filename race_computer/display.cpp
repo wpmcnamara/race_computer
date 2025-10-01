@@ -32,6 +32,9 @@ char buffer[256];
 
 struct gpsDataStruct *gpsDataPtr;
 orcTime_t *gpsTimePtr;
+uint8_t menuItem=0;
+race_t *dispRace;
+raceLeg_t *dispRaceLeg;
 
 std::list<displayContent_t*> displayList;
 
@@ -46,6 +49,8 @@ void displayContent::display(void) {
 }
 
 void displaySetup(void) {
+  dispRace=NULL;
+  dispRaceLeg=NULL;
   oledDisp1.setBufferPtr(new uint8_t[oledDisp1.getBufferSize()]);
   oledDisp1.initDisplay();
   oledDisp1.clearDisplay();
@@ -72,20 +77,20 @@ void displaySetup(void) {
   ledDisp.ShowMe("01234567");
 
   oledDisp1.clearBuffer();
-  oledDisp1.setFont(u8g2_font_spleen32x64_mf);	// choose a suitable font
-  oledDisp1.drawStr(0,53,"Disp 1");	// write something to the internal memory  
+  oledDisp1.setFont(u8g2_font_spleen32x64_mf);	
+  oledDisp1.drawStr(0,53,"Disp 1");	 
   oledDisp1.sendBuffer();
   oledDisp2.clearBuffer();
-  oledDisp2.setFont(u8g2_font_spleen32x64_mf);	// choose a suitable font
-  oledDisp2.drawStr(0,53,"Disp 2");	// write something to the internal memory  
+  oledDisp2.setFont(u8g2_font_spleen32x64_mf);	
+  oledDisp2.drawStr(0,53,"Disp 2");	  
   oledDisp2.sendBuffer();
   oledDisp3.clearBuffer();
-  oledDisp3.setFont(u8g2_font_spleen32x64_mf);	// choose a suitable font
-  oledDisp3.drawStr(0,53,"Disp 3");	// write something to the internal memory  
+  oledDisp3.setFont(u8g2_font_spleen32x64_mf);	
+  oledDisp3.drawStr(0,53,"Disp 3");	 
   oledDisp3.sendBuffer();
   oledDisp4.clearBuffer();
-  oledDisp4.setFont(u8g2_font_spleen32x64_mf);	// choose a suitable font
-  oledDisp4.drawStr(0,53,"Disp 4");	// write something to the internal memory  
+  oledDisp4.setFont(u8g2_font_spleen32x64_mf);	
+  oledDisp4.drawStr(0,53,"Disp 4");	 
   oledDisp4.sendBuffer();
 
   delay(1000);
@@ -98,14 +103,14 @@ void displaySetup(void) {
   oledDisp2.drawXBM(18,0,agr_bottom_width, agr_bottom_height, agr_logo_bottom);
   oledDisp2.sendBuffer();
   oledDisp3.clearBuffer();
-  oledDisp3.setFont(u8g2_font_spleen16x32_mf);	// choose a suitable font
-  oledDisp3.drawStr(55,20,"Open Race");	// write something to the internal memory
-  oledDisp3.drawStr(63,52,"Computer");	// write something to the internal memory
+  oledDisp3.setFont(u8g2_font_spleen16x32_mf);	
+  oledDisp3.drawStr(55,20,"Open Race");	
+  oledDisp3.drawStr(63,52,"Computer");	
   oledDisp3.sendBuffer();
   oledDisp4.clearBuffer();
   oledDisp4.setFont(u8g2_font_spleen12x24_mf);
-  oledDisp4.drawStr(20,20,"\xA9 Patrick McNamara");	// write something to the internal memory
-  oledDisp4.drawStr(38,52,"firmware: 0.0.1");	// write something to the internal memory
+  oledDisp4.drawStr(20,20,"\xA9 Patrick McNamara");	
+  oledDisp4.drawStr(38,52,"firmware: 0.0.1");	
   oledDisp4.sendBuffer();
   delay(5000);
 
@@ -113,41 +118,12 @@ void displaySetup(void) {
   new event_t(displayUpdate, eventRepeat, true, false, 0, 10, &Serial, "displayUpdate");
   gpsDataPtr=getGpsData();
   gpsTimePtr=getGpsTime();
-
-  displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayDistRemainLarge));
-  displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayGPSInfo));
-  displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayAvgSpeedLarge));
-  displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGpsSpeedLarge));
 }
 
 void displayUpdate() {
   struct gpsDataStruct *gpsData=getGpsData();
   orcTime_t *gpsTime=getGpsTime();
-  /*
-  oledDisp1.clearBuffer();					
-  displayGPSInfo(oledDisp1, dispNA, dispNA);
-  oledDisp1.sendBuffer();					
 
-  oledDisp2.clearBuffer();
-  //displayDeltaTimeMed(oledDisp2, dispNA, dispTop);
-  //displayDeltaSpeedMed(oledDisp2, dispNA, dispBottom);
-  displayDistRemainLarge(oledDisp2, dispNA, dispNA);
-  oledDisp2.sendBuffer();					
-
-  oledDisp3.clearBuffer();
-  //displayDistRemainMed(oledDisp3, dispNA, dispTop);
-  //displayDistanceMed(oledDisp3, dispNA, dispBottom);
-  displayAvgSpeedLarge(oledDisp3, dispNA, dispNA);
-  //displayDeltaSpeedLarge(oledDisp4, dispNA, dispNA);
-  oledDisp3.sendBuffer();
-
-  oledDisp4.clearBuffer();
-  //displayGpsSpeedMed(oledDisp4, dispNA, dispTop);
-  //displayGpsAvgSpeedMed(oledDisp4, dispNA, dispBottom);
-  displayGpsSpeedLarge(oledDisp4, dispNA, dispNA);
-  //displayDeltaTimeLarge(oledDisp4, dispNA, dispNA);
-  oledDisp4.sendBuffer();
-  */
   oledDisp1.clearBuffer();
   oledDisp2.clearBuffer();
   oledDisp3.clearBuffer();
@@ -173,16 +149,30 @@ void displayGPSInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX
   display.drawStr(0,44,buffer);	
   sprintf(buffer, "satellites: %2d", gpsDataPtr->siv);
   display.drawStr(0,56,buffer);	
-  if(gpsDataPtr->fix == 0) sprintf(buffer, "fix: none");
-  else if(gpsDataPtr->fix == 1) display.drawStr(128,56, "fix: DR");
-  else if(gpsDataPtr->fix == 2) display.drawStr(128,56, "fix: 2D");
-  else if(gpsDataPtr->fix == 3) display.drawStr(128,56, "fix: 3D");
-  else if(gpsDataPtr->fix == 4) display.drawStr(128,56, "fix: GNSS+DR");
-  else if(gpsDataPtr->fix == 5) display.drawStr(128,56, "fix: Time");
+  switch(gpsDataPtr->fix) {
+    case 1:
+      display.drawStr(128,56, "fix: DR");
+      break;
+    case 2:
+      display.drawStr(128,56, "fix: 2D");
+      break;
+    case 3:
+      display.drawStr(128,56, "fix: 3D");
+      break;
+    case 4:
+      display.drawStr(128,56, "fix: GNSS+DR");
+      break;
+    case 5:
+      display.drawStr(128,56, "fix: Time");
+      break;
+    default:
+      sprintf(buffer, "fix: none");
+      break;
+  }
 }
 
 void displayDeltaTimeMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  unsigned int y;
+  unsigned int y=0;
   switch (posY) {
     case dispTop:
       y=26;
@@ -218,7 +208,7 @@ void displayDeltaTimeMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t
 }
 
 void displayDeltaSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  unsigned int y;
+  unsigned int y=0;
   switch (posY) {
     case dispTop:
       y=26;
@@ -254,7 +244,7 @@ void displayDeltaSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_
 }
 
 void displayDistanceMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  unsigned int y;
+  unsigned int y=0;
   switch (posY) {
     case dispTop:
       y=26;
@@ -281,7 +271,7 @@ void displayDistanceMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t 
 }
 
 void displayDistRemainMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  unsigned int y;
+  unsigned int y=0;
   switch (posY) {
     case dispTop:
       y=26;
@@ -308,7 +298,7 @@ void displayDistRemainMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_
 }
 
 void displayGpsSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  unsigned int y;
+  unsigned int y=0;
   switch (posY) {
     case dispTop:
       y=26;
@@ -335,7 +325,7 @@ void displayGpsSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t 
 }
 
 void displayAvgSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  unsigned int y;
+  unsigned int y=0;
   switch (posY) {
     case dispTop:
       y=26;
@@ -436,6 +426,69 @@ void displayDeltaSpeedLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPo
   display.drawStr(42,61,buffer);	
   display.setFont(u8g2_font_spleen12x24_mf);	
   display.drawStr(0,61,"mph");
+}
+
+
+void displayRaceInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  display.setFont(u8g2_font_spleen6x12_mf);
+  display.drawStr(0,12,"Race Selected");
+  if(dispRace!=NULL) {
+    sprintf(buffer, "race: %s", dispRace->descr.c_str());
+    display.drawStr(0,24,buffer);
+    sprintf(buffer, "dist: %8.3f  speed: %07.3f  timing: %ds", dispRace->distance, dispRace->speed, dispRace->mark);
+    display.drawStr(0,36,buffer);
+    sprintf(buffer, "leg: %s", dispRaceLeg->descr.c_str());
+    display.drawStr(0,48,buffer);
+    sprintf(buffer, "dist: %8.3f  speed: %07.3f  timing: %ds", dispRaceLeg->distance, dispRaceLeg->speed, dispRaceLeg->mark);
+    display.drawStr(0,60,buffer);
+  } else {
+    display.drawStr(0,24,"race: none");
+    display.drawStr(0,48,"leg: none");
+  }
+
+}
+void displayMenu(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  display.setFont(u8g2_font_spleen6x12_mf);
+  if(menuItem==0) {
+  display.drawButtonUTF8(1, 13, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, "Start Leg" );
+  } else {
+  display.drawButtonUTF8(1, 13, U8G2_BTN_BW0, 255,  0,  0, "Start Leg" );
+  }
+  if(menuItem==1) {
+  display.drawButtonUTF8(1, 26, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, "Select Race" );
+  } else {
+  display.drawButtonUTF8(1, 26, U8G2_BTN_BW0, 255,  0,  0, "Select Race" );
+  }
+  if(menuItem==2) {
+  display.drawButtonUTF8(1, 39, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, "Select Leg" );
+  } else {
+  display.drawButtonUTF8(1, 39, U8G2_BTN_BW0, 255,  0,  0, "Select Leg" );
+  }
+}
+void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+ display.setFont(u8g2_font_spleen16x32_mf);	
+ display.drawStr(56,20,"Main Menu");
+}
+
+void displayRaceSelectTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+ display.setFont(u8g2_font_spleen16x32_mf);	
+ display.drawStr(40,20,"Race Select");
+}
+
+void displayRaceLegSelectTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+ display.setFont(u8g2_font_spleen16x32_mf);	
+ display.drawStr(8,20,"Race Leg Select");
+}
+
+
+
+void displayLegSummaryTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+ display.setFont(u8g2_font_spleen16x32_mf);	
+ display.drawStr(64,20,"Leg Summary");
+}
+void displayLegSummary(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  display.setFont(u8g2_font_spleen6x12_mf);
+  display.drawStr(0,12,"Race leg summary");
 }
 
 

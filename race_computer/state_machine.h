@@ -12,7 +12,11 @@ enum stateMachineStatesEnum {
   stateDelayedStart,
   stateLegActive,
   stateLegComplete,
-  stateRaceComplete
+  stateRaceComplete,
+  stateSelectRace,
+  stateSelectRaceLeg,
+  stateSaveSelection,
+  stateCancelSelection
 };
 
 enum startStopStateEnum {

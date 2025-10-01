@@ -1,5 +1,7 @@
 #include "state_machine.h"
 #include "keypad.h"
+#include "display.h"
+#include "race.h"
 
 
 class stateMachine stateMachine;
@@ -13,8 +15,11 @@ stateMachine::stateMachine(void) {
 void stateMachine::run(void) {
   uint8_t keys=getKeyPress();
 
+  //Update the system based on changing state.  We do this first to ensure that we try and pass through
+  //every state transition.  There are no state transitions allowed here.  This is actions on entrance to
+  //a new state only.
   if(state != lastState ) {
-   switch(lastState) {
+    switch(lastState) {
       case stateInit:
         Serial.print("from: stateInit");
         break;
@@ -36,6 +41,18 @@ void stateMachine::run(void) {
       case stateRaceComplete:
         Serial.print("from: stateRaceComplete");
         break;
+      case stateSelectRace:
+        Serial.print("from: stateSelectRace");
+        break;
+      case stateSelectRaceLeg:
+        Serial.print("from: stateSelectRaceLeg");
+        break;
+      case stateSaveSelection:
+        Serial.print("from: stateSaveSelection");
+        break;
+      case stateCancelSelection:
+        Serial.print("from: stateCancelSelection");
+      
     }
     switch(state) {
       case stateInit:
@@ -43,9 +60,26 @@ void stateMachine::run(void) {
         break;
       case stateMainMenu:
         Serial.println("  to: stateMainMenu");
+        status.flags.startStopState=stateOff;
+        startStopStartsRace=false;        
+        dispRace=race.activeRace;
+        dispRaceLeg=race.activeLeg;
+        menuItem=0;
+        displayList.erase(displayList.begin(), displayList.end());
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));        
         break;
       case stateRaceStart:
         Serial.println("  to: stateRaceStart");
+        status.flags.startStopState=stateBreath;
+        startStopStartsRace=true;
+        displayList.erase(displayList.begin(), displayList.end());
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayDeltaSpeedLarge));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayDeltaTimeLarge));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayDistRemainLarge));
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGpsSpeedLarge));
         break;
       case stateDelayedStart:
         Serial.println("  to: stateDelayedStart");
@@ -55,13 +89,57 @@ void stateMachine::run(void) {
         break;
       case stateLegComplete:
         Serial.println("  to: stateLegComplete");
+        startStopStartsRace=false;
+        displayList.erase(displayList.begin(), displayList.end());
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayLegSummaryTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayLegSummary));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));        
         break;
       case stateRaceComplete:
         Serial.println("  to: stateRaceComplete");
         break;
+      case stateSelectRace:
+        Serial.println("  to: stateSelectRace");
+        menuItem=255;
+        selectedRaceSave=selectedRace;
+        selectedRace=races.begin();
+        selectedRaceLeg=(*selectedRace)->raceLegs.begin();
+        dispRace=(*selectedRace);
+        dispRaceLeg=(*selectedRaceLeg);
+        displayList.erase(displayList.begin(), displayList.end());
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayRaceSelectTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));       
+        break;
+      case stateSelectRaceLeg:
+        Serial.println("  to: stateSelectRaceLeg");
+        menuItem=255;
+        selectedRaceLeg=race.activeRace->raceLegs.begin();
+        dispRace=(race.activeRace);
+        dispRaceLeg=(*selectedRaceLeg);
+        displayList.erase(displayList.begin(), displayList.end());
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayRaceLegSelectTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));               
+        break;
+      case stateSaveSelection:
+        Serial.println("  to: stateSaveSelection");
+        setRace((*selectedRace), (*selectedRaceLeg));
+        break;
+      case stateCancelSelection:
+        Serial.println("  to: stateCancelSelection");
+        selectedRace=selectedRaceSave;
+        break;
     }      
     lastState=state;
   }
+
+  //evaluated every pass through the state machine.  This handles state transitions caused
+  //by async events in the race timing or GPS systems.  No actions or status updates allowed
+  //in this block.  State transitions only.
   switch(state) {
     case stateInit:
       state=stateMainMenu;
@@ -87,35 +165,71 @@ void stateMachine::run(void) {
       }
       break;
     case stateLegComplete:
-      startStopStartsRace=false;
-      state=stateRaceComplete;
       break;
     case stateRaceComplete:
       state=stateMainMenu;
       break;
+    case stateSaveSelection:      
+      state=stateMainMenu;
+      break;
+    case stateCancelSelection:
+      state=stateMainMenu;
+      break;
+    case stateSelectRace:
+      break;
+    case stateSelectRaceLeg:
+      break;
   }
 
+  //Everything below here should only be executed if there is a keypress, or if the status flags 
+  //have changed.
   if(keys==0 && (status.value==lastStatus.value)) {
     return;
   }
 
+  //state machine evaluation based on keypad input.  The only state transitions here should be
+  //driven by a key press.  No actions or status updates allowed in this block.  State transitions only.
   switch(state) {
     case stateInit:
       break;
     case stateMainMenu:
       if(keys & KEYPAD_KEY_ENTER) {
-        if(status.flags.gpsReady) {
-          state=stateRaceStart;
-          status.flags.startStopState=stateBreath;
-          startStopStartsRace=true;
+        switch(menuItem) {
+          case 0:
+            if(race.activeRace!=NULL && status.flags.gpsReady) {
+              state=stateRaceStart;
+            }
+            break;
+          case 1:
+            if(!race.inProgress) {
+              state=stateSelectRace;
+            }
+            break;
+          case 2:
+            if(race.activeRace!=NULL && !race.inProgress) {
+              state=stateSelectRaceLeg;
+            }
+            break;
+        }
+      }
+      if(keys & KEYPAD_KEY_UP) {
+        if(menuItem==0) {
+          menuItem=2;
+        } else {
+          menuItem--;
+        }
+      }
+      if(keys & KEYPAD_KEY_DOWN) {
+        if(menuItem==2) {
+          menuItem=0;
+        } else {
+          menuItem++;
         }
       }
       break;
     case stateRaceStart:
       if(keys & KEYPAD_KEY_ESC) {
         state=stateMainMenu;
-        status.flags.startStopState=stateOff;
-        startStopStartsRace=false;
       }
       break;
     case stateDelayedStart:
@@ -123,11 +237,68 @@ void stateMachine::run(void) {
     case stateLegActive:
       break;
     case stateLegComplete:
+      if(keys & KEYPAD_KEY_ESC) {
+          state=stateRaceComplete;
+      }
+      break;
+    case stateSelectRace:
+      if(keys & KEYPAD_KEY_ENTER) {
+        state=stateSaveSelection;
+      }
+      if(keys & KEYPAD_KEY_UP) {
+        if(selectedRace==races.begin()) {
+          selectedRace=races.end();
+        }
+        --selectedRace;
+        selectedRaceLeg=(*selectedRace)->raceLegs.begin();
+        dispRace=(*selectedRace);
+        dispRaceLeg=(*selectedRaceLeg);
+      }
+      if(keys & KEYPAD_KEY_DOWN) {
+        ++selectedRace;
+        if(selectedRace==races.end()) {
+          selectedRace=races.begin();
+        } 
+        selectedRaceLeg=(*selectedRace)->raceLegs.begin();
+        dispRace=(*selectedRace);
+        dispRaceLeg=(*selectedRaceLeg);
+      }    
+      if(keys & KEYPAD_KEY_ESC) {
+        state=stateCancelSelection;
+      }    
+      break;
+    case stateSelectRaceLeg:
+      if(keys & KEYPAD_KEY_ENTER) {
+        state=stateSaveSelection;
+      }
+      if(keys & KEYPAD_KEY_UP) {
+        if(selectedRaceLeg==race.activeRace->raceLegs.begin()) {
+          selectedRaceLeg=race.activeRace->raceLegs.end();
+        }
+        --selectedRaceLeg;
+        dispRaceLeg=(*selectedRaceLeg);
+      }
+      if(keys & KEYPAD_KEY_DOWN) {
+        ++selectedRaceLeg;
+        if(selectedRaceLeg==race.activeRace->raceLegs.end()) {
+          selectedRaceLeg=race.activeRace->raceLegs.begin();
+        } 
+        dispRaceLeg=(*selectedRaceLeg);
+
+      }    
+      if(keys & KEYPAD_KEY_ESC) {
+        state=stateCancelSelection;
+      }        
       break;
     case stateRaceComplete:
       break;
+    case stateSaveSelection:
+      break;
+    case stateCancelSelection:
+      break;      
   }
 
+  //Handle the button lighting based on the current state of the system.
   Serial.printf("keys:%d status:%d  lastStatus:%d\n", keys, status.value, lastStatus.value);
 
   if(status.flags.delayedStart!=lastStatus.flags.delayedStart) {

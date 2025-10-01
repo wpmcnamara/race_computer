@@ -3,19 +3,27 @@
 
 #include "timer.h"
 #include <list>
-
-void raceSetup(void);
-void raceLegStart(void);
-void raceLegStop(void);
-void loadRaces(void);
-
-extern event_t *delayedStartEvent;
+#include <string>
 
 typedef class racePoint racePoint_t;
 typedef class raceLeg raceLeg_t;
 typedef class race race_t;
 typedef class raceData raceData_t;
 
+void raceSetup(void);
+void raceLegStart(void);
+void raceLegStop(void);
+void loadRaces(void);
+void setRace(race_t *, raceLeg_t *);
+
+extern event_t *delayedStartEvent;
+
+
+
+
+extern std::list<race_t *>::iterator selectedRace;
+extern std::list<race_t *>::iterator selectedRaceSave;
+extern std::vector<raceLeg_t *>::iterator selectedRaceLeg;
 extern std::list<race_t *> races; 
 
 class racePoint {
@@ -33,23 +41,25 @@ class raceLeg {
     float speed;
     float distance;
     unsigned int id;
-    char *descr;
+    String descr;
     unsigned int mark;
     bool inProgress;
     bool complete;
   private:
-    std::list<racePoint_t *> points;
+    std::vector<racePoint_t *> points;
 };
 
 class race {
   public:
-    char *descr;
+    //const char *descr;
+    String descr;
     float speed;
     float distance;
     bool inProgress;
     unsigned int mark;
+    std::vector<raceLeg_t *> raceLegs;
   private:
-    std::list<raceLeg_t *> raceLegs;
+    
 
 };
 
@@ -73,8 +83,9 @@ class raceData {
     //race definition when the race is selected.  For legs, it is loaded from the leg
     //definition when the leg is entered.
     unsigned int totalDistance;
-    //zero for a race leg.  For the active race, this is the sum of the distance of 
-    //completed legs.  Needed to calculate the whole race average speed.
+    //For the active race, this is the sum of the distance of completed legs.  For a leg,
+    //this is amount of the leg that has been completed.  Needed to calculate the whole
+    //race average speed.
     unsigned int distanceComplete;
     //zero for a race leg.  For the active race, this is the sum of the times for all
     //completed legs.  Needed to calculate the whole race average speed.

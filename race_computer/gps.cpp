@@ -47,7 +47,7 @@ void gpsSetup(void) {
   digitalWrite(GPS_RESET, HIGH);
   delay(250);
 
-  if (gps.begin(SPI, GPS_CS, 4000000) == false)  //Connect to the u-blox module using Wire port
+  if (gps.begin(SPI, GPS_CS, 3000000) == false)  //Connect to the u-blox module using Wire port
   {
     Serial.println(F("u-blox GNSS not detected on SPI bus. Please check wiring. Freezing."));
     while (1);
@@ -262,6 +262,7 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
 
     //If we reached the end of the leg, then stop the leg, just as if the start/stop button had been pressed.
     if (race.legData->distanceRemaining <= 0) {
+      Serial.println("dist remaining=0");
       startPressInt();
     }
   }
