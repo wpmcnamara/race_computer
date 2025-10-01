@@ -164,32 +164,30 @@ void loadRaces() {
 void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
   race.activeRace=selectedRace;
   race.activeLeg=selectedRaceLeg;
+  race.targetSpeed=(selectedRace->speed)/2.23694;
+  race.totalDistance=(selectedRace->distance)/0.000621372;
+  race.distanceRemaining=race.totalDistance;
+  race.startMark=selectedRace->mark;
+  
+  race.averageSpeed=0;
+  race.distanceComplete=0;
+  race.distance=0;
+  race.distanceOffset=0;
+  race.averageSpeed=0;
+  race.speedDelta=0;
+  race.timeDelta=0;  
+  race.startTs.seconds=0;
+  race.startTs.millis=0;
+  race.endTs.seconds=0;
+  race.endTs.millis=0;
+}
 
-  if(race.inProgress==false) {
-    race.targetSpeed=(selectedRace->speed)/2.23694;
-    race.totalDistance=(selectedRace->distance)/0.000621372;
-    race.distanceRemaining=race.totalDistance;
-    race.startMark=selectedRace->mark;
-    
-    race.averageSpeed=0;
-    race.distanceComplete=0;
-    race.distance=0;
-    race.distanceOffset=0;
-    race.averageSpeed=0;
-    race.speedDelta=0;
-    race.timeDelta=0;  
-    race.startTs.seconds=0;
-    race.startTs.millis=0;
-    race.endTs.seconds=0;
-    race.endTs.millis=0;
-  }
-
-
-  race.legData->targetSpeed=(selectedRaceLeg->speed)/2.23694;
+void prepRace(void) {
+  race.legData->targetSpeed=(race.activeLeg->speed)/2.23694;
   race.legData->distance=0;
-  race.legData->totalDistance=(selectedRaceLeg->distance)/0.000621372;
+  race.legData->totalDistance=(race.activeLeg->distance)/0.000621372;
   race.legData->distanceRemaining=race.legData->totalDistance;
-  race.legData->startMark=selectedRaceLeg->mark;
+  race.legData->startMark=race.activeLeg->mark;
   
   race.legData->distanceComplete=0;
   race.legData->distanceOffset=0;
@@ -202,7 +200,11 @@ void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
   race.legData->startTs.seconds=0;
   race.legData->startTs.millis=0;
   race.legData->endTs.seconds=0;
-  race.legData->endTs.millis=0;
+  race.legData->endTs.millis=0;  
 }
 
+void updateRace(void) {
+  race.activeLeg->complete=true;
+  race.distanceComplete=race.distance;
+}
 

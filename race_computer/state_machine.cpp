@@ -52,7 +52,10 @@ void stateMachine::run(void) {
         break;
       case stateCancelSelection:
         Serial.print("from: stateCancelSelection");
-      
+        break;
+      case stateNextLeg:
+        Serial.print("from: stateNextLeg");
+        break; 
     }
     switch(state) {
       case stateInit:
@@ -74,6 +77,7 @@ void stateMachine::run(void) {
       case stateRaceStart:
         Serial.println("  to: stateRaceStart");
         status.flags.startStopState=stateBreath;
+        prepRace();
         startStopStartsRace=true;
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayDeltaSpeedLarge));
@@ -90,6 +94,7 @@ void stateMachine::run(void) {
       case stateLegComplete:
         Serial.println("  to: stateLegComplete");
         startStopStartsRace=false;
+        updateRace();
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayLegSummaryTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayLegSummary));
@@ -97,7 +102,11 @@ void stateMachine::run(void) {
         displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));        
         break;
       case stateRaceComplete:
-        Serial.println("  to: stateRaceComplete");
+        Serial.println("  to: stateRaceComplete");      
+        race.inProgress=false;
+        race.activeRace->inProgress=false;
+        race.activeLeg=NULL;
+        race.activeRace=NULL;
         break;
       case stateSelectRace:
         Serial.println("  to: stateSelectRace");
@@ -132,6 +141,15 @@ void stateMachine::run(void) {
       case stateCancelSelection:
         Serial.println("  to: stateCancelSelection");
         selectedRace=selectedRaceSave;
+        break;
+      case stateNextLeg:
+        Serial.print("to: stateNextLeg");
+        selectedRaceLeg++;
+        if(selectedRaceLeg != (*selectedRace)->raceLegs.end()) {
+          race.activeLeg=(*selectedRaceLeg);
+        } else {
+          race.activeLeg=NULL;
+        }
         break;
     }      
     lastState=state;
@@ -178,6 +196,13 @@ void stateMachine::run(void) {
     case stateSelectRace:
       break;
     case stateSelectRaceLeg:
+      break;
+    case stateNextLeg:
+      if(selectedRaceLeg == (*selectedRace)->raceLegs.end()) {
+        state=stateRaceComplete;
+      } else {
+        state=stateMainMenu;
+      }    
       break;
   }
 
@@ -238,8 +263,10 @@ void stateMachine::run(void) {
       break;
     case stateLegComplete:
       if(keys & KEYPAD_KEY_ESC) {
-          state=stateRaceComplete;
+          state=stateNextLeg;
       }
+      break;
+    case stateNextLeg:
       break;
     case stateSelectRace:
       if(keys & KEYPAD_KEY_ENTER) {
@@ -295,7 +322,7 @@ void stateMachine::run(void) {
     case stateSaveSelection:
       break;
     case stateCancelSelection:
-      break;      
+      break;  
   }
 
   //Handle the button lighting based on the current state of the system.

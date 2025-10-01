@@ -15,6 +15,8 @@ void raceLegStart(void);
 void raceLegStop(void);
 void loadRaces(void);
 void setRace(race_t *, raceLeg_t *);
+void prepRace(void);
+void updateRace(void);
 
 extern event_t *delayedStartEvent;
 
