@@ -210,6 +210,8 @@ void readKeypad(void) {
     }
   } 
   if(startPress) {
+    Serial.println("startPress");
+    startPress=false;
     lastStartStopState=startStopState;
     startStopState=digitalReadFast(KEYPAD_START);
     if(lastStartStopState!=startStopState) {
@@ -229,8 +231,16 @@ void readKeypad(void) {
 }
 
 void keyDebounce(void) {
-      digitalWriteFast(GPS_INT, HIGH);
-      enableInterrupt(KEYPAD_START);
+  digitalWriteFast(GPS_INT, HIGH);
+  lastStartStopState=startStopState;
+  startStopState=digitalReadFast(KEYPAD_START);
+  //because we are in the debounce routine, startStopState is 0, coming into 
+  //this routine, so the only transition we could get would be to 1, which would
+  //represent the button being released
+  if(lastStartStopState!=startStopState) {
+    stateMachine.status.flags.startStopState=stateOff; 
+  }      
+  enableInterrupt(KEYPAD_START);
 }
 
 uint8_t getKeyPress(void) {
