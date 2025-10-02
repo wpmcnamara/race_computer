@@ -176,6 +176,8 @@ void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
   race.averageSpeed=0;
   race.speedDelta=0;
   race.timeDelta=0;  
+  race.timeComplete.seconds=0;
+  race.timeComplete.millis=0;
   race.startTs.seconds=0;
   race.startTs.millis=0;
   race.endTs.seconds=0;
@@ -184,16 +186,18 @@ void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
 
 void prepRace(void) {
   race.legData->targetSpeed=(race.activeLeg->speed)/2.23694;
-  race.legData->distance=0;
   race.legData->totalDistance=(race.activeLeg->distance)/0.000621372;
   race.legData->distanceRemaining=race.legData->totalDistance;
   race.legData->startMark=race.activeLeg->mark;
   
+  race.legData->distance=0;
   race.legData->distanceComplete=0;
   race.legData->distanceOffset=0;
   race.legData->averageSpeed=0;
   race.legData->speedDelta=0;
   race.legData->timeDelta=0;
+  race.legData->timeComplete.seconds=0;
+  race.legData->timeComplete.millis=0;
   race.legData->activeRace=NULL;
   race.legData->activeLeg=NULL;
   race.legData->inProgress=false;
@@ -204,7 +208,11 @@ void prepRace(void) {
 }
 
 void updateRace(void) {
+  double elapsedRaceTime=0;
   race.activeLeg->complete=true;
-  race.distanceComplete=race.distance;
+  race.distanceComplete+=race.legData->totalDistance;
+  elapsedRaceTime = TS_TO_FLOAT(race.timeComplete) + (TS_TO_FLOAT(race.legData->endTs) - TS_TO_FLOAT(race.legData->startTs));
+  race.timeComplete.seconds=(unsigned long)elapsedRaceTime;
+  race.timeComplete.millis=(elapsedRaceTime-(unsigned long)elapsedRaceTime)*1000;
 }
 

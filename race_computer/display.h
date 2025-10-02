@@ -83,6 +83,8 @@ void displayRaceSelectTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPo
 void displayRaceLegSelectTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayLegSummaryTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayLegSummary(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayRaceSummaryTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayRaceSummary(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 
 
 

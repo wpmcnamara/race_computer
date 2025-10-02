@@ -205,7 +205,7 @@ void displayDeltaTimeMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t
   display.setFont(u8g2_font_spleen16x32_mf);	
 
   sprintf(buffer, "%9.3f", race.legData->timeDelta);
-  oledDisp2.drawStr(81,y, buffer);
+  display.drawStr(81,y, buffer);
   display.setFont(u8g2_font_spleen6x12_mf);	
   display.drawStr(225,y,"sec");	
 }
@@ -346,8 +346,7 @@ void displayAvgSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t 
       break;      
   }
   display.setFont(u8g2_font_spleen8x16_mf);	
-  display.drawStr(0,y,"  speed \xd8:");	
-  display.setFont(u8g2_font_spleen16x32_mf);	
+  display.drawStr(0,y,"  speed \xd8:");		
   sprintf(buffer, "%8.3f", race.legData->averageSpeed*2.23694);
   display.drawStr(97,y,buffer);	
   display.setFont(u8g2_font_spleen6x12_mf);	
@@ -496,14 +495,78 @@ void displayRaceLegSelectTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dis
 }
 
 void displayLegSummaryTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
- display.setFont(u8g2_font_spleen16x32_mf);	
- display.drawStr(64,20,"Leg Summary");
+  int y;
+  display.setFont(u8g2_font_spleen8x16_mf);	
+  display.drawStr(84,12,"Leg Summary");
+  y=32;
+  display.setFont(u8g2_font_spleen8x16_mf);	
+  display.drawStr(0,y,"  speed \xd8:");	
+  display.setFont(u8g2_font_spleen8x16_mf);	
+  sprintf(buffer, "%8.3f", race.legData->averageSpeed*2.23694);
+  display.drawStr(90,y,buffer);	
+  display.setFont(u8g2_font_spleen6x12_mf);	
+  display.drawStr(225,y,"mph");	
+
+  y=44;
+  display.setFont(u8g2_font_spleen8x16_mf);
+  display.drawStr(0,y,"   time  :");
+  display.drawLine(61,y,66,y-11);
+  display.drawLine(62,y-1,66,y-10); 
+
+  display.drawLine(66,y-11,71,y);
+  display.drawLine(66,y-10,70,y-1);
+ 
+  display.drawLine(61,y,71,y);
+  display.drawLine(62,y-1,70,y-1);
+  display.setFont(u8g2_font_spleen8x16_mf);	
+
+  sprintf(buffer, "%+9.3f", race.legData->timeDelta);
+  display.drawStr(81,y, buffer);
+  display.setFont(u8g2_font_spleen6x12_mf);	
+  display.drawStr(225,y,"sec");	
 }
 void displayLegSummary(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   display.setFont(u8g2_font_spleen6x12_mf);
-  display.drawStr(0,12,"Race leg summary");
+  display.drawStr(83,12,"Race Leg Detail");
+  display.drawStr(46,24,"Actual");
+  display.drawStr(168,23,"Adjusted");
 }
 
+void displayRaceSummaryTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  int y;
+  display.setFont(u8g2_font_spleen8x16_mf);	
+  display.drawStr(80,12,"Race Summary");
+  y=32;
+  display.setFont(u8g2_font_spleen8x16_mf);	
+  display.drawStr(0,y,"  speed \xd8:");	
+  display.setFont(u8g2_font_spleen8x16_mf);	
+  sprintf(buffer, "%+08.3f", race.averageSpeed*2.23694);
+  display.drawStr(91,y,buffer);	
+  display.setFont(u8g2_font_spleen6x12_mf);	
+  display.drawStr(225,y,"mph");	
+
+  y=44;
+  display.setFont(u8g2_font_spleen8x16_mf);
+  display.drawStr(0,y,"   time  :");
+  display.drawLine(61,y,66,y-11);
+  display.drawLine(62,y-1,66,y-10); 
+
+  display.drawLine(66,y-11,71,y);
+  display.drawLine(66,y-10,70,y-1);
+ 
+  display.drawLine(61,y,71,y);
+  display.drawLine(62,y-1,70,y-1);
+  display.setFont(u8g2_font_spleen8x16_mf);	
+
+  sprintf(buffer, "%+09.3f", race.timeDelta);
+  display.drawStr(81,y, buffer);
+  display.setFont(u8g2_font_spleen6x12_mf);	
+  display.drawStr(225,y,"sec");	
+}
+void displayRaceSummary(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  display.setFont(u8g2_font_spleen6x12_mf);
+  display.drawStr(0,12,"Race leg summary");
+}
 
 void displayUpdateFast(void) {
   if(ledDispFunc!=NULL) {

@@ -13,6 +13,7 @@ void keyDebounce();
 
 Adafruit_NeoKey_1x4 keypad;
 volatile bool keyPress=false;
+volatile bool startPress=false;
 volatile bool startStopKeyPress=false;
 //volatile bool startDebounce=false;
 //int debounceCount=0;
@@ -24,8 +25,8 @@ int startStopBlinkColor=0x00FF00;
 bool startStopBlinkState=false;
 bool startStopBlinkActive=false;
 uint8_t buttonState=0;
-bool startStopState=false;
-bool lastStartStopState=false;
+bool startStopState=true;
+bool lastStartStopState=true;
 bool keysLocked=false;
 bool startStopStartsRace=false;
 std::list<uint8_t> keyPresses;
@@ -154,7 +155,10 @@ void keyPressInt() {
 }
 
 void startPressInt() {
-  keyPress=true;
+  Serial.println("start/stop interrupt");
+  startPress=true;
+  Serial.print("startStopState=");
+  Serial.println(startStopState);  
   if(startStopStartsRace) {
     if(startStopState==1) {
       if(!race.legData->inProgress) {
@@ -205,15 +209,17 @@ void readKeypad(void) {
       buttons=0;
     }
   } 
-  lastStartStopState=startStopState;
-  startStopState=digitalReadFast(KEYPAD_START);
-  if(lastStartStopState!=startStopState) {
-    if(startStopState==0 ) {
-        buttons|=(1<<KEYPAD_KEY_START_STOP);
-        stateMachine.startStopColor=COLOR_WHITE;
-        stateMachine.status.flags.startStopState=stateOn;
-    } else {
-      stateMachine.status.flags.startStopState=stateOff; 
+  if(startPress) {
+    lastStartStopState=startStopState;
+    startStopState=digitalReadFast(KEYPAD_START);
+    if(lastStartStopState!=startStopState) {
+      if(startStopState==0 ) {
+          buttons|=(1<<KEYPAD_KEY_START_STOP);
+          stateMachine.startStopColor=COLOR_WHITE;
+          stateMachine.status.flags.startStopState=stateOn;
+      } else {
+        stateMachine.status.flags.startStopState=stateOff; 
+      }
     }
   }
   if(buttons) {

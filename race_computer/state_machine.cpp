@@ -8,6 +8,7 @@ class stateMachine stateMachine;
 
 stateMachine::stateMachine(void) {
   state=stateInit;
+  lastState=stateInit;
   status.value=0;
   lastStatus.value=0;
 }
@@ -103,8 +104,8 @@ void stateMachine::run(void) {
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayLegSummaryTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayLegSummary));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));        
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceSummaryTitle));
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayRaceSummary));        
         break;
       case stateRaceComplete:
         Serial.println("  to: stateRaceComplete");      
@@ -373,7 +374,7 @@ void stateMachine::run(void) {
   }
 
   if(status.flags.startStopState!=lastStatus.flags.startStopState) {
-    Serial.printf("startStopState=%d lastStartStopState=%d\n", status.flags.startStopState, lastStatus.flags.startStopState);
+    Serial.printf("flags.startStopState=%d last flags.startStopState=%d\n", status.flags.startStopState, lastStatus.flags.startStopState);
     switch(lastStatus.flags.startStopState) {
       case stateBlink:
         startStopStopBlink();
