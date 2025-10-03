@@ -17,6 +17,8 @@ void loadRaces(void);
 void setRace(race_t *, raceLeg_t *);
 void prepRace(void);
 void updateRace(void);
+void dumpRaceData(raceData_t *data);
+void raceCheckPoint(void);
 
 extern event_t *delayedStartEvent;
 
@@ -53,7 +55,7 @@ class raceLeg {
 
 class race {
   public:
-    //const char *descr;
+    String fileName;
     String descr;
     float speed;
     float distance;

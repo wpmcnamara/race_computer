@@ -155,10 +155,10 @@ void keyPressInt() {
 }
 
 void startPressInt() {
-  Serial.println("start/stop interrupt");
+  //Serial.println("start/stop interrupt");
   startPress=true;
-  Serial.print("startStopState=");
-  Serial.println(startStopState);  
+  //Serial.print("startStopState=");
+  //Serial.println(startStopState);  
   if(startStopStartsRace) {
     if(startStopState==1) {
       if(!race.legData->inProgress) {
@@ -210,7 +210,7 @@ void readKeypad(void) {
     }
   } 
   if(startPress) {
-    Serial.println("startPress");
+    //Serial.println("startPress");
     startPress=false;
     lastStartStopState=startStopState;
     startStopState=digitalReadFast(KEYPAD_START);
@@ -225,7 +225,7 @@ void readKeypad(void) {
     }
   }
   if(buttons) {
-    Serial.printf("buttons: %d\n", buttons);
+    //Serial.printf("buttons: %d\n", buttons);
     keyPresses.push_back(buttons);
   }   
 }

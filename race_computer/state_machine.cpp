@@ -100,6 +100,7 @@ void stateMachine::run(void) {
         Serial.println("  to: stateLegComplete");
         startStopStartsRace=false;
         updateRace();
+        raceCheckPoint();
         ledDispFunc=ledDispDashes;
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayLegSummaryTitle));
@@ -113,6 +114,7 @@ void stateMachine::run(void) {
         race.activeRace->inProgress=false;
         race.activeLeg=NULL;
         race.activeRace=NULL;
+        raceCheckPoint();
         break;
       case stateSelectRace:
         Serial.println("  to: stateSelectRace");
@@ -158,6 +160,7 @@ void stateMachine::run(void) {
         } else {
           race.activeLeg=NULL;
         }
+
         break;
     }      
     lastState=state;

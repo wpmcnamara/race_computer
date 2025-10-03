@@ -201,7 +201,7 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
           stateMachine.status.flags.delayedStart=true;
           race.legData->timerOffset.seconds = startDelay / 1000;
           race.legData->timerOffset.millis = startDelay % 1000;
-          Serial.printf("startDelay: %d\n", startDelay);
+          //Serial.printf("startDelay: %d\n", startDelay);
           //delay routine seems to run about 1.3 to 1.4x slow due to things being done in it.  We scale the
           //start delay appropriately, to get it close to correct.  Actual timing will be correct, we just
           //want the display to look right-ish
@@ -211,8 +211,8 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
       }
     } else {
       raceLegStop();
-      race.legData->endTs.seconds = (ubxDataStruct->wnF * 604800) + (ubxDataStruct->towMsF / 1000);
-      race.legData->endTs.millis = ubxDataStruct->towMsF % 1000;
+      race.legData->endTs.seconds = ts.seconds;
+      race.legData->endTs.millis = ts.millis;
       keysLocked=false;
     }
   }
@@ -260,11 +260,15 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
       stateMachine.status.flags.buttonColor=3;
     }
 
+    //I don't think we want auto-stop by default since actual distance driven will likely not match the defined
+    //race distance.  May make this a config option in the future.
+    /*
     //If we reached the end of the leg, then stop the leg, just as if the start/stop button had been pressed.
     if (race.legData->distanceRemaining <= 0) {
-      Serial.println("dist remaining=0");
+      //Serial.println("dist remaining=0");
       startPressInt();
     }
+    */
   }
 }
 

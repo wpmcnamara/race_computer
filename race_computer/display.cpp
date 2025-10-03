@@ -541,7 +541,7 @@ void displayRaceSummaryTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispP
   display.drawStr(0,y,"  speed \xd8:");	
   display.setFont(u8g2_font_spleen8x16_mf);	
   sprintf(buffer, "%+08.3f", race.averageSpeed*2.23694);
-  display.drawStr(91,y,buffer);	
+  display.drawStr(90,y,buffer);	
   display.setFont(u8g2_font_spleen6x12_mf);	
   display.drawStr(225,y,"mph");	
 

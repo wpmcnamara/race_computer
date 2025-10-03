@@ -74,9 +74,10 @@ void raceSetup(void) {
 
 void raceLegStart(void) {
   race.legData->inProgress=true;
+  race.activeRace->inProgress=true;
   race.legData->delayedStart=false;
   stateMachine.status.flags.delayedStart=false;
-  race.distanceOffset=gpsData.distance;
+  race.legData->distanceOffset=gpsData.distance;
   if(!race.inProgress) {
     race.inProgress=true;
   }
@@ -121,8 +122,11 @@ void loadRaces() {
       entry.close();
       continue;
     }
-    entry.close();
+    //do these before we close the file, or entry.name() return empty.
     raceFile=new race_t;
+    raceFile->fileName=entry.name();
+    entry.close();
+    Serial.printf("race filename: %s\n", raceFile->fileName.c_str());
     raceFile->descr=doc["descr"].as<String>();
     Serial.printf("race descr: %s\n", raceFile->descr.c_str());
     raceFile->distance=doc["distance"].as<float>();
@@ -208,11 +212,94 @@ void prepRace(void) {
 }
 
 void updateRace(void) {
-  double elapsedRaceTime=0;
+  //we convert the timestamps to a fixed point integer representation to do math.  The macros to convert
+  //to floats trigger some sort of bug where the seconds field is the same for the start and end.  Two
+  //hours of trying to figure out what was going on, with no success, and we solve the problem a different
+  //way.
+  uint32_t startTs=(race.legData->startTs.seconds*1000)+race.legData->startTs.millis;
+  uint32_t endTs=(race.legData->endTs.seconds*1000)+race.legData->endTs.millis;
+  uint32_t timeComplete=(race.timeComplete.seconds*1000)+race.timeComplete.millis;
+  uint32_t elapsedRaceTime=timeComplete+endTs-startTs;
   race.activeLeg->complete=true;
   race.distanceComplete+=race.legData->totalDistance;
-  elapsedRaceTime = TS_TO_FLOAT(race.timeComplete) + (TS_TO_FLOAT(race.legData->endTs) - TS_TO_FLOAT(race.legData->startTs));
-  race.timeComplete.seconds=(unsigned long)elapsedRaceTime;
-  race.timeComplete.millis=(elapsedRaceTime-(unsigned long)elapsedRaceTime)*1000;
+  race.timeComplete.seconds=elapsedRaceTime/1000;
+  race.timeComplete.millis=elapsedRaceTime%1000;
+  //Serial.println("Current race");
+  //dumpRaceData(&race);
+  //Serial.println("\n\nCurrent leg");
+  //dumpRaceData(race.legData);
+  //Serial.println("\n");
 }
 
+void dumpRaceData(raceData_t *data) {
+  Serial.println("Race Data Dump");
+  Serial.printf("  targetSpeed=%f m/s\n", data->targetSpeed);
+  Serial.printf("  averageSpeed=%f m/s\n", data->averageSpeed);
+  Serial.printf("  speedDelta=%f m/s\n", data->speedDelta);
+  Serial.printf("  speedTargetBand=%f m/s\n", data->speedTargetBand);
+  Serial.printf("  totalDistance=%d m\n", data->totalDistance);
+  Serial.printf("  distanceComplete=%d m\n", data->distanceComplete);
+  Serial.printf("  timeComplete sec=%d, millis=%d\n", data->timeComplete.seconds, data->timeComplete.millis);
+  Serial.printf("  distance=%d m\n", data->distance);
+  Serial.printf("  distanceRemaining=%d m\n", data->distanceRemaining);
+  Serial.printf("  distanceOffset=%d m\n", data->distanceOffset);
+  Serial.printf("  startTs sec=%d, millis=%d\n", data->startTs.seconds, data->startTs.millis);
+  Serial.printf("  endTs sec=%d, millis=%d\n", data->endTs.seconds, data->endTs.millis);
+  Serial.printf("  startMark=%d s\n", data->startMark);
+  Serial.printf("  delayedStart=%d\n", data->delayedStart);
+  Serial.printf("  timerOffset sec=%d, millis=%d\n", data->timerOffset.seconds, data->timerOffset.millis);
+  Serial.printf("  timeDelta=%f s\n", data->timeDelta);
+  Serial.printf("  inProgess=%d\n", data->inProgress);
+  Serial.printf("  legData=%#x\n", data->legData);
+  Serial.printf("  activeRace=%#x\n", data->activeRace);
+  Serial.printf("  activeLeg=%#x\n", data->activeLeg);
+}
+
+void raceCheckPoint(void) {
+  JsonDocument doc;
+  File checkPoint;
+  if(!SD.exists("orc")) {
+    return;
+  }
+  if(SD.exists("orc/race.dat")) {
+    SD.remove("orc/race.dat");
+  }
+  if(race.inProgress!=true) {
+    return;
+  }
+  Serial.println("Dumping race checkpoint");
+  doc["raceFile"]=race.activeRace->fileName;
+  doc["raceInProgress"]=race.activeRace->inProgress;
+  doc["legId"]=race.activeLeg->id;
+  doc["legInProgress"]=race.activeLeg->inProgress;
+  doc["legComplete"]=race.activeLeg->complete;
+  doc["distanceComplete"]=race.distanceComplete;
+  doc["timeSec"]=race.timeComplete.seconds;
+  doc["timeMilli"]=race.timeComplete.millis;
+  checkPoint=SD.open("orc/race.dat", FILE_WRITE);
+  if(!checkPoint) {
+    Serial.println("Checkpoint open failed");
+
+  }
+  serializeJsonPretty(doc, checkPoint);
+  checkPoint.println();
+  checkPoint.close();
+
+}
+
+void loadRaceCheckPoint(void) {
+  JsonDocument doc;
+  File checkPoint;
+  DeserializationError error;
+  if(!SD.exists("orc/race.dat")) {
+    return;
+  }  
+  Serial.println("Found race checkpoint");
+  checkPoint=SD.open("orc/race.dat");
+  error=deserializeJson(doc, checkPoint);
+  if (error) {
+    Serial.println("deserialization error");
+    checkPoint.close();
+    return;
+  }
+}
