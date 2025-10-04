@@ -17,7 +17,8 @@ enum stateMachineStatesEnum {
   stateSelectRaceLeg,
   stateSaveSelection,
   stateCancelSelection,
-  stateNextLeg
+  stateNextLeg,
+  stateUnknown
 };
 
 enum startStopStateEnum {

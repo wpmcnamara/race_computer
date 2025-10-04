@@ -282,12 +282,14 @@ void raceCheckPoint(void) {
 
   }
   serializeJsonPretty(doc, checkPoint);
-  checkPoint.println();
+  serializeJsonPretty(doc, Serial);
   checkPoint.close();
 
 }
 
 void loadRaceCheckPoint(void) {
+  std::list<race_t *>::iterator raceIt;
+  int raceLegId;
   JsonDocument doc;
   File checkPoint;
   DeserializationError error;
@@ -297,9 +299,41 @@ void loadRaceCheckPoint(void) {
   Serial.println("Found race checkpoint");
   checkPoint=SD.open("orc/race.dat");
   error=deserializeJson(doc, checkPoint);
+  checkPoint.close();
   if (error) {
     Serial.println("deserialization error");
-    checkPoint.close();
+    Serial.println(error.c_str());
     return;
   }
+  raceIt=races.begin();
+  while(raceIt!=races.end()) {
+    if((*raceIt)->fileName==doc["raceFile"]) {
+      Serial.print("Race checkpoint for: ");
+      Serial.println(doc["raceFile"].as<String>());
+      break;
+    }
+    ++raceIt;
+  }
+  if(raceIt==races.end()) {
+    Serial.println("Could not find race definition for checkpoint");
+    return;
+  }
+  raceLegId=doc["legId"].as<int>();
+  Serial.printf("legId=%d\n", raceLegId);
+  Serial.printf("legInProgress=%d  legComplete=%d\n", doc["legInProgress"].as<bool>(), doc["legComplete"].as<bool>());
+  if(doc["legInProgess"].as<bool>()==false && doc["legComplete"].as<bool>()==true) {
+    //raceLegId++;
+    if((*raceIt)->raceLegs[raceLegId]==NULL) {
+      Serial.printf("leg id %d doesn't exist\n", raceLegId++);
+      return;
+    }
+  } else {
+    return;
+  }
+  Serial.println("Setting race checkpoint");
+  setRace((*raceIt), (*raceIt)->raceLegs[raceLegId]);
+  race.activeRace->inProgress=doc["raceInProgress"].as<bool>();
+  race.distanceComplete=doc["distanceComplete"].as<int>();
+  race.timeComplete.seconds=doc["timeSec"].as<int>();
+  race.timeComplete.millis=doc["timeMilli"].as<int>();  
 }

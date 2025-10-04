@@ -8,7 +8,7 @@ class stateMachine stateMachine;
 
 stateMachine::stateMachine(void) {
   state=stateInit;
-  lastState=stateInit;
+  lastState=stateUnknown;
   status.value=0;
   lastStatus.value=0;
 }
@@ -57,10 +57,14 @@ void stateMachine::run(void) {
       case stateNextLeg:
         Serial.print("from: stateNextLeg");
         break; 
+      case stateUnknown:
+        Serial.print("from: stateUnknown");
+        break; 
     }
     switch(state) {
       case stateInit:
-        Serial.print("  to: stateInit");
+        Serial.println("  to: stateInit");
+        loadRaceCheckPoint();
         break;
       case stateMainMenu:
         Serial.println("  to: stateMainMenu");

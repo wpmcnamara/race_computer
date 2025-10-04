@@ -19,6 +19,7 @@ void prepRace(void);
 void updateRace(void);
 void dumpRaceData(raceData_t *data);
 void raceCheckPoint(void);
+void loadRaceCheckPoint(void);
 
 extern event_t *delayedStartEvent;
 

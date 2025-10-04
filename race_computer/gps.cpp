@@ -252,9 +252,9 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     deltaDistance = race.distance - targetDistance;
     race.timeDelta = deltaDistance / race.targetSpeed;
 
-    if((race.legData->speedDelta)<(race.legData->speedTargetBand*-1.0)) {
+    if((race.speedDelta)<(race.speedTargetBand*-1.0)) {
       stateMachine.status.flags.buttonColor=1;
-    } else if ((race.legData->speedDelta)>race.legData->speedTargetBand) {
+    } else if ((race.speedDelta)>race.speedTargetBand) {
       stateMachine.status.flags.buttonColor=2;
     } else {
       stateMachine.status.flags.buttonColor=3;

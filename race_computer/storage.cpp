@@ -6,7 +6,7 @@ Sd2Card sdCard;
 SdVolume volume;
 
 void storageSetup(void) {
-  if (!sdCard.init(4000000, SDCARD_CS)) {    
+  if (!sdCard.init(3000000, SDCARD_CS)) {    
     Serial.println("initialization failed. Things to check:");
     Serial.println("* is a card inserted?");
     Serial.println("* is your wiring correct?");
