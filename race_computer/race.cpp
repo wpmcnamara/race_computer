@@ -262,6 +262,7 @@ void raceCheckPoint(void) {
     return;
   }
   if(SD.exists("orc/race.dat")) {
+    Serial.println("clearing race checkpoint");
     SD.remove("orc/race.dat");
   }
   if(race.inProgress!=true) {
@@ -283,12 +284,14 @@ void raceCheckPoint(void) {
   }
   serializeJsonPretty(doc, checkPoint);
   serializeJsonPretty(doc, Serial);
+  Serial.println();
   checkPoint.close();
 
 }
 
 void loadRaceCheckPoint(void) {
   std::list<race_t *>::iterator raceIt;
+  std::vector<raceLeg_t *>::iterator raceLegIt;
   int raceLegId;
   JsonDocument doc;
   File checkPoint;
@@ -320,20 +323,28 @@ void loadRaceCheckPoint(void) {
   }
   raceLegId=doc["legId"].as<int>();
   Serial.printf("legId=%d\n", raceLegId);
-  Serial.printf("legInProgress=%d  legComplete=%d\n", doc["legInProgress"].as<bool>(), doc["legComplete"].as<bool>());
   if(doc["legInProgess"].as<bool>()==false && doc["legComplete"].as<bool>()==true) {
-    //raceLegId++;
-    if((*raceIt)->raceLegs[raceLegId]==NULL) {
-      Serial.printf("leg id %d doesn't exist\n", raceLegId++);
+    raceLegIt=(*raceIt)->raceLegs.begin();
+    //This is really bad.  It takes advantage of leg indexs being 1 based and the
+    //iterator indexes being 0 based.  Need to fix.
+    raceLegIt+=raceLegId;
+    if(raceLegIt==(*raceIt)->raceLegs.end()) {
+      Serial.printf("leg id %d doesn't exist\n", raceLegId);
       return;
+    } else {
+      Serial.print("Race leg: ");
+      Serial.println((*raceLegIt)->descr);
     }
   } else {
     return;
   }
   Serial.println("Setting race checkpoint");
-  setRace((*raceIt), (*raceIt)->raceLegs[raceLegId]);
+  setRace((*raceIt), (*raceLegIt));
   race.activeRace->inProgress=doc["raceInProgress"].as<bool>();
+  race.inProgress=race.activeRace->inProgress;
   race.distanceComplete=doc["distanceComplete"].as<int>();
   race.timeComplete.seconds=doc["timeSec"].as<int>();
-  race.timeComplete.millis=doc["timeMilli"].as<int>();  
+  race.timeComplete.millis=doc["timeMilli"].as<int>(); 
+  selectedRace=raceIt;
+  selectedRaceLeg=raceLegIt;
 }

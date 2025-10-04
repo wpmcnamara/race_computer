@@ -87,7 +87,8 @@ void stateMachine::run(void) {
         status.flags.startStopState=stateBreath;
         prepRace();
         startStopStartsRace=true;
-        ledDispFunc=ledDispRaceDeltaSpeed;
+        //ledDispFunc=ledDispRaceDeltaSpeed;
+        ledDispFunc=ledDispLegTime;
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayDeltaSpeedLarge));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayDeltaTimeLarge));
@@ -157,7 +158,7 @@ void stateMachine::run(void) {
         selectedRace=selectedRaceSave;
         break;
       case stateNextLeg:
-        Serial.print("to: stateNextLeg");
+        Serial.println("  to: stateNextLeg");
         selectedRaceLeg++;
         if(selectedRaceLeg != (*selectedRace)->raceLegs.end()) {
           race.activeLeg=(*selectedRaceLeg);
