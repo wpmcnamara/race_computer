@@ -108,10 +108,10 @@ void stateMachine::run(void) {
         raceCheckPoint();
         ledDispFunc=ledDispDashes;
         displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayLegSummaryTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayLegSummary));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceSummaryTitle));
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayRaceSummary));        
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayLegSummaryActual));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayLegSummaryAdjusted));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceSummary1));
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayRaceSummary2));        
         break;
       case stateRaceComplete:
         Serial.println("  to: stateRaceComplete");      

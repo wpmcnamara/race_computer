@@ -219,7 +219,7 @@ void updateRace(void) {
   uint32_t startTs=(race.legData->startTs.seconds*1000)+race.legData->startTs.millis;
   uint32_t endTs=(race.legData->endTs.seconds*1000)+race.legData->endTs.millis;
   uint32_t timeComplete=(race.timeComplete.seconds*1000)+race.timeComplete.millis;
-  uint32_t elapsedRaceTime=timeComplete+endTs-startTs;
+  uint32_t elapsedRaceTime=timeComplete+(endTs-startTs);
   race.activeLeg->complete=true;
   race.distanceComplete+=race.legData->totalDistance;
   race.timeComplete.seconds=elapsedRaceTime/1000;
