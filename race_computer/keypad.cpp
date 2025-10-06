@@ -6,6 +6,7 @@
 #include "race.h"
 #include "gps.h"
 #include "state_machine.h"
+#include "display.h"
 
 void startStopBreath(void);
 void startStopOff();
@@ -115,6 +116,7 @@ void keypadSetup(void) {
 
   if (! keypad.begin(0x30)) {     // begin with I2C address, default is 0x30
     Serial.println("Could not start NeoKey, check wiring?");
+    displayError("NeoKey start error");
     while(1) delay(10);
   }
   Serial.println("NeoKey started!");

@@ -141,6 +141,8 @@ void loadRaces() {
       raceLegFile=new raceLeg_t;
       raceLegFile->descr=jsonLeg["descr"].as<String>();
       Serial.printf("   leg descr: %s\n", raceLegFile->descr.c_str());
+      raceLegFile->pointsFile=jsonLeg["points"].as<String>();
+      Serial.printf("   leg pointsFile: %s\n", raceLegFile->pointsFile.c_str());
       raceLegFile->id=jsonLeg["id"].as<int>();
       Serial.printf("   leg id: %d\n", raceLegFile->id);
       raceLegFile->speed=jsonLeg["speed"].as<float>();
@@ -209,7 +211,66 @@ void prepRace(void) {
   race.legData->startTs.millis=0;
   race.legData->endTs.seconds=0;
   race.legData->endTs.millis=0;  
+
+  loadRacePoints(race.activeLeg);
+  race.legData->activePoint=race.activeLeg->points.begin();
 }
+
+void loadRacePoints(raceLeg_t *raceLeg) {
+  racePoint_t *point;
+  char path[256];
+  int index=0;
+  JsonDocument doc;
+  DeserializationError error;
+  sprintf(path, "orc/%s", race.activeLeg->pointsFile.c_str());
+  if(!SD.exists(path)) {
+    return;
+  }
+  Serial.printf("Loading point file: %s\n", path);
+  File pointFile=SD.open(path);
+  if(!pointFile) {
+    Serial.println("  file open error");
+    return;
+  }
+  error=deserializeJson(doc, pointFile);
+  if (error) {
+    Serial.println("deserialization error");
+    Serial.println(error.c_str());
+    pointFile.close();
+    return;
+  }
+  pointFile.close();
+  
+  for (JsonObject jsonPoint : doc["points"].as<JsonArray>()) {
+    point=new racePoint_t;
+    point->id=index;
+    Serial.printf(" point %d\n", point->id);
+    point->turn=jsonPoint["turn"].as<int>();
+    Serial.printf("   turn: %d\n", point->turn);
+    point->turnDir=jsonPoint["dir"].as<bool>();
+    Serial.printf("   dir: %d\n", point->turnDir);
+    point->distance=jsonPoint["distance"].as<float>()/0.000621372;
+    Serial.printf("   distance: %d\n", point->distance);
+    point->descrLine1=jsonPoint["descr1"].as<String>();
+    Serial.printf("   descr1: %s\n", point->descrLine1.c_str());
+    point->descrLine2=jsonPoint["descr2"].as<String>();
+    Serial.printf("   descr2: %s\n", point->descrLine2.c_str());  
+    
+    index++;
+    raceLeg->points.push_back(point);   
+  } 
+
+}
+
+void clearRacePoints(raceLeg_t *raceLeg) {
+  while(!raceLeg->points.empty()){
+    Serial.printf("Deleting race point id: %d\n", (*(raceLeg->points.back())).id);
+    delete raceLeg->points.back();
+    raceLeg->points.erase(raceLeg->points.end()-1);
+  }
+  race.legData->activePoint=raceLeg->points.end();
+}
+
 
 void updateRace(void) {
   //we convert the timestamps to a fixed point integer representation to do math.  The macros to convert
@@ -248,7 +309,7 @@ void dumpRaceData(raceData_t *data) {
   Serial.printf("  startMark=%d s\n", data->startMark);
   Serial.printf("  delayedStart=%d\n", data->delayedStart);
   Serial.printf("  timerOffset sec=%d, millis=%d\n", data->timerOffset.seconds, data->timerOffset.millis);
-  Serial.printf("  timeDelta=%f s\n", data->timeDelta);
+  Serial.printf("  timeDelta=%d.%u s\n", data->timeDelta/1000, abs(data->timeDelta%1000));
   Serial.printf("  inProgess=%d\n", data->inProgress);
   Serial.printf("  legData=%#x\n", data->legData);
   Serial.printf("  activeRace=%#x\n", data->activeRace);

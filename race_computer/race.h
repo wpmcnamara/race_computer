@@ -20,6 +20,8 @@ void updateRace(void);
 void dumpRaceData(raceData_t *data);
 void raceCheckPoint(void);
 void loadRaceCheckPoint(void);
+void loadRacePoints(raceLeg_t *raceLeg);
+void clearRacePoints(raceLeg_t *raceLeg);
 
 extern event_t *delayedStartEvent;
 
@@ -33,11 +35,14 @@ extern std::list<race_t *> races;
 
 class racePoint {
   public:
-    float miles;
-    unsigned int turn;
+    int distance;
+    int turn;
     bool turnDir;
-    float speed;
-    char *descr;
+    double speed;
+    String descrLine1;
+    String descrLine2;
+    long int timeToPoint;
+    int distToPoint;
     unsigned int id;
 };
 
@@ -47,11 +52,13 @@ class raceLeg {
     float distance;
     unsigned int id;
     String descr;
+    String pointsFile;
     unsigned int mark;
     bool inProgress;
     bool complete;
-  private:
     std::vector<racePoint_t *> points;
+  private:
+
 };
 
 class race {
@@ -64,7 +71,7 @@ class race {
     unsigned int mark;
     std::vector<raceLeg_t *> raceLegs;
   private:
-    
+
 
 };
 
@@ -73,35 +80,35 @@ class raceData {
     //target speed for the current race or leg.  This will be in meters/second;
     //Value is loaded from the race definition when the race is selected. For race
     //legs it is loaded when the leg is entered.
-    float targetSpeed;
+    double targetSpeed;
     //running average speed for the leg/race.  This is actively updated from GPS
     //data during the race
-    float averageSpeed;
+    double averageSpeed;
     //difference between target and average.  We calculate once and store, when 
     //averageSpeed is updated, rather than calculating each time it is used elsewhere.
-    float speedDelta;
+    double speedDelta;
     //Defines the range, +/-, in meters/s around the targetSpeed that is considered 
     //within the target speed range.  Used to control the LED color feedback during a
     //race 
-    float speedTargetBand;
+    double speedTargetBand;
     //Total distance of the race/leg in meters.  For a race, value is loaded from the
     //race definition when the race is selected.  For legs, it is loaded from the leg
     //definition when the leg is entered.
-    unsigned int totalDistance;
+    int totalDistance;
     //For the active race, this is the sum of the distance of completed legs.  For a leg,
     //this is amount of the leg that has been completed.  Needed to calculate the whole
     //race average speed.
-    unsigned int distanceComplete;
+    int distanceComplete;
     //zero for a race leg.  For the active race, this is the sum of the times for all
     //completed legs.  Needed to calculate the whole race average speed.
     timeStamp_t timeComplete;
     //distance traveled for the race/leg.  For a race, this will be the sum of distanceComplete
     //and the distance traveled in the current leg.
-    unsigned int distance;
-    unsigned int distanceRemaining;
+    int distance;
+    int distanceRemaining;
     //zero for a race.  For a leg, this will be the value of the GPS odometer at the start
     //of the leg.
-    unsigned int distanceOffset;
+    int distanceOffset;
     //start and end GPS timestamps for the leg.  Not used in the race context
     timeStamp_t startTs;
     timeStamp_t endTs;
@@ -114,8 +121,8 @@ class raceData {
     timeStamp_t timerOffset;
     //difference between target time and current time, based on distance traveled.  Like speedDelta
     //we calculate when GPS data changes and save, rather than calculating every time it is 
-    //used.
-    float timeDelta;
+    //used.  Value is in milliseconds
+    long int timeDelta;
     //signify the race/leg is being actively timed.
     bool inProgress;
     //For a race, this points to the raceData structure for the current leg.  For a leg, this
@@ -125,6 +132,7 @@ class raceData {
     race_t *activeRace;
     //active leg within the race definition;
     raceLeg_t *activeLeg;
+    std::vector<racePoint_t *>::iterator activePoint;
 };
 
 extern raceData_t race;

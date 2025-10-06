@@ -86,13 +86,15 @@ void displayLegSummaryAdjusted(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dis
 void displayRaceSummary1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayRaceSummary2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 
-
+void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 
 void ledDispLegTime(void);
 void ledDispRaceTime(void);
 void ledDispLegDeltaSpeed(void);
 void ledDispRaceDeltaSpeed(void);
 void ledDispDashes(void);
+
+void displayError(const char *err);
 
 
 #endif

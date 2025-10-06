@@ -5,6 +5,8 @@
 #include "race.h"
 #include "keypad.h"
 #include "state_machine.h"
+#include "display.h"
+
 //GPS
 SFE_UBLOX_GNSS gps;
 
@@ -50,6 +52,7 @@ void gpsSetup(void) {
   if (gps.begin(SPI, GPS_CS, 3000000) == false)  //Connect to the u-blox module using Wire port
   {
     Serial.println(F("u-blox GNSS not detected on SPI bus. Please check wiring. Freezing."));
+    displayError("GPS not detected");
     while (1);
   }
   Serial.print(F("NEO-8MU protocol version:"));
@@ -96,6 +99,7 @@ void gpsSetup(void) {
   // Get the time pulse parameters
   if (gps.getTimePulseParameters(&timePulseParameters) == false) {
     Serial.println(F("getTimePulseParameters failed! Freezing..."));
+    displayError("TimePulse Param Error");
     while (1);  // Do nothing more
   }
 
@@ -246,19 +250,25 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
 
     targetDistance = race.legData->targetSpeed * elapsedTime;
     deltaDistance = race.legData->distance - targetDistance;
-    race.legData->timeDelta = deltaDistance / race.legData->targetSpeed;
+    race.legData->timeDelta = (deltaDistance / race.legData->targetSpeed)*1000.0;
 
     targetDistance = race.targetSpeed * (TS_TO_FLOAT(race.timeComplete) + elapsedTime);
     deltaDistance = race.distance - targetDistance;
-    race.timeDelta = deltaDistance / race.targetSpeed;
+    race.timeDelta =(deltaDistance / race.targetSpeed)*1000;
 
-    if((race.speedDelta)<(race.speedTargetBand*-1.0)) {
+    if((race.legData->speedDelta)<(race.legData->speedTargetBand*-1.0)) {
       stateMachine.status.flags.buttonColor=1;
-    } else if ((race.speedDelta)>race.speedTargetBand) {
+    } else if ((race.legData->speedDelta)>race.legData->speedTargetBand) {
       stateMachine.status.flags.buttonColor=2;
     } else {
       stateMachine.status.flags.buttonColor=3;
     }
+
+  if(race.legData->activePoint!=race.activeLeg->points.end()) {
+    if(race.legData->distance > (*(race.legData->activePoint))->distance) {
+      race.legData->activePoint++;
+    }
+  }
 
     //I don't think we want auto-stop by default since actual distance driven will likely not match the defined
     //race distance.  May make this a config option in the future.

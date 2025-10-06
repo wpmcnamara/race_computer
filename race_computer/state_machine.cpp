@@ -87,13 +87,15 @@ void stateMachine::run(void) {
         status.flags.startStopState=stateBreath;
         prepRace();
         startStopStartsRace=true;
-        //ledDispFunc=ledDispRaceDeltaSpeed;
-        ledDispFunc=ledDispLegTime;
+        ledDispFunc=ledDispLegDeltaSpeed;
+        //ledDispFunc=ledDispLegTime;
         displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayDeltaSpeedLarge));
+        //displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayDeltaSpeedLarge));
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayGpsSpeedLarge));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayDeltaTimeLarge));
         displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayDistRemainLarge));
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGpsSpeedLarge));
+        //displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGpsSpeedLarge));
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayPoint));
         break;
       case stateDelayedStart:
         Serial.println("  to: stateDelayedStart");
@@ -106,6 +108,7 @@ void stateMachine::run(void) {
         startStopStartsRace=false;
         updateRace();
         raceCheckPoint();
+        clearRacePoints(race.activeLeg);
         ledDispFunc=ledDispDashes;
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayLegSummaryActual));
