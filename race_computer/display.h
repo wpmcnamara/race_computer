@@ -33,6 +33,28 @@ enum dispPos {
 };
 typedef enum dispPos dispPos_t;
 
+enum OLEDRaceDisplayTypedef {
+  GPSSpeedLarge=0,
+  AvgSpeedLarge,
+  DistanceLarge,
+  DistRemainLarge,
+  DeltaTimeLarge,
+  DeltaSpeedLarge,
+  TurnPoints,
+  GPSInfo
+};
+
+typedef enum OLEDRaceDisplayTypedef OLEDRraceDisplayTypedef_t;
+
+enum LEDRaceDisplayTypedef {
+  LegTime=0,
+  RaceTime,
+  LegDeltaSpeed,
+  RaceDeltaSpeed,
+  Dashes
+};
+typedef enum LEDRaceDisplayTypedef LEDRaceDisplayTypedef_t;
+
 
 extern std::list<displayContent_t*> displayList;
 extern uint8_t menuItem;
@@ -41,7 +63,14 @@ extern raceLeg_t *dispRaceLeg;
 extern bool raceSelectHighlight;
 extern bool raceLegSelectHighlight;
 extern void (*ledDispFunc)(void);
-
+extern int OLEDDisplayActive[4];
+extern int OLEDDisplaySelect[4];
+extern int LEDDisplayActive;
+extern int LEDDisplaySelect;
+extern const char *OLEDDisplayDescr[8];
+extern const char *LEDDisplayDescr[5];
+extern event_t *displayUpdateEvent;
+extern event_t *displayUpdateFastEvent;
 
 class displayContent {
   public:
@@ -79,6 +108,8 @@ void displayGPSInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX
 void displayRaceInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayMenu(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayDisplayConfigTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayDisplayConfig(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayRaceSelectTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayRaceLegSelectTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayLegSummaryActual(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);

@@ -4,6 +4,7 @@
 #include "keypad.h"
 #include "storage.h"
 #include "state_machine.h"
+#include "display.h"
 #include <ArduinoJson.h>
 
 raceData_t race;
@@ -95,10 +96,19 @@ void loadRaces() {
   DeserializationError error;
   race_t *raceFile;
   raceLeg_t *raceLegFile;
-
+  //see if we have an SD card or not.  If we don't we are going to fall back to a hardcoded set of
+  //races and legs.
+  if(!sdCardPresent) {
+    Serial.println("No SD card.  Loading default race definitions");
+    loadDefaultRaces();
+    return;
+  }
+  //disable display and GPS use of the SPI bus to prevent collisions
+  CLAIM_SPI
   //race data files will be stored in a directory called "orc"
   //if it doesn't exist, then we've got races to load.
   if(!SD.exists("orc")) {
+    RELEASE_SPI
     return;
   }
   File orcDir=SD.open("orc");
@@ -165,6 +175,7 @@ void loadRaces() {
   selectedRace=races.begin();
   selectedRaceLeg=(*selectedRace)->raceLegs.begin();
   Serial.println((*selectedRace)->descr);
+  RELEASE_SPI
 }
 
 void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
@@ -226,10 +237,13 @@ void loadRacePoints(raceLeg_t *raceLeg) {
   if(!SD.exists(path)) {
     return;
   }
+  //disable display and GPS use of the SPI bus to prevent collisions
+  CLAIM_SPI
   Serial.printf("Loading point file: %s\n", path);
   File pointFile=SD.open(path);
   if(!pointFile) {
     Serial.println("  file open error");
+    RELEASE_SPI
     return;
   }
   error=deserializeJson(doc, pointFile);
@@ -237,10 +251,11 @@ void loadRacePoints(raceLeg_t *raceLeg) {
     Serial.println("deserialization error");
     Serial.println(error.c_str());
     pointFile.close();
+    RELEASE_SPI
     return;
   }
   pointFile.close();
-  
+  RELEASE_SPI
   for (JsonObject jsonPoint : doc["points"].as<JsonArray>()) {
     point=new racePoint_t;
     point->id=index;
@@ -319,7 +334,14 @@ void dumpRaceData(raceData_t *data) {
 void raceCheckPoint(void) {
   JsonDocument doc;
   File checkPoint;
+  if(!sdCardPresent) {
+    Serial.println("No SD card.  Unable to checkpoint race");
+    return;
+  }
+  //disable display and GPS use of the SPI bus to prevent collisions
+  CLAIM_SPI
   if(!SD.exists("orc")) {
+    RELEASE_SPI
     return;
   }
   if(SD.exists("orc/race.dat")) {
@@ -327,6 +349,7 @@ void raceCheckPoint(void) {
     SD.remove("orc/race.dat");
   }
   if(race.inProgress!=true) {
+    RELEASE_SPI
     return;
   }
   Serial.println("Dumping race checkpoint");
@@ -347,6 +370,7 @@ void raceCheckPoint(void) {
   serializeJsonPretty(doc, Serial);
   Serial.println();
   checkPoint.close();
+  RELEASE_SPI
 
 }
 
@@ -357,13 +381,21 @@ void loadRaceCheckPoint(void) {
   JsonDocument doc;
   File checkPoint;
   DeserializationError error;
+  if(!sdCardPresent) {
+    Serial.println("No SD card.  Unable to load race checkpoint");
+    return;
+  }
+  //disable display and GPS use of the SPI bus to prevent collisions
+  CLAIM_SPI
   if(!SD.exists("orc/race.dat")) {
+    RELEASE_SPI
     return;
   }  
   Serial.println("Found race checkpoint");
   checkPoint=SD.open("orc/race.dat");
   error=deserializeJson(doc, checkPoint);
   checkPoint.close();
+  RELEASE_SPI
   if (error) {
     Serial.println("deserialization error");
     Serial.println(error.c_str());
@@ -408,4 +440,106 @@ void loadRaceCheckPoint(void) {
   race.timeComplete.millis=doc["timeMilli"].as<int>(); 
   selectedRace=raceIt;
   selectedRaceLeg=raceLegIt;
+}
+
+void loadDefaultRaces(void) {
+  race_t *raceDef;
+  raceLeg_t *raceLegDef;
+
+  raceDef=new race_t;
+  raceDef->fileName="";
+  raceDef->descr="Big Bend Open Road Race (default)";
+  raceDef->speed=110.0;
+  raceDef->distance=59.0;
+  raceDef->mark=5;
+  raceDef->inProgress=false;
+  races.push_back(raceDef);
+
+  raceLegDef=new raceLeg_t;
+  raceLegDef->descr="BBORR Southbound";
+  raceLegDef->pointsFile="";
+  raceLegDef->id=1;
+  raceLegDef->speed=110;
+  raceLegDef->distance=59.0;
+  raceLegDef->mark=5;
+  raceLegDef->inProgress=false;
+  raceLegDef->complete=false;
+  raceDef->raceLegs.push_back(raceLegDef);
+
+  raceLegDef=new raceLeg_t;
+  raceLegDef->descr="BBORR Northbound";
+  raceLegDef->pointsFile="";
+  raceLegDef->id=2;
+  raceLegDef->speed=110;
+  raceLegDef->distance=59.0;
+  raceLegDef->mark=5;
+  raceLegDef->inProgress=false;
+  raceLegDef->complete=false;
+  raceDef->raceLegs.push_back(raceLegDef);
+
+  raceDef=new race_t;
+  raceDef->fileName="";
+  raceDef->descr="BBORR Practice (default)";
+  raceDef->speed=110.0;
+  raceDef->distance=15.9;
+  raceDef->mark=0;
+  raceDef->inProgress=false;
+  races.push_back(raceDef);
+
+  raceLegDef=new raceLeg_t;
+  raceLegDef->descr="BBORR Practice Westbound";
+  raceLegDef->pointsFile="";
+  raceLegDef->id=2;
+  raceLegDef->speed=110;
+  raceLegDef->distance=8.0;
+  raceLegDef->mark=0;
+  raceLegDef->inProgress=false;
+  raceLegDef->complete=false;
+  raceDef->raceLegs.push_back(raceLegDef);
+
+  raceLegDef=new raceLeg_t;
+  raceLegDef->descr="BBORR Practice Eastbound";
+  raceLegDef->pointsFile="";
+  raceLegDef->id=2;
+  raceLegDef->speed=110;
+  raceLegDef->distance=7.9;
+  raceLegDef->mark=0;
+  raceLegDef->inProgress=false;
+  raceLegDef->complete=false;
+  raceDef->raceLegs.push_back(raceLegDef);
+
+  raceDef=new race_t;
+  raceDef->fileName="";
+  raceDef->descr="Test and debugging drive (default)";
+  raceDef->speed=29.5;
+  raceDef->distance=12.9;
+  raceDef->mark=0;
+  raceDef->inProgress=false;
+  races.push_back(raceDef);
+
+  raceLegDef=new raceLeg_t;
+  raceLegDef->descr="Test Drive -- clockwise";
+  raceLegDef->pointsFile="";
+  raceLegDef->id=1;
+  raceLegDef->speed=31.9;
+  raceLegDef->distance=6.4;
+  raceLegDef->mark=0;
+  raceLegDef->inProgress=false;
+  raceLegDef->complete=false;
+  raceDef->raceLegs.push_back(raceLegDef);
+
+  raceLegDef=new raceLeg_t;
+  raceLegDef->descr="Test Drive -- counterclockwise";
+  raceLegDef->pointsFile="";
+  raceLegDef->id=2;
+  raceLegDef->speed=26.5;
+  raceLegDef->distance=6.5;
+  raceLegDef->mark=0;
+  raceLegDef->inProgress=false;
+  raceLegDef->complete=false;
+  raceDef->raceLegs.push_back(raceLegDef);
+
+  selectedRace=races.begin();
+  selectedRaceLeg=(*selectedRace)->raceLegs.begin();
+  Serial.println((*selectedRace)->descr);
 }

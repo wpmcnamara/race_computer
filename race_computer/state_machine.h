@@ -18,6 +18,7 @@ enum stateMachineStatesEnum {
   stateSaveSelection,
   stateCancelSelection,
   stateNextLeg,
+  stateDispSelect,
   stateUnknown
 };
 

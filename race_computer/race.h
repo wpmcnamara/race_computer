@@ -22,6 +22,7 @@ void raceCheckPoint(void);
 void loadRaceCheckPoint(void);
 void loadRacePoints(raceLeg_t *raceLeg);
 void clearRacePoints(raceLeg_t *raceLeg);
+void loadDefaultRaces(void);
 
 extern event_t *delayedStartEvent;
 

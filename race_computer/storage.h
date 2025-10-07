@@ -11,6 +11,7 @@
 extern Sd2Card sdCard;
 extern SdVolume volume;
 extern SdFile root;
+extern bool sdCardPresent;
 
 void storageSetup(void);
 

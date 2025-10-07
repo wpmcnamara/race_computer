@@ -12,6 +12,7 @@
 //GPS
 extern SFE_UBLOX_GNSS gps;
 extern struct gpsDataStruct gpsData;
+extern event_t *gpsUpdateEvent;
 
 struct gpsDataStruct {
   double lat;

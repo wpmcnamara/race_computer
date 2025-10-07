@@ -37,7 +37,36 @@ race_t *dispRace;
 raceLeg_t *dispRaceLeg;
 bool raceSelectHighlight=false;
 bool raceLegSelectHighlight=false;
+event_t *displayUpdateEvent;
+event_t *displayUpdateFastEvent;
 void (*ledDispFunc)(void)=NULL;
+
+int OLEDDisplayActive[4]={GPSSpeedLarge,
+                                DeltaTimeLarge,
+                                DistRemainLarge,
+                                TurnPoints};
+int OLEDDisplaySelect[4]={GPSSpeedLarge,
+                                DeltaTimeLarge,
+                                DistRemainLarge,
+                                TurnPoints};
+int LEDDisplayActive=LegDeltaSpeed;
+int LEDDisplaySelect=LegDeltaSpeed;
+const char *OLEDDisplayDescr[8]={
+  "Current GPS Speed",
+  "Leg: Average Speed",
+  "Leg: Distance Traveled",
+  "Leg: Distance Remaining",
+  "Leg: Time Delta",
+  "Leg: Speed Delta",
+  "Leg: Turns",
+  "GPS Info"
+};
+const char *LEDDisplayDescr[5]={
+  "Leg: Time",
+  "Race: Time",
+  "Leg: Speed Delta",
+  "Race: Speed Delta"
+};
 
 std::list<displayContent_t*> displayList;
 
@@ -113,19 +142,26 @@ void displaySetup(void) {
   oledDisp4.clearBuffer();
   oledDisp4.setFont(u8g2_font_spleen12x24_mf);
   oledDisp4.drawStr(20,20,"\xA9 Patrick McNamara");	
-  oledDisp4.drawStr(38,52,"firmware: 0.2.0");	
+  oledDisp4.drawStr(38,52,VERSION_STR);	
   oledDisp4.sendBuffer();
   delay(5000);
-
-  new event_t(displayUpdateFast, eventRepeat, true, false, 0, 1, &Serial, "displayUpdateFast");
-  new event_t(displayUpdate, eventRepeat, true, false, 0, 10, &Serial, "displayUpdate");
+  oledDisp1.clearBuffer();
+  oledDisp2.clearBuffer();
+  oledDisp3.clearBuffer();
+  oledDisp4.clearBuffer();
+  oledDisp1.sendBuffer();
+  oledDisp2.sendBuffer();
+  oledDisp3.sendBuffer();
+  oledDisp4.sendBuffer();
+  displayUpdateFastEvent=new event_t(displayUpdateFast, eventRepeat, true, false, 0, 1, &Serial, "displayUpdateFast");
+  displayUpdateEvent=new event_t(displayUpdate, eventRepeat, true, false, 0, 10, &Serial, "displayUpdate");
   gpsDataPtr=getGpsData();
   gpsTimePtr=getGpsTime();
 }
 
 void displayUpdate() {
-  struct gpsDataStruct *gpsData=getGpsData();
-  orcTime_t *gpsTime=getGpsTime();
+  //struct gpsDataStruct *gpsData=getGpsData();
+  //orcTime_t *gpsTime=getGpsTime();
 
   oledDisp1.clearBuffer();
   oledDisp2.clearBuffer();
@@ -501,7 +537,7 @@ void displayRaceInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t pos
     } else {
       display.drawButtonUTF8(1, 24, U8G2_BTN_BW0, 255,  0,  0, buffer );
     }
-    sprintf(buffer, "dist: %8.3f  speed: %07.3f  timing: %ds", dispRace->distance, dispRace->speed, dispRace->mark);
+    sprintf(buffer, "dist: %8.3f  speed: %7.3f  timing: %ds", dispRace->distance, dispRace->speed, dispRace->mark);
     display.drawStr(1,36,buffer);
     sprintf(buffer, "leg: %s", dispRaceLeg->descr.c_str());
     if(raceLegSelectHighlight) {
@@ -509,7 +545,7 @@ void displayRaceInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t pos
     } else {
       display.drawButtonUTF8(1, 48, U8G2_BTN_BW0, 255,  0,  0, buffer );
     }
-    sprintf(buffer, "dist: %8.3f  speed: %07.3f  timing: %ds", dispRaceLeg->distance, dispRaceLeg->speed, dispRaceLeg->mark);
+    sprintf(buffer, "dist: %8.3f  speed: %7.3f  timing: %ds", dispRaceLeg->distance, dispRaceLeg->speed, dispRaceLeg->mark);
     display.drawStr(1,60,buffer);
   } else {
     display.drawStr(1,24,"race: none");
@@ -533,6 +569,11 @@ void displayMenu(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, d
   display.drawButtonUTF8(1, 39, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, "Select Leg" );
   } else {
   display.drawButtonUTF8(1, 39, U8G2_BTN_BW0, 255,  0,  0, "Select Leg" );
+  }
+  if(menuItem==3) {
+    display.drawButtonUTF8(1, 52, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, "Configure Display" );
+  } else {
+    display.drawButtonUTF8(1, 52, U8G2_BTN_BW0, 255,  0,  0, "Configure Display" );
   }
 }
 void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
@@ -840,6 +881,7 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
   char dir;
   int x;
   double distRemaining=0;
+  double timeRemaining=0;
   if(race.legData->activePoint==race.activeLeg->points.end()) {
     display.setFont(u8g2_font_spleen16x32_mf);
     display.drawStr(24, 37, "No Point Data");
@@ -857,31 +899,36 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
     sprintf(buffer, "!!");
   }
   if(distRemaining<3057) {
+    timeRemaining=distRemaining/gpsData.speed;
     display.setFont(u8g2_font_spleen16x32_mf);
     x=3+((64-display.getStrWidth(buffer))/2);
     display.drawStr(x, 25, buffer);
     sprintf(buffer, "%4.2f", distRemaining*0.000621372);
     display.drawStr(73, 25, buffer);
     if(gpsData.speed==0) {
-      sprintf(buffer, "%0.2f", 0);
+      timeRemaining=0;
+      sprintf(buffer, "%5.2f", 0);
     } else {
-      sprintf(buffer, "%5.2f", distRemaining/gpsData.speed);
+      if(timeRemaining>99.9) {
+        timeRemaining=99.9;
+      }
     }
+    sprintf(buffer, "%5.1f", timeRemaining);
     display.drawStr(153, 25, buffer);   
 
-    display.setFont(u8g2_font_spleen5x8_mf);
-    display.drawStr(138, 25, "mi");
-    display.drawStr(233, 25, "sec");
 
-  }
-  display.drawRFrame(0, 0, 70, 32, 5);
-  display.drawRFrame(72, 0, 78, 32, 5);
-  display.drawRFrame(152, 0, 99, 32, 5);
-  if(distRemaining<804) {
+
     display.setFont(u8g2_font_spleen8x16_mf);
     display.drawStr(0,46, (*race.legData->activePoint)->descrLine1.c_str());
     display.drawStr(0,60, (*race.legData->activePoint)->descrLine2.c_str());
   }
+  display.setFont(u8g2_font_spleen5x8_mf);
+  display.drawStr(138, 25, "mi");
+  display.drawStr(233, 25, "sec");
+  display.drawRFrame(0, 0, 70, 32, 5);
+  display.drawRFrame(72, 0, 78, 32, 5);
+  display.drawRFrame(152, 0, 99, 32, 5);
+  
 }
 
 void displayUpdateFast(void) {
@@ -950,7 +997,6 @@ void ledDispRaceDeltaSpeed(void) {
 }
 
 void ledDispDashes(void) {
-  ledDisp.begin();
   ledDisp.RefreshMe();
   ledDisp.Set_Position(0);
   ledDisp.ShowMe("--------");
@@ -961,4 +1007,14 @@ void displayError(const char *err) {
   oledDisp4.setFont(u8g2_font_spleen12x24_mf);
   oledDisp4.drawStr(0,24,err);	
   oledDisp4.sendBuffer();
+}
+
+void displayDisplayConfigTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  display.setFont(u8g2_font_spleen12x24_mf);	
+  display.drawStr(86,20,"Display");
+  display.drawStr(50,40,"Configuration");
+}
+
+void displayDisplayConfig(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+
 }

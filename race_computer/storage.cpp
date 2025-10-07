@@ -4,16 +4,19 @@
 // set up variables using the SD utility library functions:
 Sd2Card sdCard;
 SdVolume volume;
+bool sdCardPresent;
 
 void storageSetup(void) {
-  if (!sdCard.init(3000000, SDCARD_CS)) {    
+  if (!sdCard.init(SPI_SPEED, SDCARD_CS)) {    
     Serial.println("initialization failed. Things to check:");
     Serial.println("* is a card inserted?");
     Serial.println("* is your wiring correct?");
     Serial.println("* did you change the chipSelect pin to match your shield or module?");
-    //return;
+    sdCardPresent=false;
+    return;
   } else {
    Serial.println("Wiring is correct and a card is present.");
+   sdCardPresent=true;
   }
 
   // print the type of card
@@ -35,7 +38,8 @@ void storageSetup(void) {
   // Now we will try to open the 'volume'/'partition' - it should be FAT16 or FAT32
   if (!volume.init(sdCard)) {
     Serial.println("Could not find FAT16/FAT32 partition.\nMake sure you've formatted the card");
-    //return;
+    sdCardPresent=false;
+    return;
   } else {
     // print the type and size of the first FAT-type volume
     uint32_t volumesize;
@@ -56,5 +60,6 @@ void storageSetup(void) {
     volumesize /= 1024;
     Serial.println(volumesize);
   }
+  SD.begin(SDCARD_CS);
 }
 

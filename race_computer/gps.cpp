@@ -18,7 +18,7 @@ unsigned int speedSamples = 0;
 unsigned long speedSum = 0;
 
 struct gpsDataStruct gpsData;
-//event_t gpsUpdateEvent(gpsUpdate, eventRepeat, false, 0, 10);
+event_t *gpsUpdateEvent;
 
 void gpsSetup(void) {
   uint8_t flags;         // Odometer/Low-speed COG filter flags
@@ -49,7 +49,7 @@ void gpsSetup(void) {
   digitalWrite(GPS_RESET, HIGH);
   delay(250);
 
-  if (gps.begin(SPI, GPS_CS, 3000000) == false)  //Connect to the u-blox module using Wire port
+  if (gps.begin(SPI, GPS_CS, SPI_SPEED) == false)  //Connect to the u-blox module using Wire port
   {
     Serial.println(F("u-blox GNSS not detected on SPI bus. Please check wiring. Freezing."));
     displayError("GPS not detected");
@@ -159,7 +159,7 @@ void gpsSetup(void) {
 
   gps.setAutoPVTcallbackPtr(&gpsNAVcallback);
   gps.setAutoPVT(true);  //Tell the GNSS to "send" each solution
-  new event_t(gpsUpdate, eventRepeat, true, false, 0, 10, &Serial, "gpsUpdate");
+  gpsUpdateEvent=new event_t(gpsUpdate, eventRepeat, true, false, 0, 10, &Serial, "gpsUpdate");
 }
 
 void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {

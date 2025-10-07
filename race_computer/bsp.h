@@ -36,4 +36,6 @@
 
 #define SDCARD_CS 2
 
+#define SPI_SPEED 3000000
+
 #endif

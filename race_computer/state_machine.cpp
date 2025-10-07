@@ -57,6 +57,9 @@ void stateMachine::run(void) {
       case stateNextLeg:
         Serial.print("from: stateNextLeg");
         break; 
+      case stateDispSelect:
+        Serial.print("from: stateDispSelect");
+        break; 
       case stateUnknown:
         Serial.print("from: stateUnknown");
         break; 
@@ -170,6 +173,17 @@ void stateMachine::run(void) {
         }
 
         break;
+      case stateDispSelect:
+        Serial.println("  to: stateDispSelect");
+        displayList.erase(displayList.begin(), displayList.end());
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayDisplayConfigTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayDisplayConfig));
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo)); 
+        break;
+      case stateUnknown:
+        Serial.println("  to: stateUnknown");
+        break;
     }      
     lastState=state;
   }
@@ -223,6 +237,10 @@ void stateMachine::run(void) {
         state=stateMainMenu;
       }    
       break;
+    case stateDispSelect:
+      break;
+    case stateUnknown:
+      break;
   }
 
   //Everything below here should only be executed if there is a keypress, or if the status flags 
@@ -254,17 +272,19 @@ void stateMachine::run(void) {
               state=stateSelectRaceLeg;
             }
             break;
+          case 3:
+            state=stateDispSelect;
         }
       }
       if(keys & KEYPAD_KEY_UP) {
         if(menuItem==0) {
-          menuItem=2;
+          menuItem=3;
         } else {
           menuItem--;
         }
       }
       if(keys & KEYPAD_KEY_DOWN) {
-        if(menuItem==2) {
+        if(menuItem==3) {
           menuItem=0;
         } else {
           menuItem++;
@@ -342,6 +362,13 @@ void stateMachine::run(void) {
       break;
     case stateCancelSelection:
       break;  
+    case stateDispSelect:
+      if(keys & KEYPAD_KEY_ESC) {
+        state=stateMainMenu;
+      }
+      break;
+    case stateUnknown:
+      break;
   }
 
   //Handle the button lighting based on the current state of the system.
