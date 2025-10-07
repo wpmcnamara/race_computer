@@ -104,11 +104,11 @@ void loadRaces() {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  CLAIM_SPI
+  doSPILock();
   //race data files will be stored in a directory called "orc"
   //if it doesn't exist, then we've got races to load.
   if(!SD.exists("orc")) {
-    RELEASE_SPI
+    doSPIUnlock();
     return;
   }
   File orcDir=SD.open("orc");
@@ -175,7 +175,7 @@ void loadRaces() {
   selectedRace=races.begin();
   selectedRaceLeg=(*selectedRace)->raceLegs.begin();
   Serial.println((*selectedRace)->descr);
-  RELEASE_SPI
+  doSPIUnlock();
 }
 
 void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
@@ -238,12 +238,12 @@ void loadRacePoints(raceLeg_t *raceLeg) {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  CLAIM_SPI
+  doSPILock();
   Serial.printf("Loading point file: %s\n", path);
   File pointFile=SD.open(path);
   if(!pointFile) {
     Serial.println("  file open error");
-    RELEASE_SPI
+    doSPIUnlock();
     return;
   }
   error=deserializeJson(doc, pointFile);
@@ -251,11 +251,11 @@ void loadRacePoints(raceLeg_t *raceLeg) {
     Serial.println("deserialization error");
     Serial.println(error.c_str());
     pointFile.close();
-    RELEASE_SPI
+    doSPIUnlock();
     return;
   }
   pointFile.close();
-  RELEASE_SPI
+  doSPIUnlock();
   for (JsonObject jsonPoint : doc["points"].as<JsonArray>()) {
     point=new racePoint_t;
     point->id=index;
@@ -339,9 +339,9 @@ void raceCheckPoint(void) {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  CLAIM_SPI
+  doSPILock();
   if(!SD.exists("orc")) {
-    RELEASE_SPI
+    doSPIUnlock();
     return;
   }
   if(SD.exists("orc/race.dat")) {
@@ -349,7 +349,7 @@ void raceCheckPoint(void) {
     SD.remove("orc/race.dat");
   }
   if(race.inProgress!=true) {
-    RELEASE_SPI
+    doSPIUnlock();
     return;
   }
   Serial.println("Dumping race checkpoint");
@@ -370,7 +370,7 @@ void raceCheckPoint(void) {
   serializeJsonPretty(doc, Serial);
   Serial.println();
   checkPoint.close();
-  RELEASE_SPI
+  doSPIUnlock();
 
 }
 
@@ -386,16 +386,16 @@ void loadRaceCheckPoint(void) {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  CLAIM_SPI
+  doSPILock();
   if(!SD.exists("orc/race.dat")) {
-    RELEASE_SPI
+    doSPIUnlock();
     return;
   }  
   Serial.println("Found race checkpoint");
   checkPoint=SD.open("orc/race.dat");
   error=deserializeJson(doc, checkPoint);
   checkPoint.close();
-  RELEASE_SPI
+  doSPIUnlock();
   if (error) {
     Serial.println("deserialization error");
     Serial.println(error.c_str());

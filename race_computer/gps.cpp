@@ -223,6 +223,10 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
 }
 
 void gpsUpdate(void) {
+  if(SPILock) {
+    Serial.println("gpsUpdate: SPI Collision");
+    return;
+  }
   gps.checkUblox();
   gps.checkCallbacks();
 }

@@ -8,13 +8,6 @@
 #define IMR_INDEX   5
 #define ISR_INDEX   6
 
-#define CLAIM_SPI gpsUpdateEvent->active=false; \
-									displayUpdateEvent->active=false; \
-									displayUpdateFastEvent->active=false;
-#define RELEASE_SPI gpsUpdateEvent->active=true; \
-									displayUpdateEvent->active=true; \
-									displayUpdateFastEvent->active=true;
-					
 #define VERSION_STRING "firmware: 0.2.1"
 
 inline void disableInterrupt(uint8_t pin) {

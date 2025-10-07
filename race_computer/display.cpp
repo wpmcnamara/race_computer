@@ -142,7 +142,7 @@ void displaySetup(void) {
   oledDisp4.clearBuffer();
   oledDisp4.setFont(u8g2_font_spleen12x24_mf);
   oledDisp4.drawStr(20,20,"\xA9 Patrick McNamara");	
-  oledDisp4.drawStr(38,52,VERSION_STR);	
+  oledDisp4.drawStr(38,52,VERSION_STRING);	
   oledDisp4.sendBuffer();
   delay(5000);
   oledDisp1.clearBuffer();
@@ -160,9 +160,10 @@ void displaySetup(void) {
 }
 
 void displayUpdate() {
-  //struct gpsDataStruct *gpsData=getGpsData();
-  //orcTime_t *gpsTime=getGpsTime();
-
+  if(SPILock) {
+    Serial.println("displayUpdate: SPI Collision");
+    return;
+  }
   oledDisp1.clearBuffer();
   oledDisp2.clearBuffer();
   oledDisp3.clearBuffer();
@@ -932,6 +933,10 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
 }
 
 void displayUpdateFast(void) {
+  if(SPILock) {
+    Serial.println("displayUpdateFast: SPI Collision");
+    return;
+  }
   if(ledDispFunc!=NULL) {
     ledDispFunc();
   }

@@ -36,6 +36,13 @@
 
 #define SDCARD_CS 2
 
+extern bool SPILock;
+
+inline void doSPILock (void) {SPILock=true;}
+inline void doSPIUnlock (void) {SPILock=false;}
+
 #define SPI_SPEED 3000000
+
+
 
 #endif
