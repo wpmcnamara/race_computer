@@ -53,20 +53,43 @@ int LEDDisplayActive=LegDeltaSpeed;
 int LEDDisplaySelect=LegDeltaSpeed;
 const char *OLEDDisplayDescr[8]={
   "Current GPS Speed",
-  "Leg: Average Speed",
-  "Leg: Distance Traveled",
-  "Leg: Distance Remaining",
-  "Leg: Time Delta",
-  "Leg: Speed Delta",
-  "Leg: Turns",
+  "Leg - Average Speed",
+  "Leg - Distance Traveled",
+  "Leg - Distance Remaining",
+  "Leg - Time Delta",
+  "Leg - Speed Delta",
+  "Leg - Turns",
   "GPS Info"
 };
 const char *LEDDisplayDescr[5]={
-  "Leg: Time",
-  "Race: Time",
-  "Leg: Speed Delta",
-  "Race: Speed Delta"
+  "Leg - Time",
+  "Race - Time",
+  "Leg - Speed Delta",
+  "Race - Speed Delta",
+  "Dashes"
 };
+
+void (*OLEDDisplayFuncs[8])(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) = {
+  displayGpsSpeedLarge,
+  displayAvgSpeedLarge,
+  displayDistanceLarge,
+  displayDistRemainLarge,
+  displayDeltaTimeLarge,
+  displayDeltaSpeedLarge,
+  displayPoint,
+  displayGPSInfo
+};
+void (*LEDDisplayFuncs[5])(void)= {
+  ledDispLegTime,
+  ledDispRaceTime,
+  ledDispLegDeltaSpeed,
+  ledDispRaceDeltaSpeed,
+  ledDispDashes  
+};
+
+int displaySelectLine=0;
+bool displaySelectLineMode=false;
+
 
 std::list<displayContent_t*> displayList;
 
@@ -1021,5 +1044,32 @@ void displayDisplayConfigTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dis
 }
 
 void displayDisplayConfig(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  int oled=0;
+  display.setFont(u8g2_font_spleen6x12_mf);
+  display.drawStr(0,12, "  LED:");
+  if(displaySelectLine==0) {
+    if(displaySelectLineMode==true) {
+      display.drawButtonUTF8(42, 12, U8G2_BTN_INV|U8G2_BTN_BW1, 213,  0,  0, LEDDisplayDescr[LEDDisplaySelect] );
+    } else {
+      display.drawButtonUTF8(42, 12, U8G2_BTN_BW1, 255,  0,  0, LEDDisplayDescr[LEDDisplaySelect] );
+    }
+  } else {
+    display.drawStr(42,12, LEDDisplayDescr[LEDDisplaySelect]);
+  }
+  for(oled=0; oled<4; oled++) {
+    sprintf(buffer, "OLED%d:", oled+1);
+    display.drawStr(0,24+(oled*12), buffer);
+    if(displaySelectLine==oled+1) {
+      if(displaySelectLineMode==true) {
+        display.drawButtonUTF8(42, 24+(oled*12), U8G2_BTN_INV|U8G2_BTN_BW1, 213,  0,  0, OLEDDisplayDescr[OLEDDisplaySelect[oled]] );
+      } else {
+        display.drawButtonUTF8(42, 24+(oled*12), U8G2_BTN_BW1, 213,  0,  0, OLEDDisplayDescr[OLEDDisplaySelect[oled]] );
+      }
+    } else {
+      display.drawStr(42,24+(oled*12), OLEDDisplayDescr[OLEDDisplaySelect[oled]]);
+    }  
+  }
+
+  
 
 }

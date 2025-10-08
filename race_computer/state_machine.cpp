@@ -90,15 +90,12 @@ void stateMachine::run(void) {
         status.flags.startStopState=stateBreath;
         prepRace();
         startStopStartsRace=true;
-        ledDispFunc=ledDispLegDeltaSpeed;
-        //ledDispFunc=ledDispLegTime;
+        ledDispFunc=LEDDisplayFuncs[LEDDisplayActive];
         displayList.erase(displayList.begin(), displayList.end());
-        //displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayDeltaSpeedLarge));
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayGpsSpeedLarge));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayDeltaTimeLarge));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayDistRemainLarge));
-        //displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGpsSpeedLarge));
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayPoint));
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[0]]));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[1]]));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[2]]));
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[3]]));
         break;
       case stateDelayedStart:
         Serial.println("  to: stateDelayedStart");
@@ -175,6 +172,10 @@ void stateMachine::run(void) {
         break;
       case stateDispSelect:
         Serial.println("  to: stateDispSelect");
+        LEDDisplaySelect=LEDDisplayActive;
+        for (int idx=0; idx<4; idx++) {
+          OLEDDisplaySelect[idx]=OLEDDisplayActive[idx];
+        }
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayDisplayConfigTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
@@ -363,9 +364,79 @@ void stateMachine::run(void) {
     case stateCancelSelection:
       break;  
     case stateDispSelect:
-      if(keys & KEYPAD_KEY_ESC) {
-        state=stateMainMenu;
+      if(displaySelectLineMode==false) {
+        if(keys & KEYPAD_KEY_ESC) {
+          state=stateMainMenu;
+        }
+        if(keys & KEYPAD_KEY_UP) {
+          if(displaySelectLine==0) {
+            displaySelectLine=4;
+          } else {
+            displaySelectLine--;
+          }
+        }
+        if(keys & KEYPAD_KEY_DOWN) {
+          if(displaySelectLine==4) {
+            displaySelectLine=0;
+          } else {
+            displaySelectLine++;
+          }
+        } 
+        if(keys & KEYPAD_KEY_ENTER) {
+          displaySelectLineMode=true;
+        }
+      } else {
+        if(keys & KEYPAD_KEY_ESC) {
+          displaySelectLineMode=false;
+          if(displaySelectLine==0) {
+            LEDDisplaySelect=LEDDisplayActive;
+          } else {
+            OLEDDisplaySelect[displaySelectLine-1]=OLEDDisplayActive[displaySelectLine-1];
+          }   
+        }       
+
+        if(keys & KEYPAD_KEY_UP) {
+          if(displaySelectLine==0) {
+            if(LEDDisplaySelect==LEDDispFuncMinValue) {
+              LEDDisplaySelect=LEDDispFuncMaxValue-1;
+            } else {
+              LEDDisplaySelect--;
+            } 
+          } else {
+            if(OLEDDisplaySelect[displaySelectLine-1]==OLEDDispFuncMinValue) {
+              OLEDDisplaySelect[displaySelectLine-1]=OLEDDispFuncMaxValue-1;
+            } else {
+              OLEDDisplaySelect[displaySelectLine-1]--;
+            }
+          }
+        }        
+
+        if(keys & KEYPAD_KEY_DOWN) {
+          if(displaySelectLine==0) {
+            if(LEDDisplaySelect==LEDDispFuncMaxValue-1) {
+              LEDDisplaySelect=LEDDispFuncMinValue;
+            } else {
+              LEDDisplaySelect++;
+            } 
+          } else {
+            if(OLEDDisplaySelect[displaySelectLine-1]==OLEDDispFuncMaxValue-1) {
+              OLEDDisplaySelect[displaySelectLine-1]=OLEDDispFuncMinValue;
+            } else {
+              OLEDDisplaySelect[displaySelectLine-1]++;
+            }
+          }
+        }  
+        
+        if(keys & KEYPAD_KEY_ENTER) {
+          displaySelectLineMode=false;
+          if(displaySelectLine==0) {
+            LEDDisplayActive=LEDDisplaySelect;
+          } else {
+            OLEDDisplayActive[displaySelectLine-1]=OLEDDisplaySelect[displaySelectLine-1];
+          }
+        }
       }
+           
       break;
     case stateUnknown:
       break;

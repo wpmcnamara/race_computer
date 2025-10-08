@@ -41,7 +41,9 @@ enum OLEDRaceDisplayTypedef {
   DeltaTimeLarge,
   DeltaSpeedLarge,
   TurnPoints,
-  GPSInfo
+  GPSInfo,
+  OLEDDispFuncMaxValue,
+  OLEDDispFuncMinValue=GPSSpeedLarge
 };
 
 typedef enum OLEDRaceDisplayTypedef OLEDRraceDisplayTypedef_t;
@@ -51,9 +53,12 @@ enum LEDRaceDisplayTypedef {
   RaceTime,
   LegDeltaSpeed,
   RaceDeltaSpeed,
-  Dashes
+  Dashes,
+  LEDDispFuncMaxValue,
+  LEDDispFuncMinValue=LegTime
 };
 typedef enum LEDRaceDisplayTypedef LEDRaceDisplayTypedef_t;
+
 
 
 extern std::list<displayContent_t*> displayList;
@@ -65,12 +70,19 @@ extern bool raceLegSelectHighlight;
 extern void (*ledDispFunc)(void);
 extern int OLEDDisplayActive[4];
 extern int OLEDDisplaySelect[4];
+extern int displaySelectLine;
+extern bool displaySelectLineMode;
 extern int LEDDisplayActive;
 extern int LEDDisplaySelect;
 extern const char *OLEDDisplayDescr[8];
 extern const char *LEDDisplayDescr[5];
+
 extern event_t *displayUpdateEvent;
 extern event_t *displayUpdateFastEvent;
+
+
+extern void (*OLEDDisplayFuncs[8])(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+extern void (*LEDDisplayFuncs[5])(void);
 
 class displayContent {
   public:
