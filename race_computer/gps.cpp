@@ -16,7 +16,8 @@ UBX_TIM_TM2_data_t timeStamp;
 
 unsigned int speedSamples = 0;
 unsigned long speedSum = 0;
-
+std::vector<double>::iterator speedListInsert;
+std::vector<double> speedList;
 struct gpsDataStruct gpsData;
 event_t *gpsUpdateEvent;
 
@@ -28,6 +29,10 @@ void gpsSetup(void) {
   uint8_t velLpGain;     // Velocity low-pass filter level
   uint8_t cogLpGain;     // COG low-pass filter level
 
+  for (int i=0; i<AVG_SPEED_VALUES; i++) {
+    speedList.push_back(0.0);
+  }
+  speedListInsert=speedList.begin();
   //Initialize the global GPS data structure to known values
   gpsData.lat = 0;
   gpsData.lon = 0;
@@ -287,6 +292,7 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
 }
 
 void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
+  double avgSpeed=0;
   gpsData.fix = ubxDataStruct->fixType;
   gpsData.siv = ubxDataStruct->numSV;
   gpsData.lat = ubxDataStruct->lat / 10000000.0;
@@ -299,7 +305,17 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
   //elsewhere.  If we aren't actively tracking a leg, then force the speed to zero.  This keeps
   //the speed display from bouncing around at small values due to GPS wander.
   if (race.legData->inProgress) {
-    gpsData.speed = (double)ubxDataStruct->gSpeed / 1000.0;
+    //gpsData.speed = (double)ubxDataStruct->gSpeed / 1000.0;
+    (*speedListInsert)=(double)ubxDataStruct->gSpeed / 1000.0;
+    speedListInsert++;
+    if(speedListInsert==speedList.end()) {
+      speedListInsert=speedList.begin();
+    }
+    for (int i=0; i<AVG_SPEED_VALUES; i++) {
+      avgSpeed+=speedList[i];
+    }
+    avgSpeed/=(double)AVG_SPEED_VALUES;
+    gpsData.speed = avgSpeed;
   } else {
     gpsData.speed = 0;
   }

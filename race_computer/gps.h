@@ -8,6 +8,7 @@
 #include "timer.h"
 
 #define PPS_FREQUENCY 1000
+#define AVG_SPEED_VALUES 5
 
 //GPS
 extern SFE_UBLOX_GNSS gps;
@@ -23,6 +24,10 @@ struct gpsDataStruct {
   double speed;
   unsigned long distance;
 };
+
+extern std::vector<double>::iterator speedListInsert;
+extern std::vector<double> speedList;
+
 
 void gpsSetup(void);
 void TIMTM2dataCallback(UBX_TIM_TM2_data_t *);

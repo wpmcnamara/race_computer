@@ -906,38 +906,61 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
   int x;
   double distRemaining=0;
   double timeRemaining=0;
+  char tUnit[4]="sec";
   if(race.legData->activePoint==race.activeLeg->points.end()) {
     display.setFont(u8g2_font_spleen16x32_mf);
-    display.drawStr(24, 37, "No Point Data");
-    return;
-  }
-  distRemaining=(*race.legData->activePoint)->distance-race.legData->distance;
-  if((*race.legData->activePoint)->turnDir==0) {
-    dir='L';
+    display.drawStr(24, 60, "No Point Data");
+    tUnit[0]=0;
   } else {
-    dir='R';
-  }
-  if((*race.legData->activePoint)->turn>0) {
-    sprintf(buffer, "%d%c", (*race.legData->activePoint)->turn, dir );
-  } else {
-    sprintf(buffer, "!!");
-  }
-  if(distRemaining<3057) {
+    //Calculate distance to next point in meters
+    distRemaining=(*race.legData->activePoint)->distance-race.legData->distance;
+    //Calculate time to point based on our current instantaneous speed
     timeRemaining=distRemaining/gpsData.speed;
+    //if we are more than sixty seconds out, we are going to print time in either 
+    //minutes or hours
+    if(timeRemaining>60) {
+      timeRemaining/=60;
+      //If we are more than an hour out, print time in hours.
+      if(timeRemaining>60) {
+        timeRemaining/=60;
+        strcpy(tUnit, "hr");
+      } else {
+        strcpy(tUnit, "min");
+      }
+      
+    }
+    //Now that we have time to point, we can convert the distance to miles to make
+    //figuring out the precesion we print easier.
+    distRemaining=distRemaining*0.000621372;
+    if((*race.legData->activePoint)->turnDir==0) {
+      dir='L';
+    } else {
+      dir='R';
+    }
+    if((*race.legData->activePoint)->turn>0) {
+      sprintf(buffer, "%d%c", (*race.legData->activePoint)->turn, dir );
+    } else {
+      sprintf(buffer, "!!");
+    }
     display.setFont(u8g2_font_spleen16x32_mf);
     x=3+((64-display.getStrWidth(buffer))/2);
     display.drawStr(x, 25, buffer);
-    sprintf(buffer, "%4.2f", distRemaining*0.000621372);
+
+    if(distRemaining>=100) {
+      sprintf(buffer, "%4d", (int)distRemaining);
+    } else if(distRemaining>=10) {
+      sprintf(buffer, "%4.1f", distRemaining);
+    } else {
+      sprintf(buffer, "%04.2f", distRemaining);
+    }
     display.drawStr(73, 25, buffer);
+
     if(gpsData.speed==0) {
       timeRemaining=0;
-      sprintf(buffer, "%5.2f", 0);
-    } else {
-      if(timeRemaining>99.9) {
-        timeRemaining=99.9;
-      }
-    }
-    sprintf(buffer, "%5.1f", timeRemaining);
+      tUnit[0]=0;
+      sprintf(buffer, "%5.2f", 0.0);
+    } 
+    sprintf(buffer, "%05.2f", timeRemaining);
     display.drawStr(153, 25, buffer);   
 
 
@@ -945,10 +968,11 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
     display.setFont(u8g2_font_spleen8x16_mf);
     display.drawStr(0,46, (*race.legData->activePoint)->descrLine1.c_str());
     display.drawStr(0,60, (*race.legData->activePoint)->descrLine2.c_str());
+    
   }
   display.setFont(u8g2_font_spleen5x8_mf);
   display.drawStr(138, 25, "mi");
-  display.drawStr(233, 25, "sec");
+  display.drawStr(233, 25, tUnit);
   display.drawRFrame(0, 0, 70, 32, 5);
   display.drawRFrame(72, 0, 78, 32, 5);
   display.drawRFrame(152, 0, 99, 32, 5);
