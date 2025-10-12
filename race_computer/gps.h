@@ -25,9 +25,6 @@ struct gpsDataStruct {
   unsigned long distance;
 };
 
-extern std::vector<double>::iterator speedListInsert;
-extern std::vector<double> speedList;
-
 
 void gpsSetup(void);
 void TIMTM2dataCallback(UBX_TIM_TM2_data_t *);

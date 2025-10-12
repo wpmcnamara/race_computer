@@ -12,7 +12,7 @@
 typedef struct timeStamp timeStamp_t;
 
 extern volatile bool timer_run;
-extern timeStamp_t timerVal;
+extern volatile timeStamp_t timerVal;
 extern IMXRT_TMR_t * TMRx;
 
 struct timeStamp {

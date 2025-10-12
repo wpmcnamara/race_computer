@@ -35,11 +35,16 @@ typedef enum dispPos dispPos_t;
 
 enum OLEDRaceDisplayTypedef {
   GPSSpeedLarge=0,
-  AvgSpeedLarge,
-  DistanceLarge,
-  DistRemainLarge,
-  DeltaTimeLarge,
-  DeltaSpeedLarge,
+  LegAvgSpeedLarge,
+  LegDistanceLarge,
+  LegDistRemainLarge,
+  LegDeltaTimeLarge,
+  LegDeltaSpeedLarge,
+  RaceAvgSpeedLarge,
+  RaceDistanceLarge,
+  RaceDistRemainLarge,
+  RaceDeltaTimeLarge,
+  RaceDeltaSpeedLarge,
   TurnPoints,
   GPSInfo,
   OLEDDispFuncMaxValue,
@@ -74,14 +79,14 @@ extern int displaySelectLine;
 extern bool displaySelectLineMode;
 extern int LEDDisplayActive;
 extern int LEDDisplaySelect;
-extern const char *OLEDDisplayDescr[8];
+extern const char *OLEDDisplayDescr[OLEDDispFuncMaxValue];
 extern const char *LEDDisplayDescr[5];
 
 extern event_t *displayUpdateEvent;
 extern event_t *displayUpdateFastEvent;
 
 
-extern void (*OLEDDisplayFuncs[8])(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+extern void (*OLEDDisplayFuncs[OLEDDispFuncMaxValue])(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 extern void (*LEDDisplayFuncs[5])(void);
 
 class displayContent {
@@ -92,9 +97,9 @@ class displayContent {
       void (*argShowFunc)(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &, dispPos_t, dispPos_t));
     void display(void);
   private:
+    U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &screen;
     dispPos_t posX;
     dispPos_t posY;
-    U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &screen;
     void (*showFunc)(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 };
 
@@ -103,18 +108,24 @@ void displayUpdate(void);
 void displayUpdateFast(void);
 
 void displayGpsSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
-void displayAvgSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
-void displayDistanceMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
-void displayDistRemainMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
-void displayDeltaTimeMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
-void displayDeltaSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayLegAvgSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayLegDistanceMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayLegDistRemainMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayLegDeltaTimeMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayLegDeltaSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 
 void displayGpsSpeedLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
-void displayAvgSpeedLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
-void displayDistanceLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
-void displayDistRemainLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
-void displayDeltaTimeLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
-void displayDeltaSpeedLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayLegAvgSpeedLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayLegDistanceLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayLegDistRemainLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayLegDeltaTimeLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayLegDeltaSpeedLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+
+void displayRaceAvgSpeedLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayRaceDistanceLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayRaceDistRemainLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayRaceDeltaTimeLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displayRaceDeltaSpeedLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 
 void displayGPSInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayRaceInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
@@ -136,6 +147,7 @@ void ledDispRaceTime(void);
 void ledDispLegDeltaSpeed(void);
 void ledDispRaceDeltaSpeed(void);
 void ledDispDashes(void);
+void ledDispStartCountdown(void);
 
 void displayError(const char *err);
 

@@ -183,26 +183,27 @@ void startPressInt() {
 void readKeypad(void) {
   uint8_t buttons=0;
   if(keyPress) {
+    Serial.println("keypress");
     keyPress=false;
     buttons = keypad.read();
     if(!keysLocked) {
       if (buttons & KEYPAD_KEY_ENTER) {
-        keypad.pixels.setPixelColor(0, 0xFFFFFF); // red
+        keypad.pixels.setPixelColor(0, 0xFFFFFF); 
       } else {
         keypad.pixels.setPixelColor(0, 0);
       }
       if (buttons & KEYPAD_KEY_DOWN) {
-        keypad.pixels.setPixelColor(1, 0xFFFFFF); // yellow
+        keypad.pixels.setPixelColor(1, 0xFFFFFF); 
       } else {
         keypad.pixels.setPixelColor(1, 0);
       }
       if (buttons & KEYPAD_KEY_UP) {
-        keypad.pixels.setPixelColor(2, 0xFFFFFF); // green
+        keypad.pixels.setPixelColor(2, 0xFFFFFF); 
       } else {
         keypad.pixels.setPixelColor(2, 0);
       }
       if (buttons & KEYPAD_KEY_ESC) {
-        keypad.pixels.setPixelColor(3, 0xFFFFFF); // blue
+        keypad.pixels.setPixelColor(3, 0xFFFFFF); 
       } else {
         keypad.pixels.setPixelColor(3, 0);
       }  
@@ -218,7 +219,7 @@ void readKeypad(void) {
     startStopState=digitalReadFast(KEYPAD_START);
     if(lastStartStopState!=startStopState) {
       if(startStopState==0 ) {
-          buttons|=(1<<KEYPAD_KEY_START_STOP);
+          buttons|=KEYPAD_KEY_START_STOP;
           stateMachine.startStopColor=COLOR_WHITE;
           stateMachine.status.flags.startStopState=stateOn;
       } else {
@@ -227,7 +228,7 @@ void readKeypad(void) {
     }
   }
   if(buttons) {
-    //Serial.printf("buttons: %d\n", buttons);
+    Serial.printf("buttons: %d\n", buttons);
     keyPresses.push_back(buttons);
   }   
 }

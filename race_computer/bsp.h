@@ -41,7 +41,7 @@ extern bool SPILock;
 inline void doSPILock (void) {SPILock=true;}
 inline void doSPIUnlock (void) {SPILock=false;}
 
-#define SPI_SPEED 3000000
+#define SPI_SPEED 4000000
 
 
 

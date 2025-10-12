@@ -298,6 +298,8 @@ void updateRace(void) {
   uint32_t elapsedRaceTime=timeComplete+(endTs-startTs);
   race.activeLeg->complete=true;
   race.distanceComplete+=race.legData->totalDistance;
+  race.distance = race.distanceComplete;
+  race.distanceRemaining = race.totalDistance - race.distance;  
   race.timeComplete.seconds=elapsedRaceTime/1000;
   race.timeComplete.millis=elapsedRaceTime%1000;
   //Serial.println("Current race");
@@ -450,8 +452,8 @@ void loadDefaultRaces(void) {
   raceDef->fileName="";
   raceDef->descr="Big Bend Open Road Race (default)";
   raceDef->speed=110.0;
-  raceDef->distance=59.0;
-  raceDef->mark=5;
+  raceDef->distance=118.0;
+  raceDef->mark=10;
   raceDef->inProgress=false;
   races.push_back(raceDef);
 
@@ -461,7 +463,7 @@ void loadDefaultRaces(void) {
   raceLegDef->id=1;
   raceLegDef->speed=110;
   raceLegDef->distance=59.0;
-  raceLegDef->mark=5;
+  raceLegDef->mark=10;
   raceLegDef->inProgress=false;
   raceLegDef->complete=false;
   raceDef->raceLegs.push_back(raceLegDef);
@@ -472,7 +474,7 @@ void loadDefaultRaces(void) {
   raceLegDef->id=2;
   raceLegDef->speed=110;
   raceLegDef->distance=59.0;
-  raceLegDef->mark=5;
+  raceLegDef->mark=10;
   raceLegDef->inProgress=false;
   raceLegDef->complete=false;
   raceDef->raceLegs.push_back(raceLegDef);

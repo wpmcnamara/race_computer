@@ -6,8 +6,8 @@
 void timerUpdate(void);
 
 volatile bool timer_run=false;
-timeStamp_t timerVal;
-timeStamp_t timerTs;
+volatile timeStamp_t timerVal;
+volatile timeStamp_t timerTs;
 //unsigned long intervalTimerCount=0;
 
 IntervalTimer it1;
@@ -44,7 +44,7 @@ void ppsInterrupt() {
   TMRx->CH[2].CSCTRL &= ~(TMR_CSCTRL_TCF1);
   timerVal.seconds++;
   timerTs.seconds=timerVal.seconds;
-  timerTs.millis=0;
+  timerTs.millis=TMRx->CH[2].CNTR;
 }
 
 void timerSetup(void) {
@@ -69,8 +69,8 @@ void timerSetup(void) {
 }
 
 void timerUpdate(void) {
-  timerTs.millis=TMRx->CH[2].CNTR;
   timerTs.seconds=timerVal.seconds;
+  timerTs.millis=TMRx->CH[2].CNTR;
 }
 
 unsigned long getTick(void) { return timerTs.seconds; };

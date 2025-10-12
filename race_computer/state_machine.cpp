@@ -99,9 +99,11 @@ void stateMachine::run(void) {
         break;
       case stateDelayedStart:
         Serial.println("  to: stateDelayedStart");
+        ledDispFunc=ledDispStartCountdown;
         break;
       case stateLegActive:
         Serial.println("  to: stateLegActive");
+        ledDispFunc=LEDDisplayFuncs[LEDDisplayActive];
         break;
       case stateLegComplete:
         Serial.println("  to: stateLegComplete");
