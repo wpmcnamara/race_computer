@@ -1,0 +1,23 @@
+{
+    "descr": "Big Bend Open Road Race",
+    "speed":  110.0,
+    "distance": 118.0,
+    "tmark": 10,
+    "legs": [
+        {
+            "id": 1,
+            "descr": "BBORR Southbound",
+            "speed": 110.0,
+            "distance": 59.0,
+            "points": "bborr/south.jsn"
+        },
+        {
+            "id": 2,
+            "descr": "BBORR Northbound",
+            "speed": 110.0,
+            "distance": 59.0,
+            "points": "bborr/north.jsn"
+
+        }
+    ]
+}

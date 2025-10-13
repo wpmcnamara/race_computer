@@ -1,0 +1,599 @@
+{
+    "points": [
+        {
+            "turn": 1,
+            "dir": 1,
+            "distance": 0.9,
+            "descr1": "Right hand sweeper into long",
+            "descr2": "straight"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 2.2,
+            "descr1": "Rough spot.",
+            "descr2": ""
+        },
+        {
+            "turn": 2,
+            "dir": 0,
+            "distance": 3.3,
+            "descr1": "Left hand sweeper into very long ",
+            "descr2": "straight"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 7.7,
+            "descr1": "Six Shooter Draw bridge",
+            "descr2": ""
+        },
+        {
+            "turn": 3,
+            "dir": 1,
+            "distance": 8.2,
+            "descr1": "Slight bend to the right",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 8.4,
+            "descr1": "Bridge (culvert)",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 10.3,
+            "descr1": "Rough in left lane",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 10.5,
+            "descr1": "Blind hill - straight",
+            "descr2": ""
+        },
+        {
+            "turn": 4,
+            "dir": 0,
+            "distance": 12.0,
+            "descr1": "up hill - thru cut, down to short",
+            "descr2": "dstraight - four lanes wide"
+        },
+        {
+            "turn": 5,
+            "dir": 1,
+            "distance": 12.8,
+            "descr1": "Right hand corner, down hill",
+            "descr2": "Three lanes back to two"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 13.1,
+            "descr1": "Bridge",
+            "descr2": ""
+        },
+        {
+            "turn": 6,
+            "dir": 0,
+            "distance": 14.6,
+            "descr1": "Left hand sweeper - then uphill",
+            "descr2": "three lanes wide"
+        },
+        {
+            "turn": 7,
+            "dir": 1,
+            "distance": 15.1,
+            "descr1": "Blind over crest into downhill",
+            "descr2": "straight. Narrows to two lanes"
+        },
+        {
+            "turn": 8,
+            "dir": 1,
+            "distance": 16.2,
+            "descr1": "Right hand bend to very short ",
+            "descr2": "straight"
+        },
+        {
+            "turn": 9,
+            "dir": 1,
+            "distance": 16.6,
+            "descr1": "Right hand bend",
+            "descr2": ""
+        },
+        {
+            "turn": 10,
+            "dir": 0,
+            "distance": 17.6,
+            "descr1": "Left hand turn uphill into short",
+            "descr2": "straight"
+        },
+        {
+            "turn": 11,
+            "dir": 0,
+            "distance": 17.9,
+            "descr1": "Blind left hand turn over hill.",
+            "descr2": "Immediately into next turn."
+        },
+        {
+            "turn": 12,
+            "dir": 1,
+            "distance": 18.2,
+            "descr1": "Right hand turn downhill into ",
+            "descr2": "very short straight -- CAUTION"
+        },
+        {
+            "turn": 13,
+            "dir": 1,
+            "distance": 18.5,
+            "descr1": "Right hand bend - downhill",
+            "descr2": ""
+        },
+        {
+            "turn": 14,
+            "dir": 0,
+            "distance": 19.0,
+            "descr1": "Left hand corner downhill into",
+            "descr2": " blind exit"
+        },
+        {
+            "turn": 15,
+            "dir": 0,
+            "distance": 19.8,
+            "descr1": "Left hand bend - downhill",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 20.9,
+            "descr1": "Nineteen Draw Bridge with a blind",
+            "descr2": "rise. Rough surface on bridge."
+        },
+        {
+            "turn": 16,
+            "dir": 1,
+            "distance": 22.0,
+            "descr1": "Slight right hand bend into very",
+            "descr2": "short straight."
+        },
+        {
+            "turn": 17,
+            "dir": 1,
+            "distance": 22.3,
+            "descr1": "slight uphill, Monument Draw ",
+            "descr2": "Bridge at start, rough on bridge"
+        },
+        {
+            "turn": 18,
+            "dir": 0,
+            "distance": 23.3,
+            "descr1": "Slight left hand bend - Mitchell ",
+            "descr2": "Road on left"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 24.7,
+            "descr1": "Marsh Lea Ranch on left",
+            "descr2": ""
+        },
+        {
+            "turn": 19,
+            "dir": 1,
+            "distance": 25.6,
+            "descr1": "Right hand corner - slight ",
+            "descr2": "upgrade"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 25.9,
+            "descr1": "Blind uphill into straightaway",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 27.2,
+            "descr1": "Cerf Ranch on left",
+            "descr2": ""
+        },
+        {
+            "turn": 20,
+            "dir": 1,
+            "distance": 27.7,
+            "descr1": "Blind right hand sweeper over ",
+            "descr2": "crest - long"
+        },
+        {
+            "turn": 21,
+            "dir": 0,
+            "distance": 29.3,
+            "descr1": "sweeper with elevation changes",
+            "descr2": "Escondido Draw Bridge 3/4 thru"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 30.6,
+            "descr1": "Blind crest in straight elevator",
+            "descr2": " ride! Look ahead."
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 31.7,
+            "descr1": "Blind crest in straight - very",
+            "descr2": "quick to next turn"
+        },
+        {
+            "turn": 22,
+            "dir": 0,
+            "distance": 32.0,
+            "descr1": "corner thru cut, blid exit down",
+            "descr2": "hill to short straight"
+        },
+        {
+            "turn": 23,
+            "dir": 0,
+            "distance": 32.4,
+            "descr1": "Left hand bend downhill. Quick",
+            "descr2": "to next turn. Narrows to 2 lanes"
+        },
+        {
+            "turn": 24,
+            "dir": 1,
+            "distance": 32.7,
+            "descr1": "Right hand bend - immediate into",
+            "descr2": "next turn"
+        },
+        {
+            "turn": 25,
+            "dir": 1,
+            "distance": 33.0,
+            "descr1": "Left hand turn with blind exit",
+            "descr2": " with slight rise into straight"
+        },
+        {
+            "turn": 26,
+            "dir": 1,
+            "distance": 35.6,
+            "descr1": "Right hand bend into very short",
+            "descr2": "straight"
+        },
+        {
+            "turn": 27,
+            "dir": 0,
+            "distance": 36.0,
+            "descr1": "Left hand sweeper with blind exit",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 36.6,
+            "descr1": "Big Canyon Bridge",
+            "descr2": "Rough bridge surface"
+        },
+        {
+            "turn": 28,
+            "dir": 1,
+            "distance": 37.0,
+            "descr1": "Right hand turn.  Immediately",
+            "descr2": "into next turn"
+        },
+        {
+            "turn": 29,
+            "dir": 1,
+            "distance": 37.2,
+            "descr1": "Right hand turn with blind exit",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 38.0,
+            "descr1": "Windmill on left",
+            "descr2": ""
+        },
+        {
+            "turn": 30,
+            "dir": 0,
+            "distance": 38.2,
+            "descr1": "Very slight left bend",
+            "descr2": ""
+        },
+        {
+            "turn": 31,
+            "dir": 1,
+            "distance": 1.0,
+            "descr1": "Right hand turn downhill with ",
+            "descr2": "blind exit - to short straight"
+        },
+        {
+            "turn": 32,
+            "dir": 1,
+            "distance": 39.4,
+            "descr1": "Right hand bend to short straight",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 39.8,
+            "descr1": "Middle Fork Bridge",
+            "descr2": "Rough bridge surface"
+        },
+        {
+            "turn": 33,
+            "dir": 0,
+            "distance": 40.0,
+            "descr1": "Left hand turn to short straight",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 40.6,
+            "descr1": "Sign - Sanderson 20 miles on ",
+            "descr2": "right"
+        },
+        {
+            "turn": 34,
+            "dir": 1,
+            "distance": 41.1,
+            "descr1": "Long right hand corner with ",
+            "descr2": "uphill rise"
+        },
+        {
+            "turn": 35,
+            "dir": 0,
+            "distance": 42.4,
+            "descr1": "Left hand turn - slight down hill",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 42.8,
+            "descr1": "Clark Place Draw Bridge",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 43.0,
+            "descr1": "        !!WARNING!!",
+            "descr2": "Approaching Quick Blind Corners"
+        },
+        {
+            "turn": 36,
+            "dir": 0,
+            "distance": 43.8,
+            "descr1": "Long left, uphill into very short",
+            "descr2": "straight. Three lanes wide."
+        },
+        {
+            "turn": 37,
+            "dir": 1,
+            "distance": 44.2,
+            "descr1": "Right hand corner through cut",
+            "descr2": "Four lanes.  Into right turn"
+        },
+        {
+            "turn": 38,
+            "dir": 0,
+            "distance": 44.4,
+            "descr1": "Blind left hand corner downhill, ",
+            "descr2": "long"
+        },
+        {
+            "turn": 39,
+            "dir": 0,
+            "distance": 45.0,
+            "descr1": "Slight left hand bend into long",
+            "descr2": "right.  Back to two lanes."
+        },
+        {
+            "turn": 40,
+            "dir": 1,
+            "distance": 45.2,
+            "descr1": "Very long corner through cut into",
+            "descr2": "short straigh"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 45.6,
+            "descr1": "FM 2400 Junction on left",
+            "descr2": ""
+        },
+        {
+            "turn": 41,
+            "dir": 0,
+            "distance": 45.8,
+            "descr1": "Left hand turn uphill and over",
+            "descr2": "into slight right.  Four lanes."
+        },
+        {
+            "turn": 42,
+            "dir": 1,
+            "distance": 46.0,
+            "descr1": "Slight right into short downhill ",
+            "descr2": "straight.  Three lanes."
+        },
+        {
+            "turn": 43,
+            "dir": 1,
+            "distance": 46.4,
+            "descr1": "Right hand corner into short ",
+            "descr2": "straight"
+        },
+        {
+            "turn": 44,
+            "dir": 0,
+            "distance": 47.1,
+            "descr1": "Long left. Three lanes at ",
+            "descr2": "entrance, narrows to two in turn"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 48.0,
+            "descr1": "Ranch house on right",
+            "descr2": "Left lane rough"
+        },
+        {
+            "turn": 45,
+            "dir": 0,
+            "distance": 48.7,
+            "descr1": "Slight left hand bend",
+            "descr2": "Left lane rough"
+        },
+        {
+            "turn": 46,
+            "dir": 1,
+            "distance": 49.4,
+            "descr1": "Blind right downhill into long straight",
+            "descr2": "straight.  Look up."
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 49.9,
+            "descr1": "Terrell County Sign",
+            "descr2": "pavement changes"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 50.1,
+            "descr1": "Downie Draw Bridge",
+            "descr2": "Rough bridge surface"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 50.8,
+            "descr1": "Sign - Sanderson 10 miles",
+            "descr2": ""
+        },
+        {
+            "turn": 47,
+            "dir": 0,
+            "distance": 51.4,
+            "descr1": "Left uphill, very late apex to ",
+            "descr2": "exit, into very short straight"
+        },
+        {
+            "turn": 48,
+            "dir": 0,
+            "distance": 51.8,
+            "descr1": "Left sweeper through cut downhill",
+            "descr2": "almost joins next turn"
+        },
+        {
+            "turn": 49,
+            "dir": 0,
+            "distance": 52.2,
+            "descr1": "Left into very short straight",
+            "descr2": "Three lanes, tighter than last"
+        },
+        {
+            "turn": 50,
+            "dir": 1,
+            "distance": 52.5,
+            "descr1": "Right hand corner downhill, blind",
+            "descr2": "exit, into long left"
+        },
+        {
+            "turn": 51,
+            "dir": 0,
+            "distance": 52.7,
+            "descr1": "Long left hand corner still ",
+            "descr2": "downhill, two lanes at exit into"
+        },
+        {
+            "turn": 52,
+            "dir": 1,
+            "distance": 53.2,
+            "descr1": "Right hand corner into short ",
+            "descr2": "straight"
+        },
+        {
+            "turn": 53,
+            "dir": 0,
+            "distance": 53.7,
+            "descr1": "Left hand corner",
+            "descr2": ""
+        },
+        {
+            "turn": 54,
+            "dir": 1,
+            "distance": 54.2,
+            "descr1": "Right hand bend",
+            "descr2": ""
+        },  
+        {
+            "turn": 55,
+            "dir": 1,
+            "distance": 54.9,
+            "descr1": "Slight right hand bend into very ",
+            "descr2": "short straight"
+        },
+        {
+            "turn": 56,
+            "dir": 0,
+            "distance": 55.3,
+            "descr1": "Left hand turn into short ",
+            "descr2": "straight"
+        },  
+        {
+            "turn": 57,
+            "dir": 1,
+            "distance": 55.9,
+            "descr1": "Long right hand corner",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 56.5,
+            "descr1": "Bridge",
+            "descr2": ""
+        },  
+        {
+            "turn": 58,
+            "dir": 1,
+            "distance": 57.4,
+            "descr1": "Right hand turn - bridge just",
+            "descr2": "past exit - into immediate right"
+        },
+        {
+            "turn": 59,
+            "dir": 1,
+            "distance": 57.7,
+            "descr1": "Right hand corner. CAUTION slower",
+            "descr2": "than previous turn."
+        }, 
+        {
+            "turn": 60,
+            "dir": 0,
+            "distance": 58.2,
+            "descr1": "Left hand sweeper - then head to ",
+            "descr2": "finish line"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 59.0,
+            "descr1": "FINISH LINE",
+            "descr2": ""
+        }
+    ]
+}

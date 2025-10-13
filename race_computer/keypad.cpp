@@ -183,7 +183,7 @@ void startPressInt() {
 void readKeypad(void) {
   uint8_t buttons=0;
   if(keyPress) {
-    Serial.println("keypress");
+    //Serial.println("keypress");
     keyPress=false;
     buttons = keypad.read();
     if(!keysLocked) {
@@ -228,7 +228,7 @@ void readKeypad(void) {
     }
   }
   if(buttons) {
-    Serial.printf("buttons: %d\n", buttons);
+    //Serial.printf("buttons: %d\n", buttons);
     keyPresses.push_back(buttons);
   }   
 }

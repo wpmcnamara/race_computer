@@ -1,0 +1,22 @@
+{
+    "descr": "Test and debugging drive",
+    "speed":  31.9,
+    "distance": 12.8,
+    "tmark": 0,
+    "legs": [
+        {
+            "id": 1,
+            "descr": "Test Drive -- clockwise",
+            "speed": 31.9,
+            "distance": 6.4,
+            "points": "testdrv/testcw.jsn"
+        },
+        {
+            "id": 2,
+            "descr": "Test Drive -- counterclockwise",
+            "speed": 31.9,
+            "distance": 6.62,
+            "points": "testdrv/testccw.jsn"
+        }
+    ]
+}

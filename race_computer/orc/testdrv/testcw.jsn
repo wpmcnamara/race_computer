@@ -1,0 +1,75 @@
+{
+    "points": [
+        {
+            "turn": 1,
+            "dir": 1,
+            "distance": 0.01,
+            "descr1": "Right turn onto Dunafan",
+            "descr2": "30MPH Speed Limit"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 0.26,
+            "descr1": "Stop sign",
+            "descr2": ""
+        },
+        {
+            "turn": 2,
+            "dir": 1,
+            "distance": 0.51,
+            "descr1": "Right turn onto Teel Pkwy",
+            "descr2": "45MPH Speed Limit"
+        },
+        {
+            "turn": 3,
+            "dir": 1,
+            "distance": 1.41,
+            "descr1": "Right turn onto Stonebrook Parkway",
+            "descr2": "45MPH Speed Limit"
+        },
+        {
+            "turn": 4,
+            "dir": 1,
+            "distance": 3.01,
+            "descr1": "Right turn onto Hwy423",
+            "descr2": "45MPH Speed Limit"
+        },
+        {
+            "turn": 5,
+            "dir": 1,
+            "distance": 3.61,
+            "descr1": "Right turn onto Main St",
+            "descr2": "45MPH Speed Limit"
+        },
+        {
+            "turn": 6,
+            "dir": 1,
+            "distance": 5.11,
+            "descr1": "Right turn onto Teel Pkwy",
+            "descr2": "45MPH Speed Limit"
+        },
+        {
+            "turn": 7,
+            "dir": 1,
+            "distance": 5.71,
+            "descr1": "Right on High Shoals",
+            "descr2": "30MPH Speed Limit"
+        },
+        {
+            "turn": 8,
+            "dir": 1,
+            "distance": 6.11,
+            "descr1": "Right on Bishop",
+            "descr2": "20MPH (30MPH Speed Limit)"
+        },
+        {
+            "turn": 9,
+            "dir": 0,
+            "distance": 6.21,
+            "descr1": "Left on Greenwood",
+            "descr2": ""
+        }
+
+    ]
+}

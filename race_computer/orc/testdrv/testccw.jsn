@@ -1,0 +1,75 @@
+{
+    "points": [
+        {
+            "turn": 1,
+            "dir": 1,
+            "distance": 0.015,
+            "descr1": "Right turn onto Bishop",
+            "descr2": "20MPH (30MPH Speed Limit)"
+        },
+        {
+            "turn": 2,
+            "dir": 0,
+            "distance": 0.115,
+            "descr1": "Left on High Shoals",
+            "descr2": ""
+        },
+        {
+            "turn": 3,
+            "dir": 0,
+            "distance": 0.52,
+            "descr1": "Left turn onto Teel Pkwy",
+            "descr2": "45MPH Speed Limit"
+        },
+        {
+            "turn": 4,
+            "dir": 0,
+            "distance": 1.12,
+            "descr1": "Left turn onto Main Street",
+            "descr2": "45MPH Speed Limit"
+        },
+        {
+            "turn": 5,
+            "dir": 0,
+            "distance": 2.7,
+            "descr1": "Left turn onto Hwyv423",
+            "descr2": "45MPH Speed Limit"
+        },
+        {
+            "turn": 6,
+            "dir": 0,
+            "distance": 3.4,
+            "descr1": "Left turn onto Stonebrook Pkwy",
+            "descr2": "45MPH Speed Limit"
+        },
+        {
+            "turn": 7,
+            "dir": 0,
+            "distance": 5.11,
+            "descr1": "Left turn onto Teel Pkwy",
+            "descr2": "45MPH Speed Limit"
+        },
+        {
+            "turn": 8,
+            "dir": 0,
+            "distance": 6.1,
+            "descr1": "Left on Angel Falls",
+            "descr2": "30MPH Speed Limit"
+        },
+        {
+            "turn": 9,
+            "dir": 0,
+            "distance": 6.6,
+            "descr1": "Left  on Dunafan",
+            "descr2": "20MPH (30MPH Speed Limit)"
+        },
+        {
+            "turn": 10,
+            "dir": 0,
+            "distance": 6.61,
+            "descr1": "Left into alleyway",
+            "descr2": ""
+        }
+
+    ]
+}

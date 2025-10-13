@@ -1,0 +1,102 @@
+{
+    "points": [
+        {
+            "turn": 1,
+            "dir": 0,
+            "distance": 0.1,
+            "descr1": "Left sweeper",
+            "descr2": ""
+        },
+        {
+            "turn": 2,
+            "dir": 1,
+            "distance": 1.0,
+            "descr1": "Long right sweeper",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 1.4,
+            "descr1": "Short straightaway",
+            "descr2": ""
+        },
+        {
+            "turn": 3,
+            "dir": 1,
+            "distance": 3.0,
+            "descr1": "Right sweeper",
+            "descr2": ""
+        },
+        {
+            "turn": 4,
+            "dir": 0,
+            "distance": 3.4,
+            "descr1": "Left curve into straightway",
+            "descr2": ""
+        },
+        {
+            "turn": 5,
+            "dir": 0,
+            "distance": 3.7,
+            "descr1": "Left curve",
+            "descr2": ""
+        },
+        {
+            "turn": 6,
+            "dir": 1,
+            "distance": 3.9,
+            "descr1": "Right sharp curve into ",
+            "descr2": "straight away"
+        },
+        {
+            "turn": 7,
+            "dir": 1,
+            "distance": 4.6,
+            "descr1": "right sweeper",
+            "descr2": ""
+        },
+        {
+            "turn": 8,
+            "dir": 1,
+            "distance": 5.3,
+            "descr1": "Right sweeper",
+            "descr2": ""
+        },
+        {
+            "turn": 9,
+            "dir": 1,
+            "distance": 5.9,
+            "descr1": "Right curve into rough bridge",
+            "descr2": ""
+        },
+        {
+            "turn": 10,
+            "dir": 0,
+            "distance": 5.9,
+            "descr1": "Left curve",
+            "descr2": ""
+        },
+        {
+            "turn": 11,
+            "dir": 0,
+            "distance": 6.5,
+            "descr1": "Double low, left curve",
+            "descr2": ""
+        },
+        {
+            "turn": 12,
+            "dir": 0,
+            "distance": 7.4,
+            "descr1": "Long left sweeper",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 7.9,
+            "descr1": "FINISH LINE",
+            "descr2": ""
+        }
+    ]
+}

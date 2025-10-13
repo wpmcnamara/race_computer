@@ -1,0 +1,88 @@
+{
+    "points": [
+        {
+            "turn": 1,
+            "dir": 1,
+            "distance": 0.9,
+            "descr1": "Right hand sweeper into short",
+            "descr2": "straight"
+        },
+        {
+            "turn": 2,
+            "dir": 1,
+            "distance": 1.2,
+            "descr1": "Right hand turn",
+            "descr2": "two lanes wide"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 1.8,
+            "descr1": "Rought bridge",
+            "descr2": ""
+        },
+        {
+            "turn": 3,
+            "dir": 0,
+            "distance": 2.2,
+            "descr1": "Left short sweeper into short",
+            "descr2": "straightway"
+        },
+        {
+            "turn": 4,
+            "dir": 0,
+            "distance": 2.4,
+            "descr1": "Left sweeper into long straight",
+            "descr2": ""
+        },
+        {
+            "turn": 5,
+            "dir": 0,
+            "distance": 3.2,
+            "descr1": "Left hand sweeper",
+            "descr2": ""
+        },
+        {
+            "turn": 6,
+            "dir": 0,
+            "distance": 4.1,
+            "descr1": "Left to right S curve into short",
+            "descr2": "straight"
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 4.8,
+            "descr1": "Straight S curve",
+            "descr2": ""
+        },
+        {
+            "turn": -1,
+            "dir": -1,
+            "distance": 6.2,
+            "descr1": "Sanderson Canyon Bridge rough",
+            "descr2": ""
+        },
+        {
+            "turn": 7,
+            "dir": 0,
+            "distance": 6.4,
+            "descr1": "Left sweeper",
+            "descr2": ""
+        },
+        {
+            "turn": 8,
+            "dir": 0,
+            "distance": 6.8,
+            "descr1": "Left curve",
+            "descr2": ""
+        },
+        {
+            "turn": 9,
+            "dir": 1,
+            "distance": 8.0,
+            "descr1": "Right sweeper",
+            "descr2": ""
+        }
+    ]
+}
