@@ -254,7 +254,7 @@
         },
         {
             "turn": 25,
-            "dir": 1,
+            "dir": 0,
             "distance": 33.0,
             "descr1": "Left hand turn with blind exit",
             "descr2": " with slight rise into straight"
@@ -311,7 +311,7 @@
         {
             "turn": 31,
             "dir": 1,
-            "distance": 1.0,
+            "distance": 38.8,
             "descr1": "Right hand turn downhill with ",
             "descr2": "blind exit - to short straight"
         },

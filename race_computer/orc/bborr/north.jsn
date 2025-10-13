@@ -157,7 +157,7 @@
         {
             "turn": 19,
             "dir": 0,
-            "distance": 13,
+            "distance": 13.0,
             "descr1": "Slight blind left hand bend to ",
             "descr2": "immediate right"
         },
