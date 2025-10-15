@@ -61,7 +61,7 @@
             "dir": 0,
             "distance": 12.0,
             "descr1": "up hill - thru cut, down to short",
-            "descr2": "dstraight - four lanes wide"
+            "descr2": "straight - four lanes wide"
         },
         {
             "turn": 5,
@@ -74,7 +74,7 @@
             "turn": -1,
             "dir": -1,
             "distance": 13.1,
-            "descr1": "Bridge",
+            "descr1": "Bridge.  Gas plant on left.",
             "descr2": ""
         },
         {
@@ -116,8 +116,8 @@
             "turn": 11,
             "dir": 0,
             "distance": 17.9,
-            "descr1": "Blind left hand turn over hill.",
-            "descr2": "Immediately into next turn."
+            "descr1": "Blind left over hill. Immediate",
+            "descr2": "into next turn. May need to slow"
         },
         {
             "turn": 12,
@@ -138,14 +138,14 @@
             "dir": 0,
             "distance": 19.0,
             "descr1": "Left hand corner downhill into",
-            "descr2": " blind exit"
+            "descr2": "blind exit -- SLOW 90MPH"
         },
         {
             "turn": 15,
             "dir": 0,
             "distance": 19.8,
             "descr1": "Left hand bend - downhill",
-            "descr2": ""
+            "descr2": "Bunger Cameron Ranch on left"
         },
         {
             "turn": -1,
@@ -180,7 +180,7 @@
             "dir": -1,
             "distance": 24.7,
             "descr1": "Marsh Lea Ranch on left",
-            "descr2": ""
+            "descr2": "Windmill on right"
         },
         {
             "turn": 19,
@@ -194,7 +194,7 @@
             "dir": -1,
             "distance": 25.9,
             "descr1": "Blind uphill into straightaway",
-            "descr2": ""
+            "descr2": "Tower on left"
         },
         {
             "turn": -1,
@@ -222,7 +222,7 @@
             "dir": -1,
             "distance": 30.6,
             "descr1": "Blind crest in straight elevator",
-            "descr2": " ride! Look ahead."
+            "descr2": "ride! Look ahead."
         },
         {
             "turn": -1,
@@ -235,7 +235,7 @@
             "turn": 22,
             "dir": 0,
             "distance": 32.0,
-            "descr1": "corner thru cut, blid exit down",
+            "descr1": "corner thru cut, blind exit down",
             "descr2": "hill to short straight"
         },
         {
@@ -254,7 +254,7 @@
         },
         {
             "turn": 25,
-            "dir": 1,
+            "dir": 0,
             "distance": 33.0,
             "descr1": "Left hand turn with blind exit",
             "descr2": " with slight rise into straight"
@@ -295,13 +295,6 @@
             "descr2": ""
         },
         {
-            "turn": -1,
-            "dir": -1,
-            "distance": 38.0,
-            "descr1": "Windmill on left",
-            "descr2": ""
-        },
-        {
             "turn": 30,
             "dir": 0,
             "distance": 38.2,
@@ -311,7 +304,7 @@
         {
             "turn": 31,
             "dir": 1,
-            "distance": 1.0,
+            "distance": 38.8,
             "descr1": "Right hand turn downhill with ",
             "descr2": "blind exit - to short straight"
         },
@@ -348,21 +341,21 @@
             "dir": 1,
             "distance": 41.1,
             "descr1": "Long right hand corner with ",
-            "descr2": "uphill rise"
+            "descr2": "uphill rise. May need to slow"
         },
         {
             "turn": 35,
             "dir": 0,
             "distance": 42.4,
             "descr1": "Left hand turn - slight down hill",
-            "descr2": ""
+            "descr2": "SLOW"
         },
         {
             "turn": -1,
             "dir": -1,
             "distance": 42.8,
             "descr1": "Clark Place Draw Bridge",
-            "descr2": ""
+            "descr2": "rough bridge surface"
         },
         {
             "turn": -1,
@@ -383,7 +376,7 @@
             "dir": 1,
             "distance": 44.2,
             "descr1": "Right hand corner through cut",
-            "descr2": "Four lanes.  Into right turn"
+            "descr2": "Four lanes.  Into left turn"
         },
         {
             "turn": 38,
@@ -404,7 +397,7 @@
             "dir": 1,
             "distance": 45.2,
             "descr1": "Very long corner through cut into",
-            "descr2": "short straigh"
+            "descr2": "short straigh.  Watch speed."
         },
         {
             "turn": -1,
@@ -491,6 +484,13 @@
             "descr2": "exit, into very short straight"
         },
         {
+            "turn": -1,
+            "dir": -1,
+            "distance": 51.5,
+            "descr1": "Race photographer at top of",
+            "descr2": "hill"
+        },
+        {
             "turn": 48,
             "dir": 0,
             "distance": 51.8,
@@ -547,6 +547,13 @@
             "descr2": "short straight"
         },
         {
+            "turn": -1,
+            "dir": -1,
+            "distance": 55.0,
+            "descr1": "Last chance to correct time",
+            "descr2": ""
+        },
+        {
             "turn": 56,
             "dir": 0,
             "distance": 55.3,
@@ -565,7 +572,7 @@
             "dir": -1,
             "distance": 56.5,
             "descr1": "Bridge",
-            "descr2": ""
+            "descr2": "rough surface"
         },  
         {
             "turn": 58,

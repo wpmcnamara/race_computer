@@ -26,7 +26,7 @@
             "dir": -1,
             "distance": 2.5,
             "descr1": "bridge",
-            "descr2": ""
+            "descr2": "Rough bridge surface"
         },
         {
             "turn": 4,
@@ -157,7 +157,7 @@
         {
             "turn": 19,
             "dir": 0,
-            "distance": 13,
+            "distance": 13.0,
             "descr1": "Slight blind left hand bend to ",
             "descr2": "immediate right"
         },
@@ -186,8 +186,8 @@
             "turn": 22,
             "dir": 1,
             "distance": 14.0,
-            "descr1": "Slight right bend",
-            "descr2": "three lanes wide"
+            "descr1": "Slight right bend three lanes",
+            "descr2": "wide.  Watch speed next three"
         },
         {
             "turn": 23,
@@ -228,8 +228,8 @@
             "turn": 27,
             "dir": 0,
             "distance": 17.6,
-            "descr1": "Blind left hand corner downhill",
-            "descr2": "tight - to short straight"
+            "descr1": "Blind downhill to short straight",
+            "descr2": "Tight -- may need to slow"
         },
         {
             "turn": 28,
@@ -264,13 +264,6 @@
             "dir": 1,
             "distance": 20.7,
             "descr1": "Very slight right bend",
-            "descr2": ""
-        },
-        {
-            "turn": -1,
-            "dir": -1,
-            "distance": 21.0,
-            "descr1": "Windmill on right",
             "descr2": ""
         },
         {
@@ -390,7 +383,7 @@
             "dir": 0,
             "distance": 33.0,
             "descr1": "Left hand corner",
-            "descr2": ""
+            "descr2": "tower on right"
         },
         {
             "turn": -1,
@@ -467,7 +460,7 @@
             "dir": 1,
             "distance": 41.0,
             "descr1": "Blind right hand turn into short",
-            "descr2": "straight"
+            "descr2": "straight - may need to slow"
         },
         {
             "turn": 51,
@@ -530,7 +523,7 @@
             "dir": -1,
             "distance": 48.2,
             "descr1": "Blind crest thru cut - straight",
-            "descr2": ""
+            "descr2": "tower on right"
         },
         {
             "turn": -1,
@@ -565,7 +558,7 @@
             "dir": -1,
             "distance": 51.7,
             "descr1": "Sign - Ft. Stockton 10 miles",
-            "descr2": ""
+            "descr2": "Start time correction"
         },
         {
             "turn": 59,
