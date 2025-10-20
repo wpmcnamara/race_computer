@@ -1034,7 +1034,7 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
     } else if(distRemaining>=10) {
       sprintf(buffer, "%4.1f", distRemaining);
     } else {
-      sprintf(buffer, "%04.2f", distRemaining);
+      sprintf(buffer, "%4.2f", distRemaining);
     }
     display.drawStr(73, 25, buffer);
 
@@ -1043,7 +1043,7 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
       tUnit[0]=0;
       sprintf(buffer, "%5.2f", 0.0);
     } 
-    sprintf(buffer, "%05.2f", timeRemaining);
+    sprintf(buffer, "%5.2f", timeRemaining);
     display.drawStr(153, 25, buffer);   
 
 

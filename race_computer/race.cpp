@@ -30,7 +30,7 @@ void raceSetup(void) {
   race.legData=new raceData_t;
   race.averageSpeed=0;
   //race.targetSpeed=14.26058;
-  race.speedTargetBand=0.044704;
+  race.speedTargetBand=0.011176;
   //race.totalDistance=10299.8;
   race.distanceComplete=0;
   race.distance=0;
