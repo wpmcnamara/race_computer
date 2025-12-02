@@ -237,9 +237,7 @@ void gpsUpdate(void) {
 }
 
 void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
-  double elapsedTime;
-  double targetDistance;
-  double deltaDistance;
+  double targetTime;
 
   gpsData.distance = ubxDataStruct->distance;
   //Since we have an updated distamce, if we have a race in progress, then we should update
@@ -257,13 +255,17 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     race.averageSpeed = (double)race.distance / (TS_TO_FLOAT(race.timeComplete) + elapsedTime);
     race.speedDelta = race.averageSpeed - race.targetSpeed;
 
-    targetDistance = race.legData->targetSpeed * elapsedTime;
-    deltaDistance = race.legData->distance - targetDistance;
-    race.legData->timeDelta = (deltaDistance / race.legData->targetSpeed)*1000.0;
+    //Calculate how long it should have taken for us to travel the distance we have, at the target speed 
+    //for the race.
+    targetTime=(double)race.legData->distance / race.legDAta->targetSpeed;
+    //Our time delta is the difference between how long it should have taken and how long it did take.
+    //Delta will be negative if we are faster, positive if we are slower.
+    race.legData->timeDelta=targetTime-elapsedTime;
 
-    targetDistance = race.targetSpeed * (TS_TO_FLOAT(race.timeComplete) + elapsedTime);
-    deltaDistance = race.distance - targetDistance;
-    race.timeDelta =(deltaDistance / race.targetSpeed)*1000;
+    //redo the same time delta calculations as above, only for the entire race distance instead of 
+    //just the current leg.
+    targetTime=(double)race.distance / race.targetSpeed;
+    race.timeDelta=targetTime-(TS_TO_FLOAT(race.timeComplete) + elapsedTime);
 
     if((race.legData->speedDelta)<(race.legData->speedTargetBand*-1.0)) {
       stateMachine.status.flags.buttonColor=1;
