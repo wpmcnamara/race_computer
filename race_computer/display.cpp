@@ -9,11 +9,8 @@
 //8 digit LED display
 CK_MAX ledDisp(LED_DISP_LOAD);
 
-#ifdef __BREADBOARD__
+
 #define ROTATION U8G2_R0
-#else
-#define ROTATION U8G2_R2
-#endif 
 
 //OLED displays
 //New Haven Displays 256x64 is a good enough match for the displays on the dev board.  U8G2_R0 sets rotation

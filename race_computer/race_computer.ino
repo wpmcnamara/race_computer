@@ -19,8 +19,9 @@ void setup() {
   Wire.setClock(400000);
   keypadSetup();
   displaySetup();
-  gpsSetup();
+
   storageSetup();
+  gpsSetup();
   timerSetup();
   raceSetup();
 }
