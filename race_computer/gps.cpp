@@ -238,7 +238,7 @@ void gpsUpdate(void) {
 
 void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   double targetTime;
-
+  double elapsedTime;
   gpsData.distance = ubxDataStruct->distance;
   //Since we have an updated distamce, if we have a race in progress, then we should update
   //the average race stats since everything is based on time and distance travelled.
@@ -257,7 +257,7 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
 
     //Calculate how long it should have taken for us to travel the distance we have, at the target speed 
     //for the race.
-    targetTime=(double)race.legData->distance / race.legDAta->targetSpeed;
+    targetTime=(double)race.legData->distance / race.legData->targetSpeed;
     //Our time delta is the difference between how long it should have taken and how long it did take.
     //Delta will be negative if we are faster, positive if we are slower.
     race.legData->timeDelta=targetTime-elapsedTime;
