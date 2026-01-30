@@ -13,6 +13,7 @@
 
 
 void setup() {
+  bsp_setup();
   // put your setup code here, to run once:
   Serial.begin(1000000);
   Wire.begin();
