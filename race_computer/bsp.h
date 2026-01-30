@@ -32,6 +32,7 @@
 
 extern bool SPILock;
 
+void bsp_setup(void);
 inline void doSPILock (void) {SPILock=true;}
 inline void doSPIUnlock (void) {SPILock=false;}
 
