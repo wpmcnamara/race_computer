@@ -5,6 +5,7 @@
 #include "agr_logo_top.h"
 #include "event.h"
 #include "race.h"
+#include "menu.h"
 
 //8 digit LED display
 CK_MAX ledDisp(LED_DISP_LOAD);
@@ -659,6 +660,8 @@ void displayRaceInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t pos
   }
 
 }
+
+/*
 void displayMenu(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   display.setFont(u8g2_font_spleen6x12_mf);
   if(menuItem==0) {
@@ -682,9 +685,30 @@ void displayMenu(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, d
     display.drawButtonUTF8(1, 52, U8G2_BTN_BW0, 255,  0,  0, "Configure Display" );
   }
 }
+*/
+void displayMenu(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  uint8_t activeLine=(*menuStack.back()).getActiveLine();
+  uint8_t i;
+  uint8_t y=13;
+  display.setFont(u8g2_font_spleen6x12_mf);
+  for(i=0; i<4; i++) {
+    if(i==activeLine) {
+      display.drawButtonUTF8(1, y, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, (*menuStack.back())[i] );
+    } else {
+      display.drawButtonUTF8(1, y, U8G2_BTN_BW0, 255,  0,  0, (*menuStack.back())[i]);
+    }
+    y+=13;
+  }
+
+}
+
 void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  int x;
+  const char *title=(*menuStack.back()).getMenuTitle();
   display.setFont(u8g2_font_spleen12x24_mf);	
-  display.drawStr(74,20,"Main Menu");
+  x=128-(display.getStrWidth(title)/2);
+  //display.drawStr(74,20,"Main Menu");
+  display.drawStr(x,20,title);
   if(race.inProgress) {
     display.setFont(u8g2_font_spleen6x12_mf);
     display.drawStr(80,36,"Race In Progress"); 

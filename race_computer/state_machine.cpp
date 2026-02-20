@@ -3,6 +3,7 @@
 #include "display.h"
 #include "race.h"
 #include "bsp.h"
+#include "menu.h"
 
 
 class stateMachine stateMachine;
@@ -305,6 +306,8 @@ void stateMachine::run(void) {
     case stateLoadRaceCheckPoint:
       break;            
     case stateMainMenu:
+      (*menuStack.back()).keypress(keys);
+      /*
       if(keys & KEYPAD_KEY_ENTER) {
         switch(menuItem) {
           case 0:
@@ -340,6 +343,7 @@ void stateMachine::run(void) {
           menuItem++;
         }
       }
+      */
       break;
     case stateRaceStart:
       if(keys & KEYPAD_KEY_ESC) {
