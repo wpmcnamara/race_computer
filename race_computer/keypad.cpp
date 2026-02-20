@@ -113,7 +113,16 @@ bool startStopIsBlinking(void) {
 void keypadSetup(void) {
   pinMode(KEYPAD_START, INPUT_PULLUP);
   pinMode(KEYPAD_INT, INPUT_PULLUP);
+  Serial.println("NeoKey start");
+  if (! keypad.begin(0x30)) {     // begin with I2C address, default is 0x30
+    Serial.println("Could not start NeoKey, check wiring?");
+    displayError("NeoKey start error");
+    while(1) delay(10);
+  }
+  Serial.println("NeoKey reset");
+  keypad.SWReset();
 
+  Serial.println("NeoKey start");
   if (! keypad.begin(0x30)) {     // begin with I2C address, default is 0x30
     Serial.println("Could not start NeoKey, check wiring?");
     displayError("NeoKey start error");

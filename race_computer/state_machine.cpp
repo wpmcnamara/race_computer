@@ -2,6 +2,7 @@
 #include "keypad.h"
 #include "display.h"
 #include "race.h"
+#include "bsp.h"
 
 
 class stateMachine stateMachine;
@@ -23,6 +24,9 @@ void stateMachine::run(void) {
     switch(lastState) {
       case stateInit:
         Serial.print("from: stateInit");
+        break;
+      case stateLoadRaceCheckPoint:
+        Serial.print("from: loadRaceCheckPoint");
         break;
       case stateMainMenu:
         Serial.print("from: stateMainMenu");
@@ -60,6 +64,15 @@ void stateMachine::run(void) {
       case stateDispSelect:
         Serial.print("from: stateDispSelect");
         break; 
+      case stateCheckFirmwareUpdate:
+        Serial.print("from: stateCheckFirmwareUpdate");
+        break; 
+      case stateConfirmFirmwareUpdate:
+        Serial.print("from: stateConfirmFirmwareUpdate");
+        break; 
+      case stateDoFirmwareUpdate:
+        Serial.print("from: stateDoFirmwareUpdate");
+        break; 
       case stateUnknown:
         Serial.print("from: stateUnknown");
         break; 
@@ -67,7 +80,10 @@ void stateMachine::run(void) {
     switch(state) {
       case stateInit:
         Serial.println("  to: stateInit");
-        loadRaceCheckPoint();
+        break;
+      case stateLoadRaceCheckPoint:
+        Serial.println("  to: stateLoadRaceCheckPoint");
+        loadRaceCheckPoint();     
         break;
       case stateMainMenu:
         Serial.println("  to: stateMainMenu");
@@ -184,6 +200,21 @@ void stateMachine::run(void) {
         displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayDisplayConfig));
         displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo)); 
         break;
+      case stateCheckFirmwareUpdate:
+        Serial.println("  to: stateCheckFirmwareUpdate");
+        break;
+      case stateConfirmFirmwareUpdate:
+        Serial.println("  to: stateConfirmFirmwareUpdate");
+        keypad.pixels.setPixelColor(0, COLOR_GREEN);
+        keypad.pixels.setPixelColor(3, COLOR_RED);
+        keypad.pixels.show();
+        displayList.erase(displayList.begin(), displayList.end());
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayFirmwareConfirm));
+        break;
+      case stateDoFirmwareUpdate:
+        Serial.println("  to: stateDoFirmwareUpdate");
+        doFirmwareUpdate();
+        break;
       case stateUnknown:
         Serial.println("  to: stateUnknown");
         break;
@@ -192,12 +223,15 @@ void stateMachine::run(void) {
   }
 
   //evaluated every pass through the state machine.  This handles state transitions caused
-  //by async events in the race timing or GPS systems.  No actions or status updates allowed
-  //in this block.  State transitions only.
+  //by async events in the race timing or GPS systems or any other logic based state transitions.  
+  //No actions or status updates allowed in this block.  State transitions only.
   switch(state) {
     case stateInit:
-      state=stateMainMenu;
+      state=stateCheckFirmwareUpdate;
       break;
+    case stateLoadRaceCheckPoint:
+      state=stateMainMenu;  
+      break;      
     case stateMainMenu:
       break;
     case stateRaceStart:
@@ -242,6 +276,17 @@ void stateMachine::run(void) {
       break;
     case stateDispSelect:
       break;
+    case stateCheckFirmwareUpdate:
+        state=stateLoadRaceCheckPoint;
+        if(checkForUpdate()) {
+          state=stateConfirmFirmwareUpdate;
+        }
+        break;
+    case stateConfirmFirmwareUpdate:
+        break;
+    case stateDoFirmwareUpdate:
+        state=stateLoadRaceCheckPoint;
+        break;      
     case stateUnknown:
       break;
   }
@@ -257,6 +302,8 @@ void stateMachine::run(void) {
   switch(state) {
     case stateInit:
       break;
+    case stateLoadRaceCheckPoint:
+      break;            
     case stateMainMenu:
       if(keys & KEYPAD_KEY_ENTER) {
         switch(menuItem) {
@@ -440,6 +487,18 @@ void stateMachine::run(void) {
       }
            
       break;
+    case stateCheckFirmwareUpdate:
+      break;
+    case stateConfirmFirmwareUpdate:
+      if(keys & KEYPAD_KEY_ESC) {
+        state=stateLoadRaceCheckPoint;
+      }
+      if(keys & KEYPAD_KEY_ENTER) {
+        state=stateDoFirmwareUpdate;
+      }      
+      break;
+    case stateDoFirmwareUpdate:
+        break;            
     case stateUnknown:
       break;
   }
@@ -539,6 +598,7 @@ void stateMachine::run(void) {
   }
 
   if(status.flags.buttonColor != lastStatus.flags.buttonColor) {
+    Serial.printf("set all buttons: %d\n",status.flags.buttonColor);
     switch(status.flags.buttonColor) {
       case 0:
         setAllButtonColor(COLOR_BLACK);

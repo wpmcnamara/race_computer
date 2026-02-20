@@ -1,6 +1,7 @@
 {
     "descr": "BBORR Practice - 120",
     "speed":  120.0,
+    "speed_range": 0.1,
     "distance": 15.9,
     "tmark": 0,
     "legs": [

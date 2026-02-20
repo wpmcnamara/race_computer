@@ -1,6 +1,7 @@
 {
     "descr": "Test and debugging drive",
     "speed":  31.9,
+    "speed_range": 0.5,
     "distance": 12.8,
     "tmark": 0,
     "legs": [

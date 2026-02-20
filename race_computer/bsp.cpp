@@ -1,4 +1,10 @@
 #include "bsp.h"
+#include "storage.h"
+#include "gps.h"
+#include "FXUtil.h"
+extern "C" {
+  #include "FlashTxx.h"         // TLC/T3x/T4x/TMM flash primitives
+}
 
 
 bool SPILock=false;
@@ -22,4 +28,56 @@ void bsp_setup(void) {
   digitalWrite(OLED_DISP3_CS, HIGH);
   pinMode(OLED_DISP3_CS, OUTPUT);
   digitalWrite(OLED_DISP1_CS, HIGH);
+}
+
+bool checkForUpdate(void) {
+  //disable display and GPS use of the SPI bus to prevent collisions
+  if(!sdCardPresent) {
+    Serial.println("No SD card.  Skipping firmware update");
+    return false;
+  }
+  //disable display and GPS use of the SPI bus to prevent collisions
+  doSPILock();
+  if(!SD.exists("orc/firmware.hex")) {
+    doSPIUnlock();
+    Serial.println("No firmware file found.");
+    return false;
+  }  
+    doSPIUnlock();
+    Serial.println("Found orc/firmware.hex");
+    return true;
+}
+
+bool doFirmwareUpdate(void) {
+  uint32_t buffer_addr, buffer_size;
+  Serial.print("Loading firmware file");
+  delete gpsUpdateEvent;
+  //disable display and GPS use of the SPI bus to prevent collisions
+  doSPILock();
+  File firmwareFile=SD.open("orc/firmware.hex");
+  if(!firmwareFile) {
+    Serial.println("  file open error");
+    doSPIUnlock();
+    return false;
+  }
+  Serial.printf( "target = %s (%dK flash in %dK sectors)\n", FLASH_ID, FLASH_SIZE/1024, FLASH_SECTOR_SIZE/1024);
+  // create flash buffer to hold new firmware
+  if (firmware_buffer_init( &buffer_addr, &buffer_size ) == 0) {
+    Serial.printf( "unable to create buffer\n" );
+    Serial.flush();
+    for (;;) {}
+  }
+  
+  Serial.printf( "created buffer = %1luK %s (%08lX - %08lX)\n",
+		buffer_size/1024, IN_FLASH(buffer_addr) ? "FLASH" : "RAM",
+		buffer_addr, buffer_addr + buffer_size );
+  update_firmware( &firmwareFile, &Serial, buffer_addr, buffer_size );
+  // return from update_firmware() means error or user abort, so clean up and
+  // reboot to ensure that static vars get boot-up initialized before retry
+  Serial.println("Update failed");
+  Serial.println( "erase FLASH buffer / free RAM buffer..." );
+  firmware_buffer_free( buffer_addr, buffer_size );
+  Serial.flush();
+  REBOOT;
+  return false;
 }

@@ -1,0 +1,3 @@
+[submodule "race_computer/FlasherX"]
+	path = race_computer/FlasherX
+	url = https://github.com/joepasquariello/FlasherX.git

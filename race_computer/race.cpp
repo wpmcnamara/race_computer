@@ -16,25 +16,13 @@ std::vector<raceLeg_t *>::iterator selectedRaceLeg;
 
 void raceSetup(void) {
 
-  /*
-  race.activeRace=new race_t;
-  race.activeRace->distance=10299.8;
-  race.activeRace->speed=14.26058;
-  race.activeLeg=new raceLeg_t;
-  race.activeLeg->distance=10299.8;
-  race.activeLeg->speed=14.26058;
-  race.activeLeg=NULL;
-  */
   race.activeRace=NULL;
   race.activeLeg=NULL;
   race.legData=new raceData_t;
   race.averageSpeed=0;
-  //race.targetSpeed=14.26058;
-  race.speedTargetBand=0.011176;
-  //race.totalDistance=10299.8;
+  race.speedTargetBand=0.0;
   race.distanceComplete=0;
   race.distance=0;
-  //race.distanceRemaining=10299.8;
   race.distanceOffset=0;
   race.averageSpeed=0;
   race.speedDelta=0;
@@ -49,11 +37,8 @@ void raceSetup(void) {
 
 
   race.legData->averageSpeed=0;
-  //race.legData->targetSpeed=14.26058;  //31.9mph
-  race.legData->speedTargetBand=0.044704;  //0.1mph
-  //race.legData->totalDistance=10299.8; //6.4miles
+  race.legData->speedTargetBand=0.0;  
   race.legData->distance=0;
-  //race.legData->distanceRemaining=10299.8;
   race.legData->distanceComplete=0;
   race.legData->distanceOffset=0;
   race.legData->averageSpeed=0;
@@ -65,7 +50,6 @@ void raceSetup(void) {
   race.legData->startTs.millis=0;
   race.legData->endTs.seconds=0;
   race.legData->endTs.millis=0;
-  //race.legData->startMark=5;
   race.legData->delayedStart=false;
   race.legData->timeDelta=0;
 
@@ -140,9 +124,11 @@ void loadRaces() {
     raceFile->descr=doc["descr"].as<String>();
     Serial.printf("race descr: %s\n", raceFile->descr.c_str());
     raceFile->distance=doc["distance"].as<float>();
-    Serial.printf("race distance: %f\n", raceFile->distance);    
+    Serial.printf("race distance: %f\n", raceFile->distance);       
     raceFile->speed=doc["speed"].as<float>();
-    Serial.printf("race speed: %f\n", raceFile->speed);    
+    Serial.printf("race speed: %f\n", raceFile->speed);  
+    raceFile->speedRange=doc["speed_range"].as<float>();
+    Serial.printf("race speed range: %f\n", raceFile->speedRange);
     raceFile->mark=doc["tmark"].as<int>();
     Serial.printf("race mark: %d\n\n", raceFile->mark);    
     raceFile->inProgress=false;
@@ -156,9 +142,23 @@ void loadRaces() {
       raceLegFile->id=jsonLeg["id"].as<int>();
       Serial.printf("   leg id: %d\n", raceLegFile->id);
       raceLegFile->speed=jsonLeg["speed"].as<float>();
+      if(jsonLeg["speed_range"].isNull()) {
+        raceLegFile->speedRange=raceFile->speedRange;
+        Serial.printf("   speed range (from race): %f\n\n\n", raceLegFile->speedRange);
+      } else {
+        raceLegFile->speedRange=jsonLeg["speed_range"].as<float>();
+        Serial.printf("   speed range: %f\n\n\n", raceLegFile->speedRange);
+      }
       Serial.printf("   leg speed: %f\n", raceLegFile->speed);
       raceLegFile->distance=jsonLeg["distance"].as<float>();
       Serial.printf("   leg distance: %f\n\n\n", raceLegFile->distance);
+      if(jsonLeg["drive_distance"].isNull()) {
+        raceLegFile->driveDistance=raceLegFile->distance;
+        Serial.printf("   drive distance is leg distance: %f\n\n\n", raceLegFile->driveDistance);
+      } else {
+        raceLegFile->driveDistance=jsonLeg["drive_distance"].as<float>();
+        Serial.printf("   drive distance: %f\n\n\n", raceLegFile->driveDistance);
+      }
       if(jsonLeg["tmark"].isNull()) {
         raceLegFile->mark=raceFile->mark;
         Serial.printf("   leg mark(from race): %f\n\n\n", raceLegFile->mark);
@@ -179,15 +179,32 @@ void loadRaces() {
 }
 
 void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
+  std::vector<raceLeg_t *>::iterator raceLegIt;
   race.activeRace=selectedRace;
   race.activeLeg=selectedRaceLeg;
   race.targetSpeed=(selectedRace->speed)/2.23694;
+  race.speedTargetBand=(selectedRace->speedRange)/2.23694;
   race.totalDistance=(selectedRace->distance)/0.000621372;
   race.distanceRemaining=race.totalDistance;
   race.startMark=selectedRace->mark;
+
+  //Figure out how long the entire race will take, in seconds;
+  race.time=(double)race.totalDistance/race.targetSpeed;
+  //This will give us the actual driven distance for the entire race.
+  race.driveDistance=0;
+  raceLegIt=selectedRace->raceLegs.begin();
+  while(raceLegIt!=selectedRace->raceLegs.end()) {
+    race.driveDistance+=((*raceLegIt)->driveDistance/0.000621372);
+    ++raceLegIt;
+  }
+  //Actual target speed to hit, to finish the drive distance in the required
+  //time.  Should result in the race average speed over the official race
+  //distance.
+  race.adjustedTargetSpeed=(double)race.driveDistance/race.time;
   
   race.averageSpeed=0;
   race.distanceComplete=0;
+  race.driveDistanceComplete=0;
   race.distance=0;
   race.distanceOffset=0;
   race.averageSpeed=0;
@@ -203,12 +220,24 @@ void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
 
 void prepRace(void) {
   race.legData->targetSpeed=(race.activeLeg->speed)/2.23694;
+  race.legData->speedTargetBand=(race.activeLeg->speedRange)/2.23694;
   race.legData->totalDistance=(race.activeLeg->distance)/0.000621372;
-  race.legData->distanceRemaining=race.legData->totalDistance;
+  race.legData->driveDistance=(race.activeLeg->driveDistance)/0.000621372;
+  race.legData->distanceRemaining=race.legData->driveDistance;
   race.legData->startMark=race.activeLeg->mark;
-  
+  //let calculate the actual target speed we need, in order to hit the race target.
+  //this will be different if the drive distance is not the same as the race distance.  
+  //If drive distance is shorter, then it will be slower.  Faster if longer.  The 
+  //contant is the time.  We need to cover the drive distance in the time specified by
+  //the leg distance.
+  //leg time in seconds.
+  race.legData->time=(double)race.legData->totalDistance/race.legData->targetSpeed;
+  //now figure the adjusted targer based on how long the leg should take, and the 
+  //actual distance we will drive.
+  race.legData->adjustedTargetSpeed=(double)race.legData->driveDistance/race.legData->time;
   race.legData->distance=0;
   race.legData->distanceComplete=0;
+  race.legData->driveDistanceComplete=0;
   race.legData->distanceOffset=0;
   race.legData->averageSpeed=0;
   race.legData->speedDelta=0;
@@ -234,11 +263,12 @@ void loadRacePoints(raceLeg_t *raceLeg) {
   JsonDocument doc;
   DeserializationError error;
   sprintf(path, "orc/%s", race.activeLeg->pointsFile.c_str());
-  if(!SD.exists(path)) {
-    return;
-  }
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
+  if(!SD.exists(path)) {
+    doSPIUnlock();
+    return;
+  }
   Serial.printf("Loading point file: %s\n", path);
   File pointFile=SD.open(path);
   if(!pointFile) {
@@ -316,6 +346,7 @@ void dumpRaceData(raceData_t *data) {
   Serial.printf("  speedDelta=%f m/s\n", data->speedDelta);
   Serial.printf("  speedTargetBand=%f m/s\n", data->speedTargetBand);
   Serial.printf("  totalDistance=%d m\n", data->totalDistance);
+  Serial.printf("  driveDistance=%d m\n", data->driveDistance);
   Serial.printf("  distanceComplete=%d m\n", data->distanceComplete);
   Serial.printf("  timeComplete sec=%d, millis=%d\n", data->timeComplete.seconds, data->timeComplete.millis);
   Serial.printf("  distance=%d m\n", data->distance);
@@ -452,6 +483,7 @@ void loadDefaultRaces(void) {
   raceDef->fileName="";
   raceDef->descr="Big Bend Open Road Race (default)";
   raceDef->speed=110.0;
+  raceDef->speedRange=0.05;
   raceDef->distance=118.0;
   raceDef->mark=10;
   raceDef->inProgress=false;
@@ -462,7 +494,9 @@ void loadDefaultRaces(void) {
   raceLegDef->pointsFile="";
   raceLegDef->id=1;
   raceLegDef->speed=110;
+  raceLegDef->speedRange=0.05;
   raceLegDef->distance=59.0;
+  raceLegDef->driveDistance=58.935;
   raceLegDef->mark=10;
   raceLegDef->inProgress=false;
   raceLegDef->complete=false;
@@ -473,7 +507,9 @@ void loadDefaultRaces(void) {
   raceLegDef->pointsFile="";
   raceLegDef->id=2;
   raceLegDef->speed=110;
+  raceLegDef->speedRange=0.05;
   raceLegDef->distance=59.0;
+  raceLegDef->driveDistance=58.926;
   raceLegDef->mark=10;
   raceLegDef->inProgress=false;
   raceLegDef->complete=false;
@@ -483,6 +519,7 @@ void loadDefaultRaces(void) {
   raceDef->fileName="";
   raceDef->descr="BBORR Practice (default)";
   raceDef->speed=110.0;
+  raceDef->speedRange=0.1;
   raceDef->distance=15.9;
   raceDef->mark=0;
   raceDef->inProgress=false;
@@ -493,7 +530,9 @@ void loadDefaultRaces(void) {
   raceLegDef->pointsFile="";
   raceLegDef->id=2;
   raceLegDef->speed=110;
+  raceLegDef->speedRange=0.1;
   raceLegDef->distance=8.0;
+  raceLegDef->driveDistance=8.0;
   raceLegDef->mark=0;
   raceLegDef->inProgress=false;
   raceLegDef->complete=false;
@@ -504,7 +543,9 @@ void loadDefaultRaces(void) {
   raceLegDef->pointsFile="";
   raceLegDef->id=2;
   raceLegDef->speed=110;
+  raceLegDef->speedRange=0.1;
   raceLegDef->distance=7.9;
+  raceLegDef->driveDistance=7.9;
   raceLegDef->mark=0;
   raceLegDef->inProgress=false;
   raceLegDef->complete=false;
@@ -514,6 +555,7 @@ void loadDefaultRaces(void) {
   raceDef->fileName="";
   raceDef->descr="Test and debugging drive (default)";
   raceDef->speed=29.5;
+  raceDef->speedRange=0.5;
   raceDef->distance=12.9;
   raceDef->mark=0;
   raceDef->inProgress=false;
@@ -524,7 +566,9 @@ void loadDefaultRaces(void) {
   raceLegDef->pointsFile="";
   raceLegDef->id=1;
   raceLegDef->speed=31.9;
+  raceLegDef->speedRange=0.5;
   raceLegDef->distance=6.4;
+  raceLegDef->driveDistance=6.4;
   raceLegDef->mark=0;
   raceLegDef->inProgress=false;
   raceLegDef->complete=false;
@@ -535,7 +579,9 @@ void loadDefaultRaces(void) {
   raceLegDef->pointsFile="";
   raceLegDef->id=2;
   raceLegDef->speed=26.5;
+  raceLegDef->speedRange=0.5;
   raceLegDef->distance=6.5;
+  raceLegDef->driveDistance=6.5;
   raceLegDef->mark=0;
   raceLegDef->inProgress=false;
   raceLegDef->complete=false;
