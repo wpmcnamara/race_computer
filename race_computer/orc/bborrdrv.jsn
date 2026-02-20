@@ -1,6 +1,7 @@
 {
     "descr": "BBORR Course Drive",
     "speed":  65.0,
+    "speed_range": 0.5,
     "distance": 118.0,
     "tmark": 0,
     "legs": [

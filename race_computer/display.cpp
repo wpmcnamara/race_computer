@@ -1059,6 +1059,14 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
   
 }
 
+void displayFirmwareConfirm(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  display.setFont(u8g2_font_spleen16x32_mf);	
+  display.drawStr(5,20,"Firmware update");	
+  display.setFont(u8g2_font_spleen12x24_mf);
+  display.drawStr(25,48,"exit or continue?");	
+}
+
+
 void displayUpdateFast(void) {
   if(SPILock) {
     //Serial.println("displayUpdateFast: SPI Collision");

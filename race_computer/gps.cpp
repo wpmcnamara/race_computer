@@ -245,26 +245,34 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   //distance is in meters.  Time is in seconds.
   if (race.legData->inProgress) {
     race.legData->distance = gpsData.distance - race.legData->distanceOffset;
-    race.legData->distanceRemaining = race.legData->totalDistance - race.legData->distance;
-    race.distance = race.distanceComplete + race.legData->distance;
-    race.distanceRemaining = race.totalDistance - race.distance;
+    race.legData->distanceRemaining = race.legData->driveDistance - race.legData->distance;
+    //we use the drive values here as it wouldn't make sense to use published values for 
+    //the race distance when the leg distance is actual distance driven.  Race values, using
+    //published distance are only valid at the end of a leg.
+    race.distance = race.driveDistanceComplete + race.legData->distance;
+    race.distanceRemaining = race.driveDistance - race.distance;
 
+ 
     elapsedTime = TSPTR_TO_FLOAT(getTimeStamp()) - TS_TO_FLOAT(race.legData->timerOffset);
     race.legData->averageSpeed = (double)race.legData->distance / elapsedTime;
-    race.legData->speedDelta = race.legData->averageSpeed - race.legData->targetSpeed;
+    //we use the adjustedTargetSpeed here as there isn't a good way to scale things from drive distance
+    //to leg distance.  We could technically do it, but the scaling factor is tiny (0.1% as an example)
+    //and ensuring no loss of precision isn't worth the hassle.
+    race.legData->speedDelta = race.legData->averageSpeed - race.legData->adjustedTargetSpeed;
+
     race.averageSpeed = (double)race.distance / (TS_TO_FLOAT(race.timeComplete) + elapsedTime);
-    race.speedDelta = race.averageSpeed - race.targetSpeed;
+    race.speedDelta = race.averageSpeed - race.adjustedTargetSpeed;
 
     //Calculate how long it should have taken for us to travel the distance we have, at the target speed 
     //for the race.
-    targetTime=(double)race.legData->distance / race.legData->targetSpeed;
+    targetTime=(double)race.legData->distance / race.legData->adjustedTargetSpeed;
     //Our time delta is the difference between how long it should have taken and how long it did take.
     //Delta will be negative if we are faster, positive if we are slower.
     race.legData->timeDelta=targetTime-elapsedTime;
 
     //redo the same time delta calculations as above, only for the entire race distance instead of 
     //just the current leg.
-    targetTime=(double)race.distance / race.targetSpeed;
+    targetTime=(double)race.distance / race.adjustedTargetSpeed;
     race.timeDelta=targetTime-(TS_TO_FLOAT(race.timeComplete) + elapsedTime);
 
     if((race.legData->speedDelta)<(race.legData->speedTargetBand*-1.0)) {
@@ -307,7 +315,6 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
   //elsewhere.  If we aren't actively tracking a leg, then force the speed to zero.  This keeps
   //the speed display from bouncing around at small values due to GPS wander.
   if (race.legData->inProgress) {
-    //gpsData.speed = (double)ubxDataStruct->gSpeed / 1000.0;
     (*speedListInsert)=(double)ubxDataStruct->gSpeed / 1000.0;
     speedListInsert++;
     if(speedListInsert==speedList.end()) {

@@ -7,6 +7,7 @@ extern class stateMachine stateMachine;
 
 enum stateMachineStatesEnum {
   stateInit,
+  stateLoadRaceCheckPoint,
   stateMainMenu,
   stateRaceStart,
   stateDelayedStart,
@@ -19,6 +20,9 @@ enum stateMachineStatesEnum {
   stateCancelSelection,
   stateNextLeg,
   stateDispSelect,
+  stateCheckFirmwareUpdate,
+  stateConfirmFirmwareUpdate,
+  stateDoFirmwareUpdate,
   stateUnknown
 };
 

@@ -49,8 +49,15 @@ class racePoint {
 
 class raceLeg {
   public:
+    //Race target speed for this leg, based on public leg distance
     float speed;
+    //How close to target is considered to be "on target"
+    float speedRange;
+    //publish leg distance
     float distance;
+    //actual distance driven for leg.  Used to properly calculated target
+    //speed.
+    float driveDistance;
     unsigned int id;
     String descr;
     String pointsFile;
@@ -67,6 +74,7 @@ class race {
     String fileName;
     String descr;
     float speed;
+    float speedRange;
     float distance;
     bool inProgress;
     unsigned int mark;
@@ -78,10 +86,16 @@ class race {
 
 class raceData {
   public:
+    //time to complete the race/leg, in seconds.  Currently calculated from distance and
+    //speed.  Not loaded from definition files.
+    double time;
     //target speed for the current race or leg.  This will be in meters/second;
     //Value is loaded from the race definition when the race is selected. For race
     //legs it is loaded when the leg is entered.
     double targetSpeed;
+    //Actual target speed for the current race or leg.  This will be in meters/second.
+    //Value is calculated by from the ratio of publish distance to actual driving distance.
+    double adjustedTargetSpeed;
     //running average speed for the leg/race.  This is actively updated from GPS
     //data during the race
     double averageSpeed;
@@ -96,10 +110,17 @@ class raceData {
     //race definition when the race is selected.  For legs, it is loaded from the leg
     //definition when the leg is entered.
     int totalDistance;
+    //Total drive distance of the course in meters.  For a race, this will be zero and not
+    //used.  For a leg, this will be the actual distance to drive for the leg.  It will be used 
+    //to calculate the actual target speed and time deltas, in combination with the 
+    //totalDistance value.
+    int driveDistance;
     //For the active race, this is the sum of the distance of completed legs.  For a leg,
-    //this is amount of the leg that has been completed.  Needed to calculate the whole
-    //race average speed.
+    //this will be 0.  Needed to calculate the whole race average speed.
     int distanceComplete;
+    //For the active race, this is the sum of the disance driven for completed legs based on the
+    //legs defined drive distance, not the actual distance driven.  For a leg, this will 0.
+    int driveDistanceComplete;
     //zero for a race leg.  For the active race, this is the sum of the times for all
     //completed legs.  Needed to calculate the whole race average speed.
     timeStamp_t timeComplete;
