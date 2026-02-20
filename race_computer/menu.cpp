@@ -51,9 +51,6 @@ menu::~menu() {
 }
 
 uint8_t menu::keypress(uint8_t key) {
-    Serial.printf("key=%d\n", key);
-    Serial.printf("activeEntry=%d\n", activeEntry);
-    Serial.printf("displayTop=%d\n", displayTop);
     switch (key) {
         case KEYPAD_KEY_START_STOP:
             return menuActionNone;
