@@ -17,7 +17,7 @@ stateMachine::stateMachine(void) {
 
 void stateMachine::run(void) {
   uint8_t keys=getKeyPress();
-
+  uint8_t menuAction;
   //Update the system based on changing state.  We do this first to ensure that we try and pass through
   //every state transition.  There are no state transitions allowed here.  This is actions on entrance to
   //a new state only.
@@ -306,44 +306,28 @@ void stateMachine::run(void) {
     case stateLoadRaceCheckPoint:
       break;            
     case stateMainMenu:
-      (*menuStack.back()).keypress(keys);
-      /*
-      if(keys & KEYPAD_KEY_ENTER) {
-        switch(menuItem) {
-          case 0:
-            if(race.activeRace!=NULL && status.flags.gpsReady) {
+      menuAction=(*menuStack.back()).keypress(keys);
+      switch(menuAction) {
+        case menuActionStart:
+          if(race.activeRace!=NULL && status.flags.gpsReady) {
               state=stateRaceStart;
-            }
-            break;
-          case 1:
-            if(!race.inProgress) {
-              state=stateSelectRace;
-            }
-            break;
-          case 2:
-            if(race.activeRace!=NULL && !race.inProgress) {
+          }
+          break;
+        case menuActionSelectRace:
+          if(!race.inProgress) {
+            state=stateSelectRace;
+          }
+          break;
+        case menuActionSelectLeg:
+          if(race.activeRace!=NULL && !race.inProgress) {
               state=stateSelectRaceLeg;
-            }
-            break;
-          case 3:
-            state=stateDispSelect;
-        }
+          }
+          break;
+        case menuActionConfigDisplay:
+          state=stateDispSelect;
+        default:
+          break;
       }
-      if(keys & KEYPAD_KEY_UP) {
-        if(menuItem==0) {
-          menuItem=3;
-        } else {
-          menuItem--;
-        }
-      }
-      if(keys & KEYPAD_KEY_DOWN) {
-        if(menuItem==3) {
-          menuItem=0;
-        } else {
-          menuItem++;
-        }
-      }
-      */
       break;
     case stateRaceStart:
       if(keys & KEYPAD_KEY_ESC) {
@@ -508,7 +492,7 @@ void stateMachine::run(void) {
   }
 
   //Handle the button lighting based on the current state of the system.
-  Serial.printf("keys:%d status:%d  lastStatus:%d\n", keys, status.value, lastStatus.value);
+  //Serial.printf("keys:%d status:%d  lastStatus:%d\n", keys, status.value, lastStatus.value);
 
   if(status.flags.delayedStart!=lastStatus.flags.delayedStart) {
     if(status.flags.delayedStart) {
