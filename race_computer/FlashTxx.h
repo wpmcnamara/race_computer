@@ -14,6 +14,11 @@
 #define _FLASHTXX_H_
 
 #include <stdint.h>     // uint32_t, etc.
+void displayUpdate(void);
+extern uint32_t firmwareSize;
+extern uint32_t firmwareProgress;
+extern uint8_t firmwareUpdateState;
+
 
 #if defined(__MKL26Z64__)
   #define FLASH_ID		"fw_teensyLC"		// target ID (in code)

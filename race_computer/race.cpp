@@ -382,6 +382,7 @@ void raceCheckPoint(void) {
     SD.remove("orc/race.dat");
   }
   if(race.inProgress!=true) {
+    Serial.println("no race in progress");
     doSPIUnlock();
     return;
   }

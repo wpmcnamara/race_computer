@@ -2,7 +2,8 @@
 #define __BSP__
 
 #include <wiring.h>
-#include <cstdint>
+//#include <cstdint>
+#include <stdint.h>
 
 //these are the pin asignements for the prototype PCB
 //pin assignments on the Teensy
@@ -31,6 +32,9 @@
 #define SDCARD_CS 1
 
 extern bool SPILock;
+extern "C" uint32_t firmwareSize;
+extern "C" uint32_t firmwareProgress;
+extern "C" uint8_t firmwareUpdateState;
 
 void bsp_setup(void);
 inline void doSPILock (void) {SPILock=true;}

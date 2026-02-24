@@ -30,6 +30,7 @@ struct orcTime {
 typedef struct orcTime orcTime_t;
 
 void timerSetup(void);
+void eventTimerStop(void);
 unsigned long getTick(void);
 int getCnt(void);
 double getTime(void);

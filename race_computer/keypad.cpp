@@ -30,6 +30,7 @@ bool startStopState=true;
 bool lastStartStopState=true;
 bool keysLocked=false;
 bool startStopStartsRace=false;
+uint32_t buttonColors[4]={0,0,0,0};
 std::list<uint8_t> keyPresses;
 //event_t breathEvent(startStopBreath, eventRepeat, false, false, 0, 1);
 event_t *breathEvent;
@@ -197,25 +198,33 @@ void readKeypad(void) {
     buttons = keypad.read();
     if(!keysLocked) {
       if (buttons & KEYPAD_KEY_ENTER) {
-        keypad.pixels.setPixelColor(0, 0xFFFFFF); 
+        keypad.pixels.setPixelColor(0, 0xFFFFFF);
+        buttonState|=KEYPAD_KEY_ENTER; 
       } else {
-        keypad.pixels.setPixelColor(0, 0);
+        keypad.pixels.setPixelColor(0, buttonColors[0]);
+        buttonState&=~KEYPAD_KEY_ENTER;
       }
       if (buttons & KEYPAD_KEY_DOWN) {
         keypad.pixels.setPixelColor(1, 0xFFFFFF); 
+        buttonState|=KEYPAD_KEY_DOWN; 
       } else {
-        keypad.pixels.setPixelColor(1, 0);
+        keypad.pixels.setPixelColor(1, buttonColors[1]);
+        buttonState&=~KEYPAD_KEY_DOWN;
       }
       if (buttons & KEYPAD_KEY_UP) {
-        keypad.pixels.setPixelColor(2, 0xFFFFFF); 
+        keypad.pixels.setPixelColor(2, 0xFFFFFF);
+        buttonState|=KEYPAD_KEY_UP; 
       } else {
-        keypad.pixels.setPixelColor(2, 0);
+        keypad.pixels.setPixelColor(2, buttonColors[2]);
+        buttonState&=~KEYPAD_KEY_UP;
       }
       if (buttons & KEYPAD_KEY_ESC) {
         keypad.pixels.setPixelColor(3, 0xFFFFFF); 
+        buttonState|=KEYPAD_KEY_ESC; 
       } else {
-        keypad.pixels.setPixelColor(3, 0);
-      }  
+        keypad.pixels.setPixelColor(3, buttonColors[3]);
+        buttonState&=~KEYPAD_KEY_ESC;
+      }
       keypad.pixels.show();
     } else {
       buttons=0;
@@ -267,11 +276,52 @@ uint8_t getKeyPress(void) {
 }
 
 void setAllButtonColor(uint32_t color) {
-  keypad.pixels.setPixelColor(0,color);
-  keypad.pixels.setPixelColor(1,color);
-  keypad.pixels.setPixelColor(2,color);
-  keypad.pixels.setPixelColor(3,color);
+  if(!(buttonState & KEYPAD_KEY_ENTER)) {
+    keypad.pixels.setPixelColor(0, color); 
+  }
+  if(!(buttonState & KEYPAD_KEY_DOWN)) {
+    keypad.pixels.setPixelColor(1, color); 
+  }
+  if(!(buttonState & KEYPAD_KEY_UP)) {
+    keypad.pixels.setPixelColor(2, color); 
+  }
+  if(!(buttonState & KEYPAD_KEY_ESC)) {
+    keypad.pixels.setPixelColor(3, color); 
+  }
   keypad.pixels.show();  
+  buttonColors[0]=color;
+  buttonColors[1]=color;
+  buttonColors[2]=color;
+  buttonColors[3]=color;
+
+}
+
+void setButtonColor(uint8_t button, uint32_t color) {
+  if (button & KEYPAD_KEY_ENTER) {
+    if(!(buttonState & KEYPAD_KEY_ENTER)) {
+      keypad.pixels.setPixelColor(0, color); 
+    }
+    buttonColors[0]=color;
+  }
+  if (button & KEYPAD_KEY_DOWN) {
+    if(!(buttonState & KEYPAD_KEY_DOWN)) {
+      keypad.pixels.setPixelColor(1, color); 
+    }
+    buttonColors[1]=color;
+  } 
+  if (button & KEYPAD_KEY_UP) {
+    if(!(buttonState & KEYPAD_KEY_UP)) {
+      keypad.pixels.setPixelColor(2, color);
+    }
+    buttonColors[2]=color; 
+  } 
+  if (button & KEYPAD_KEY_ESC) {
+    if(!(buttonState & KEYPAD_KEY_ESC)) {
+      keypad.pixels.setPixelColor(3, color); 
+    }
+    buttonColors[3]=color;
+  } 
+  keypad.pixels.show();
 }
 
 void startStopOn(uint32_t color) {

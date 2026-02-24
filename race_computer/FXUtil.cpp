@@ -2,6 +2,8 @@
 // FXUTIL.H -- FlasherX utility functions
 //******************************************************************************
 #include <Arduino.h>
+#include "bsp.h"
+#include "display.h"
 extern "C" {
   #include "FlashTxx.h"		// TLC/T3x/T4x/TMM flash primitives
 }
@@ -49,7 +51,8 @@ void update_firmware( Stream *in, Stream *out,
   };
 
   out->printf( "reading hex lines...\n" );
-
+  firmwareUpdateState=1;
+  displayUpdate();
   // read and process intel hex lines until EOF or error
   while (!hex.eof)  {
 
@@ -80,13 +83,18 @@ void update_firmware( Stream *in, Stream *out,
         int error = flash_write_block( addr, hex.data, hex.num );
         if (error) {
           out->printf( "abort - error %02X in flash_write_block()\n", error );
-	  return;
+	        return;
         }
       }
     }
     hex.lines++;
+    out->printf( "%d\n", hex.lines++);
+    firmwareProgress+=strnlen(line,sizeof(line));
+    if(hex.lines%100==0) {
+      displayUpdate(); 
+    }
   }
-    
+  displayUpdate(); 
   out->printf( "\nhex file: %1d lines %1lu bytes (%08lX - %08lX)\n",
 			hex.lines, hex.max-hex.min, hex.min, hex.max );
 
