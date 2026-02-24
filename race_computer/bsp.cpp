@@ -1,13 +1,18 @@
 #include "bsp.h"
 #include "storage.h"
 #include "gps.h"
+#include "display.h"
 #include "FXUtil.h"
+#include "keypad.h"
 extern "C" {
   #include "FlashTxx.h"         // TLC/T3x/T4x/TMM flash primitives
 }
 
 
 bool SPILock=false;
+uint32_t firmwareSize=0;
+uint32_t firmwareProgress=0;
+uint8_t firmwareUpdateState=0;
 
 void bsp_setup(void) {
 
@@ -50,10 +55,17 @@ bool checkForUpdate(void) {
 
 bool doFirmwareUpdate(void) {
   uint32_t buffer_addr, buffer_size;
-  Serial.print("Loading firmware file");
-  delete gpsUpdateEvent;
-  //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  Serial.println("Loading firmware file");
+  
+  //stop all async events.  This becomes the only thread of execution at this point.
+  eventTimerStop();
+  //turn of key interrupts.  Nothing should interfere with flash programming.
+  detachInterrupt(digitalPinToInterrupt(KEYPAD_START));
+  detachInterrupt(digitalPinToInterrupt(KEYPAD_INT)); 
+  //make sure the keypad LEDs are turned off.
+  setAllButtonColor(COLOR_BLACK);
+  startStopOff();
+
   File firmwareFile=SD.open("orc/firmware.hex");
   if(!firmwareFile) {
     Serial.println("  file open error");
@@ -71,6 +83,8 @@ bool doFirmwareUpdate(void) {
   Serial.printf( "created buffer = %1luK %s (%08lX - %08lX)\n",
 		buffer_size/1024, IN_FLASH(buffer_addr) ? "FLASH" : "RAM",
 		buffer_addr, buffer_addr + buffer_size );
+  firmwareSize=firmwareFile.size();
+  firmwareProgress=0;
   update_firmware( &firmwareFile, &Serial, buffer_addr, buffer_size );
   // return from update_firmware() means error or user abort, so clean up and
   // reboot to ensure that static vars get boot-up initialized before retry

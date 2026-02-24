@@ -1090,6 +1090,28 @@ void displayFirmwareConfirm(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPo
   display.drawStr(25,48,"exit or continue?");	
 }
 
+void displayFirmwareUpdate(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  const char *firmwareAction[5]={"",
+                            "Reading Firmware",
+                            "Writing Firmware",
+                            "Clean Up",
+                            "Reboot"};
+  int x;
+  int progress;
+  display.setFont(u8g2_font_spleen16x32_mf);
+  x=128-(display.getStrWidth(firmwareAction[firmwareUpdateState])/2);	
+  display.drawStr(x,20,firmwareAction[firmwareUpdateState]);	
+  if(firmwareProgress==0) {
+    progress=0;
+  } else if (firmwareProgress>firmwareSize) {
+    progress=100;
+  } else {
+    progress=(firmwareProgress*100)/firmwareSize;
+  }
+  display.drawFrame(27,32,200,16);
+  display.drawBox(27,32,(progress*2),16);
+
+}
 
 void displayUpdateFast(void) {
   if(SPILock) {

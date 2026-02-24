@@ -77,3 +77,4 @@ unsigned long getTick(void) { return timerTs.seconds; };
 timeStamp_t * getTimeStamp(void) { return &timerTs; };
 double getTime(void) { return ((double)timerTs.seconds+((double)timerTs.millis/1000.0));}
 int getCnt(void) { return timerTs.millis; };
+void eventTimerStop(void) {it1.end();};

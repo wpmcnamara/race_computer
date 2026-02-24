@@ -20,6 +20,7 @@
 #include <string.h>		// memset()
 #include "FlashTxx.h"		// FLASH_BASE_ADDRESS, FLASH_SECTOR_SIZE, etc.
 
+
 static int leave_interrupts_disabled = 0; 
 
 //******************************************************************************
@@ -248,7 +249,10 @@ RAMFUNC int flash_sector_not_erased( uint32_t address )
 RAMFUNC void flash_move( uint32_t dst, uint32_t src, uint32_t size )
 {
   uint32_t offset=0, error=0, addr;
-  
+  firmwareUpdateState=2;
+  firmwareProgress=0;
+  firmwareSize=size;
+  displayUpdate();
   // set global flag leave_interrupts_disabled = 1 to prevent the T3.x flash
   // write and erase functions from re-enabling interrupts when they complete 
   leave_interrupts_disabled = 1;
@@ -290,12 +294,19 @@ RAMFUNC void flash_move( uint32_t dst, uint32_t src, uint32_t size )
     #endif
 
     offset += FLASH_WRITE_SIZE;
+    firmwareProgress+=FLASH_WRITE_SIZE;
+    if(firmwareProgress%1024==0) {
+      displayUpdate();
+    }
   }
-  
   // move is complete. if the source buffer (src) is in FLASH, erase the buffer
   // by erasing all sectors from top of new program to bottom of FLASH_RESERVE,
   // which leaves FLASH in same state as if code was loaded using TeensyDuino.
   // For KINETIS, this erase cannot include FSEC, so erase uses aFSEC=0.
+  firmwareUpdateState=3;
+  firmwareProgress=0;
+  firmwareSize=(FLASH_SIZE - FLASH_RESERVE);
+  displayUpdate();
   if (IN_FLASH(src)) {
     while (offset < (FLASH_SIZE - FLASH_RESERVE) && error == 0) {
       addr = dst + offset;
@@ -306,12 +317,20 @@ RAMFUNC void flash_move( uint32_t dst, uint32_t src, uint32_t size )
           #else
             error |= flash_erase_sector( addr, 0 );
           #endif
-	}
+	      }
       }
       offset += FLASH_WRITE_SIZE;
+      firmwareProgress+=FLASH_WRITE_SIZE;
+      if(firmwareProgress%8192==0) {
+        displayUpdate();
+      }      
     }   
   }
-
+  firmwareProgress=firmwareSize;
+  displayUpdate();
+  firmwareUpdateState=4;
+  displayUpdate();
+  delay(2000);
   // for T3.x, at least, must REBOOT here (via macro) because original code has
   // been erased and overwritten, so return address is no longer valid
   REBOOT;

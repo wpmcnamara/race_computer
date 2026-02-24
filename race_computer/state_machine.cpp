@@ -95,6 +95,7 @@ void stateMachine::run(void) {
         menuItem=0;
         raceSelectHighlight=false;
         raceLegSelectHighlight=false;
+        setAllButtonColor(COLOR_BLACK);
         ledDispFunc=ledDispDashes;
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
@@ -136,9 +137,11 @@ void stateMachine::run(void) {
         displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayRaceSummary2));        
         break;
       case stateRaceComplete:
-        Serial.println("  to: stateRaceComplete");      
+        Serial.println("  to: stateRaceComplete");   
         race.inProgress=false;
-        race.activeRace->inProgress=false;
+        if(race.activeRace!=NULL ) {
+          race.activeRace->inProgress=false;
+        }
         race.activeLeg=NULL;
         race.activeRace=NULL;
         raceCheckPoint();
@@ -206,13 +209,18 @@ void stateMachine::run(void) {
         break;
       case stateConfirmFirmwareUpdate:
         Serial.println("  to: stateConfirmFirmwareUpdate");
-        keypad.pixels.setPixelColor(0, COLOR_GREEN);
-        keypad.pixels.setPixelColor(3, COLOR_RED);
-        keypad.pixels.show();
+        setButtonColor(KEYPAD_KEY_ENTER, COLOR_GREEN);
+        setButtonColor(KEYPAD_KEY_ESC, COLOR_RED);
         displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayFirmwareConfirm));
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayFirmwareConfirm));
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));
         break;
       case stateDoFirmwareUpdate:
+        setAllButtonColor(COLOR_BLACK);
+        displayList.erase(displayList.begin(), displayList.end());
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayFirmwareUpdate));        
         Serial.println("  to: stateDoFirmwareUpdate");
         doFirmwareUpdate();
         break;
@@ -228,7 +236,7 @@ void stateMachine::run(void) {
   //No actions or status updates allowed in this block.  State transitions only.
   switch(state) {
     case stateInit:
-      state=stateCheckFirmwareUpdate;
+      state=stateLoadRaceCheckPoint;
       break;
     case stateLoadRaceCheckPoint:
       state=stateMainMenu;  
@@ -278,7 +286,7 @@ void stateMachine::run(void) {
     case stateDispSelect:
       break;
     case stateCheckFirmwareUpdate:
-        state=stateLoadRaceCheckPoint;
+        state=stateMainMenu;
         if(checkForUpdate()) {
           state=stateConfirmFirmwareUpdate;
         }
@@ -286,7 +294,7 @@ void stateMachine::run(void) {
     case stateConfirmFirmwareUpdate:
         break;
     case stateDoFirmwareUpdate:
-        state=stateLoadRaceCheckPoint;
+        state=stateMainMenu;
         break;      
     case stateUnknown:
       break;
@@ -325,6 +333,13 @@ void stateMachine::run(void) {
           break;
         case menuActionConfigDisplay:
           state=stateDispSelect;
+          break;
+        case menuActionCancelRace:
+          state=stateRaceComplete;
+          break;
+        case menuActionFirmwareUpdate:
+          state=stateCheckFirmwareUpdate;
+          break;
         default:
           break;
       }
@@ -479,7 +494,7 @@ void stateMachine::run(void) {
       break;
     case stateConfirmFirmwareUpdate:
       if(keys & KEYPAD_KEY_ESC) {
-        state=stateLoadRaceCheckPoint;
+        state=stateMainMenu;
       }
       if(keys & KEYPAD_KEY_ENTER) {
         state=stateDoFirmwareUpdate;
@@ -584,7 +599,7 @@ void stateMachine::run(void) {
         break;
     }
   }
-
+/*
   if(status.flags.buttonColor != lastStatus.flags.buttonColor) {
     Serial.printf("set all buttons: %d\n",status.flags.buttonColor);
     switch(status.flags.buttonColor) {
@@ -601,5 +616,6 @@ void stateMachine::run(void) {
         setAllButtonColor(COLOR_GREEN);
     }
   }
+*/
   lastStatus.value=status.value;
 }

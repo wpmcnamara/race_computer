@@ -41,4 +41,5 @@ void startStopOn(uint32_t color);
 void startStopOff(void);
 uint8_t getKeyPress(void);
 void setAllButtonColor(uint32_t color);
+void setButtonColor(uint8_t button, uint32_t color);
 #endif
