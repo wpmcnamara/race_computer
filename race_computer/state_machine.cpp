@@ -95,6 +95,9 @@ void stateMachine::run(void) {
         menuItem=0;
         raceSelectHighlight=false;
         raceLegSelectHighlight=false;
+        //This is pop any dummy menus of the stack and return us the the active menu tree.
+        //If we weren't in a dummy menu, then this is a no op.
+        (*menuStack.back()).keypress(0);
         setAllButtonColor(COLOR_BLACK);
         ledDispFunc=ledDispDashes;
         displayList.erase(displayList.begin(), displayList.end());
@@ -156,7 +159,7 @@ void stateMachine::run(void) {
         dispRace=(*selectedRace);
         dispRaceLeg=(*selectedRaceLeg);
         displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayRaceSelectTitle));
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
         displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));
         displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));       
@@ -169,7 +172,7 @@ void stateMachine::run(void) {
         dispRace=(race.activeRace);
         dispRaceLeg=(*selectedRaceLeg);
         displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayRaceLegSelectTitle));
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
         displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));
         displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));               
@@ -199,7 +202,7 @@ void stateMachine::run(void) {
           OLEDDisplaySelect[idx]=OLEDDisplayActive[idx];
         }
         displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayDisplayConfigTitle));
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
         displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayDisplayConfig));
         displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo)); 

@@ -12,26 +12,39 @@ std::vector<menuEntry_t> mainMenuEntries={
 };
 
 std::vector<menuEntry_t> raceMenuEntries={
-    {"Select Race", menuActionSelectRace, NULL},
-    {"Select Leg", menuActionSelectLeg, NULL},
-    {"Adjust Leg", menuActionAdjustLeg, NULL},
-    {"Cancel Race", menuActionCancelRace, NULL}
+    {"Select Race", menuActionSelectRace, &selectRaceMenu},
+    {"Select Leg", menuActionSelectLeg, &selectLegMenu},
+    {"Adjust Leg", menuActionAdjustLeg, &adjustLegMenu},
+    {"Cancel Race", menuActionCancelRace, &cancelRaceMenu}
 };
 
 std::vector<menuEntry_t> configMenuEntries={
-    {"Configure Display", menuActionConfigDisplay, NULL},
-    {"LED Brightness", menuActionLEDBrightness, NULL},
-    {"OLED Brightness", menuActionOLEDBrightness, NULL}
+    {"Configure Display", menuActionConfigDisplay, &configDisplayMenu},
+    {"LED Brightness", menuActionLEDBrightness, &ledBrightMenu},
+    {"OLED Brightness", menuActionOLEDBrightness, &oledBrightMenu}
 };
 
 std::vector<menuEntry_t> systemMenuEntries={
-    {"Firmware Update", menuActionFirmwareUpdate, NULL}
+    {"Firmware Update", menuActionFirmwareUpdate, &firmwareUpdateMenu}
 };
+
+std::vector<menuEntry_t> dummyMenuEntries;
 
 menu_t mainMenu("Main Menu", mainMenuEntries, 4);
 menu_t raceMenu("Race Menu", raceMenuEntries, 4);
 menu_t configMenu("Configuration Menu", configMenuEntries, 4);
 menu_t systemMenu("System Menu", systemMenuEntries, 4);
+
+menu_t selectRaceMenu("Select Race", dummyMenuEntries, 0);
+menu_t selectLegMenu("Select Leg", dummyMenuEntries, 0);
+menu_t adjustLegMenu("Adjust Leg", dummyMenuEntries, 0);
+menu_t cancelRaceMenu("Adjust Leg", dummyMenuEntries, 0);
+
+menu_t configDisplayMenu("Config Display", dummyMenuEntries, 0);
+menu_t ledBrightMenu("LED Brightness", dummyMenuEntries, 0);
+menu_t oledBrightMenu("OLED Brightness", dummyMenuEntries, 0);
+
+menu_t firmwareUpdateMenu("Firmware Update", dummyMenuEntries, 0);
 
 //Main menu is always on the stack.  It's our starting point.
 std::vector<menu_t*> menuStack = { &mainMenu };
@@ -42,7 +55,11 @@ menu::menu(std::string menuTitle, std::vector<menuEntry_t> menuEntries, uint8_t 
     entryCount=std::size(menuEntries);
     lines=displayLines;
     displayTop=0;
-    activeEntry=0;
+    if(entryCount) {
+        activeEntry=0;
+    } else {
+        activeEntry=-1;
+    }
 };
 
 
@@ -51,6 +68,18 @@ menu::~menu() {
 }
 
 uint8_t menu::keypress(uint8_t key) {
+    //If we currently point at a dummy menu entry when called, we need to pop up the stack one level
+    //to get back to an active menu.  This case happens when the user hits enter on a menu that leads
+    //to an action outside navigating the menu.  
+    if(lines==0) {
+        if(menuStack.size()>1) {
+            menuStack.pop_back();
+            return (*menuStack.back()).keypress(key);
+        }        
+        //This case shouldn't happen, but it it does, we reload the main menu and go there.
+        menuStack.push_back(&mainMenu);
+        return (*menuStack.back()).keypress(key);
+    }
     switch (key) {
         case KEYPAD_KEY_START_STOP:
             return menuActionNone;
