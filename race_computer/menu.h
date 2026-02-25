@@ -53,11 +53,23 @@ extern std::vector<menuEntry_t> mainMenuEntries;
 extern std::vector<menuEntry_t> raceMenuEntries;
 extern std::vector<menuEntry_t> configMenuEntries;
 extern std::vector<menuEntry_t> systemMenuEntries;
+extern std::vector<menuEntry_t> dummyMenuEntries;
 
 extern menu_t mainMenu;
 extern menu_t raceMenu;
 extern menu_t configMenu;
 extern menu_t systemMenu;
+
+extern menu_t selectRaceMenu;
+extern menu_t selectLegMenu;
+extern menu_t adjustLegMenu;
+extern menu_t cancelRaceMenu;
+
+extern menu_t configDisplayMenu;
+extern menu_t ledBrightMenu;
+extern menu_t oledBrightMenu;
+
+extern menu_t firmwareUpdateMenu;
 
 extern std::vector<menu_t*> menuStack;
 

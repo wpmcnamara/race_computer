@@ -661,35 +661,13 @@ void displayRaceInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t pos
 
 }
 
-/*
 void displayMenu(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  display.setFont(u8g2_font_spleen6x12_mf);
-  if(menuItem==0) {
-  display.drawButtonUTF8(1, 13, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, "Start Leg" );
-  } else {
-  display.drawButtonUTF8(1, 13, U8G2_BTN_BW0, 255,  0,  0, "Start Leg" );
-  }
-  if(menuItem==1) {
-  display.drawButtonUTF8(1, 26, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, "Select Race" );
-  } else {
-  display.drawButtonUTF8(1, 26, U8G2_BTN_BW0, 255,  0,  0, "Select Race" );
-  }
-  if(menuItem==2) {
-  display.drawButtonUTF8(1, 39, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, "Select Leg" );
-  } else {
-  display.drawButtonUTF8(1, 39, U8G2_BTN_BW0, 255,  0,  0, "Select Leg" );
-  }
-  if(menuItem==3) {
-    display.drawButtonUTF8(1, 52, U8G2_BTN_INV|U8G2_BTN_BW1, 255,  0,  0, "Configure Display" );
-  } else {
-    display.drawButtonUTF8(1, 52, U8G2_BTN_BW0, 255,  0,  0, "Configure Display" );
-  }
-}
-*/
-void displayMenu(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  uint8_t activeLine=(*menuStack.back()).getActiveLine();
+  int8_t activeLine=(*menuStack.back()).getActiveLine();
   uint8_t i;
   uint8_t y=13;
+  if(activeLine==-1) {
+    return;
+  }
   display.setFont(u8g2_font_spleen6x12_mf);
   for(i=0; i<4; i++) {
     if(i==activeLine) {
@@ -707,23 +685,25 @@ void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t po
   const char *title=(*menuStack.back()).getMenuTitle();
   display.setFont(u8g2_font_spleen12x24_mf);	
   x=128-(display.getStrWidth(title)/2);
-  //display.drawStr(74,20,"Main Menu");
-  display.drawStr(x,20,title);
+  display.drawStr(x,60,title);
   if(race.inProgress) {
     display.setFont(u8g2_font_spleen6x12_mf);
     display.drawStr(80,36,"Race In Progress"); 
   }
+  display.setFont(u8g2_font_open_iconic_www_2x_t);
+  display.drawStr(0,17,"\x51");
+  display.setFont(u8g2_font_open_iconic_thing_2x_t);
+  if(gpsDataPtr->fix==2 || gpsDataPtr->fix==3 || gpsDataPtr->fix==4) {
+    display.drawStr(17,17,"\x4f");
+  } else {
+    display.drawStr(17,17,"\x44");
+  }
+  display.setFont(u8g2_font_spleen5x8_mf);
+  sprintf(buffer, "%2d", gpsDataPtr->siv);
+  display.drawStr(33,17,buffer);
+  
 }
 
-void displayRaceSelectTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  display.setFont(u8g2_font_spleen12x24_mf);	
-  display.drawStr(62,20,"Race Select");
-}
-
-void displayRaceLegSelectTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
- display.setFont(u8g2_font_spleen12x24_mf);	
- display.drawStr(38,20,"Race Leg Select");
-}
 
 void displayLegSummaryActual(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   int y;
@@ -1206,12 +1186,6 @@ void displayError(const char *err) {
   oledDisp4.setFont(u8g2_font_spleen12x24_mf);
   oledDisp4.drawStr(0,24,err);	
   oledDisp4.sendBuffer();
-}
-
-void displayDisplayConfigTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  display.setFont(u8g2_font_spleen12x24_mf);	
-  display.drawStr(86,20,"Display");
-  display.drawStr(50,40,"Configuration");
 }
 
 void displayDisplayConfig(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
