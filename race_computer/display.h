@@ -81,7 +81,10 @@ extern int LEDDisplayActive;
 extern int LEDDisplaySelect;
 extern const char *OLEDDisplayDescr[OLEDDispFuncMaxValue];
 extern const char *LEDDisplayDescr[5];
-
+extern uint8_t ledBrightness;
+extern uint8_t oledBrightness;
+extern uint8_t ledBrightnessTmp;
+extern uint8_t oledBrightnessTmp;
 extern event_t *displayUpdateEvent;
 extern event_t *displayUpdateFastEvent;
 
@@ -141,12 +144,15 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
 
 void displayFirmwareConfirm(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayFirmwareUpdate(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displaySetLedBrightness(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displaySetOledBrightness(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 
 void ledDispLegTime(void);
 void ledDispRaceTime(void);
 void ledDispLegDeltaSpeed(void);
 void ledDispRaceDeltaSpeed(void);
 void ledDispDashes(void);
+void ledDispEights(void);
 void ledDispStartCountdown(void);
 
 void displayError(const char *err);

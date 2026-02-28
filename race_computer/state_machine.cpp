@@ -74,6 +74,27 @@ void stateMachine::run(void) {
       case stateDoFirmwareUpdate:
         Serial.print("from: stateDoFirmwareUpdate");
         break; 
+      case stateSetLedBrightness:
+        Serial.print("from: stateSetLedBrightness");
+        break; 
+      case stateSetOledBrightness:
+        Serial.print("from: stateDoFirmwareUpdate");
+        break; 
+      case stateSetScreenBlankTime:
+        Serial.print("from: stateSetOledBrightness");
+        break; 
+      case stateScreenBlank:
+        Serial.print("from: stateScreenBlank");
+        break; 
+      case stateSaveSettings:
+        Serial.print("from: stateSaveSettings");
+        break; 
+      case stateLoadSettings:
+        Serial.print("from: stateLoadSettings");
+        break; 
+      case stateEditRaceLeg:
+        Serial.print("from: stateEditRaceLeg");
+        break; 
       case stateUnknown:
         Serial.print("from: stateUnknown");
         break; 
@@ -104,7 +125,7 @@ void stateMachine::run(void) {
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
         displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));        
+      
         break;
       case stateRaceStart:
         Serial.println("  to: stateRaceStart");
@@ -161,8 +182,7 @@ void stateMachine::run(void) {
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));       
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));    
         break;
       case stateSelectRaceLeg:
         Serial.println("  to: stateSelectRaceLeg");
@@ -174,8 +194,7 @@ void stateMachine::run(void) {
         displayList.erase(displayList.begin(), displayList.end());
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));               
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));              
         break;
       case stateSaveSelection:
         Serial.println("  to: stateSaveSelection");
@@ -205,7 +224,6 @@ void stateMachine::run(void) {
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
         displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayDisplayConfig));
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo)); 
         break;
       case stateCheckFirmwareUpdate:
         Serial.println("  to: stateCheckFirmwareUpdate");
@@ -218,7 +236,6 @@ void stateMachine::run(void) {
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
         displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayFirmwareConfirm));
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayGPSInfo));
         break;
       case stateDoFirmwareUpdate:
         setAllButtonColor(COLOR_BLACK);
@@ -227,6 +244,39 @@ void stateMachine::run(void) {
         Serial.println("  to: stateDoFirmwareUpdate");
         doFirmwareUpdate();
         break;
+      case stateSetLedBrightness:
+        Serial.println("  to: stateSetLedBrightness");
+        displayList.erase(displayList.begin(), displayList.end());
+        ledBrightnessTmp=ledBrightness;
+        ledDispFunc=ledDispEights;
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetLedBrightness));       
+        break; 
+      case stateSetOledBrightness:
+        Serial.println("  to: stateSetOledBrightness");
+        displayList.erase(displayList.begin(), displayList.end());
+        oledBrightnessTmp=oledBrightness;
+        ledDispFunc=ledDispDashes;
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetOledBrightness));               
+        break; 
+      case stateSetScreenBlankTime:
+        Serial.println("  to: stateSetScreenBlankTime");
+        break; 
+      case stateScreenBlank:
+        Serial.println("  to: stateScreenBlank");
+        break; 
+      case stateSaveSettings:
+        Serial.println("  to: stateSaveSettings");
+        break; 
+      case stateLoadSettings:
+        Serial.println("  to: stateLoadSettings");
+        break; 
+      case stateEditRaceLeg:
+        Serial.println("  to: stateEditRaceLeg");
+        break; 
       case stateUnknown:
         Serial.println("  to: stateUnknown");
         break;
@@ -295,10 +345,29 @@ void stateMachine::run(void) {
         }
         break;
     case stateConfirmFirmwareUpdate:
-        break;
+      break;
     case stateDoFirmwareUpdate:
-        state=stateMainMenu;
-        break;      
+      state=stateMainMenu;
+      break;      
+    case stateSetLedBrightness:
+      break; 
+    case stateSetOledBrightness:
+      break; 
+    case stateSetScreenBlankTime:
+      state=stateMainMenu;  
+      break; 
+    case stateScreenBlank:
+      state=stateMainMenu;  
+      break; 
+    case stateSaveSettings:
+      state=stateMainMenu;  
+      break; 
+    case stateLoadSettings:
+      state=stateMainMenu;  
+      break; 
+    case stateEditRaceLeg:
+      state=stateMainMenu;  
+      break; 
     case stateUnknown:
       break;
   }
@@ -342,6 +411,18 @@ void stateMachine::run(void) {
           break;
         case menuActionFirmwareUpdate:
           state=stateCheckFirmwareUpdate;
+          break;
+        case menuActionLEDBrightness:
+          state=stateSetLedBrightness;
+          break;
+        case menuActionOLEDBrightness:
+          state=stateSetOledBrightness;
+          break;
+        case menuActionScreenBlank:
+          state=stateSetScreenBlankTime;
+          break;
+        case menuActionEditRaceLeg:
+          state=stateEditRaceLeg;
           break;
         default:
           break;
@@ -504,7 +585,52 @@ void stateMachine::run(void) {
       }      
       break;
     case stateDoFirmwareUpdate:
-        break;            
+      break;    
+    case stateSetLedBrightness:
+      menuAction=menuSetLedBrightness(keys);
+      switch(menuAction) {
+        case 0:
+          break;
+        case 1:
+          state=stateSaveSettings;
+          break;
+        case 2:
+          state=stateMainMenu;
+          break;
+        default:
+          break;
+      }
+      break; 
+    case stateSetOledBrightness:
+      menuAction=menuSetOledBrightness(keys);
+      switch(menuAction) {
+        case 0:
+          break;
+        case 1:
+          state=stateSaveSettings;
+          break;
+        case 2:
+          state=stateMainMenu;
+          break;
+        default:
+          break;
+      }
+      break; 
+    case stateSetScreenBlankTime:
+
+      break; 
+    case stateScreenBlank:
+
+      break; 
+    case stateSaveSettings:
+
+      break; 
+    case stateLoadSettings:
+
+      break; 
+    case stateEditRaceLeg:
+    
+      break;
     case stateUnknown:
       break;
   }
