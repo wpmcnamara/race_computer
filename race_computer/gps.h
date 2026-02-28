@@ -20,6 +20,8 @@ struct gpsDataStruct {
   double lon;
   int siv;
   uint8_t fix;
+  bool timeValid;
+  bool fixValid;
   orcTime_t gpsTime;
   double speed;
   unsigned long distance;

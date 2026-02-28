@@ -16,7 +16,9 @@ enum menuAction {
   menuActionConfigDisplay,
   menuActionLEDBrightness,
   menuActionOLEDBrightness,
-  menuActionFirmwareUpdate
+  menuActionFirmwareUpdate,
+  menuActionScreenBlank,
+  menuActionEditRaceLeg
 };
 
 typedef enum menuAction menuAction_t;
@@ -35,7 +37,7 @@ class menu {
     ~menu();
     uint8_t keypress(uint8_t key);
     const char *getLine(uint8_t line);
-    uint8_t getActiveLine(void);
+    int8_t getActiveLine(void);
     const char * operator[](uint8_t i);
     const char * getMenuTitle(void);
   private:
@@ -43,7 +45,7 @@ class menu {
     std::string title;
     uint8_t displayTop;
     uint8_t entryCount;
-    uint8_t activeEntry;
+    int8_t activeEntry;
     uint8_t lines;
 };
 
@@ -72,5 +74,8 @@ extern menu_t oledBrightMenu;
 extern menu_t firmwareUpdateMenu;
 
 extern std::vector<menu_t*> menuStack;
+
+uint8_t menuSetLedBrightness(uint8_t key);
+uint8_t menuSetOledBrightness(uint8_t key);
 
 #endif

@@ -38,6 +38,10 @@ bool raceLegSelectHighlight=false;
 event_t *displayUpdateEvent;
 event_t *displayUpdateFastEvent;
 void (*ledDispFunc)(void)=NULL;
+uint8_t ledBrightness;
+uint8_t oledBrightness;
+uint8_t ledBrightnessTmp;
+uint8_t oledBrightnessTmp;
 
 int OLEDDisplayActive[4]={GPSSpeedLarge,
                                 LegDeltaTimeLarge,
@@ -130,30 +134,32 @@ void displaySetup(void) {
   oledDisp4.initDisplay();
   oledDisp4.clearDisplay();
   oledDisp4.setPowerSave(0);  
+  oledBrightness=125;
+  oledDisp1.setContrast(oledBrightness);
+  oledDisp2.setContrast(oledBrightness);
+  oledDisp3.setContrast(oledBrightness);
+  oledDisp4.setContrast(oledBrightness);
   
   ledDisp.begin();
   ledDisp.Set_Brightness(3);
+  ledBrightness=3;
   // Turn Off the Auto Refresh
   ledDisp.AutoRefresh(false);
   ledDisp.RefreshMe();
   ledDisp.Set_Position(0);
-  ledDisp.ShowMe("01234567");
+  ledDisp.ShowMe("88888888");
 
   oledDisp1.clearBuffer();
-  oledDisp1.setFont(u8g2_font_spleen32x64_mf);	
-  oledDisp1.drawStr(0,53,"Disp 1");	 
+  oledDisp1.drawBox(0,0,256,64);
   oledDisp1.sendBuffer();
   oledDisp2.clearBuffer();
-  oledDisp2.setFont(u8g2_font_spleen32x64_mf);	
-  oledDisp2.drawStr(0,53,"Disp 2");	  
+  oledDisp2.drawBox(0,0,256,64);
   oledDisp2.sendBuffer();
   oledDisp3.clearBuffer();
-  oledDisp3.setFont(u8g2_font_spleen32x64_mf);	
-  oledDisp3.drawStr(0,53,"Disp 3");	 
+  oledDisp3.drawBox(0,0,256,64);
   oledDisp3.sendBuffer();
   oledDisp4.clearBuffer();
-  oledDisp4.setFont(u8g2_font_spleen32x64_mf);	
-  oledDisp4.drawStr(0,53,"Disp 4");	 
+  oledDisp4.drawBox(0,0,256,64);
   oledDisp4.sendBuffer();
 
   delay(1000);
@@ -167,7 +173,7 @@ void displaySetup(void) {
   oledDisp2.sendBuffer();
   oledDisp3.clearBuffer();
   oledDisp3.setFont(u8g2_font_spleen16x32_mf);	
-  oledDisp3.drawStr(55,20,"Open Race");	
+  oledDisp3.drawStr(16,20,"Open Road Race");	
   oledDisp3.drawStr(63,52,"Computer");	
   oledDisp3.sendBuffer();
   oledDisp4.clearBuffer();
@@ -209,9 +215,9 @@ void displayUpdate() {
 }
 
 void displayGPSInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  display.setFont(u8g2_font_spleen16x32_mf);	
+  display.setFont(u8g2_font_spleen16x32_mf);   
   sprintf(buffer, "%02d:%02d:%02d", gpsTimePtr->hour, gpsTimePtr->minute, gpsTimePtr->second);
-  display.drawStr(64,20,buffer);	
+  display.drawStr(64,20,buffer);    
   display.setFont(u8g2_font_spleen6x12_mf);
   display.drawStr(194,20,"GMT");
   sprintf(buffer, "lattitude: %f\xB0", gpsDataPtr->lat);
@@ -682,7 +688,14 @@ void displayMenu(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, d
 
 void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   int x;
+  static unsigned long ts_last=0;
+  unsigned long ts=millis();
+  static bool signalVisible=false;
   const char *title=(*menuStack.back()).getMenuTitle();
+  if(ts-ts_last > 500) {
+    signalVisible=!signalVisible;
+    ts_last=ts;
+  }
   display.setFont(u8g2_font_spleen12x24_mf);	
   x=128-(display.getStrWidth(title)/2);
   display.drawStr(x,60,title);
@@ -690,17 +703,36 @@ void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t po
     display.setFont(u8g2_font_spleen6x12_mf);
     display.drawStr(80,36,"Race In Progress"); 
   }
-  display.setFont(u8g2_font_open_iconic_www_2x_t);
-  display.drawStr(0,17,"\x51");
-  display.setFont(u8g2_font_open_iconic_thing_2x_t);
-  if(gpsDataPtr->fix==2 || gpsDataPtr->fix==3 || gpsDataPtr->fix==4) {
-    display.drawStr(17,17,"\x4f");
-  } else {
-    display.drawStr(17,17,"\x44");
+
+  if(gpsDataPtr->fixValid || signalVisible) {
+    display.setFont(u8g2_font_open_iconic_www_1x_t);
+    display.drawStr(0,8,"\x51");
   }
+  if(gpsDataPtr->fix!=0) {
+    display.setFont(u8g2_font_open_iconic_thing_1x_t);
+    if(gpsDataPtr->fix==2 || gpsDataPtr->fix==3 || gpsDataPtr->fix==4) {
+      display.drawStr(0,17,"\x4f");
+    } else {
+      display.drawStr(0,17,"\x44");
+    }
+    display.setFont(u8g2_font_spleen5x8_mf);
+    sprintf(buffer, "%dD", gpsDataPtr->fix);
+    display.drawStr(9,9,buffer);
+    sprintf(buffer, "%2d", gpsDataPtr->siv);
+    display.drawStr(9,17,buffer);
+    sprintf(buffer, "lat: %f\xB0", gpsDataPtr->lat);
+    x=128-(display.getStrWidth(buffer)/2);
+    display.drawStr(x,7,buffer);	
+    sprintf(buffer, "lon: %f\xB0", gpsDataPtr->lon);
+    x=128-(display.getStrWidth(buffer)/2);
+    display.drawStr(x,15,buffer);	
+  }
+  display.setFont(u8g2_font_spleen6x12_mf);	
+  sprintf(buffer, "%02d:%02d:%02d", gpsTimePtr->hour, gpsTimePtr->minute, gpsTimePtr->second);
+  display.drawStr(207,9,buffer);	
   display.setFont(u8g2_font_spleen5x8_mf);
-  sprintf(buffer, "%2d", gpsDataPtr->siv);
-  display.drawStr(33,17,buffer);
+  sprintf(buffer, "GMT");
+  display.drawStr(240,16,buffer);
   
 }
 
@@ -1093,6 +1125,28 @@ void displayFirmwareUpdate(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos
 
 }
 
+void displaySetLedBrightness(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  int x;
+  display.setFont(u8g2_font_spleen8x16_mf);
+  sprintf(buffer, "Brightness: %d", ledBrightnessTmp);
+  x=128-(display.getStrWidth(buffer)/2);
+  display.drawStr(x,20,buffer);
+  display.drawFrame(27,32,200,16);
+  display.drawBox(27,32,(200.0/14.0)*(float)ledBrightnessTmp,16);
+  return;
+}
+
+void displaySetOledBrightness(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  int x;
+  display.setFont(u8g2_font_spleen8x16_mf);
+  sprintf(buffer, "Brightness: %d", oledBrightnessTmp);
+  x=128-(display.getStrWidth(buffer)/2);
+  display.drawStr(x,20,buffer);
+  display.drawFrame(27,32,200,16);
+  display.drawBox(27,32,(200.0/250.0)*(float)oledBrightnessTmp,16);
+  return;
+}
+
 void displayUpdateFast(void) {
   if(SPILock) {
     //Serial.println("displayUpdateFast: SPI Collision");
@@ -1167,6 +1221,13 @@ void ledDispDashes(void) {
   ledDisp.Set_Position(0);
   ledDisp.ShowMe("--------");
 }
+
+void ledDispEights(void) {
+  ledDisp.RefreshMe();
+  ledDisp.Set_Position(0);
+  ledDisp.ShowMe("88888888");
+}
+
 
 void ledDispStartCountdown(void) {
   timeStamp_t *ts=getTimeStamp();

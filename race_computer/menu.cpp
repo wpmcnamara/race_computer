@@ -1,5 +1,6 @@
 #include "menu.h"
 #include "keypad.h"
+#include "display.h"
 #include <vector>
 #include <iterator>
 #include <span>
@@ -130,7 +131,7 @@ const char * menu::getLine(uint8_t line) {
     return entries[displayTop+line].text.c_str();
 }
 
-uint8_t menu::getActiveLine(void) {
+int8_t menu::getActiveLine(void) {
     return activeEntry-displayTop;
 }
 
@@ -143,4 +144,91 @@ const char * menu::operator[](uint8_t i) {
 
 const char * menu::getMenuTitle(void) {
     return title.c_str();
+}
+
+uint8_t menuSetLedBrightness(uint8_t key) {
+    switch (key) {
+        case KEYPAD_KEY_START_STOP:
+            return 0;
+            break;
+        case KEYPAD_KEY_ENTER:
+            ledBrightness=ledBrightnessTmp;
+            return 1;
+            break;
+        case KEYPAD_KEY_DOWN:
+            if(ledBrightnessTmp>0) {
+                ledBrightnessTmp--;
+                while(SPILock);
+                doSPILock();
+                ledDisp.Set_Brightness(ledBrightnessTmp);
+                doSPIUnlock();
+            }
+            break;
+        case KEYPAD_KEY_UP:
+            if(ledBrightnessTmp<14) {
+                ledBrightnessTmp++;
+                while(SPILock);
+                doSPILock();
+                ledDisp.Set_Brightness(ledBrightnessTmp);
+                doSPIUnlock();
+            }
+            break;
+        case KEYPAD_KEY_ESC:
+            while(SPILock);
+            doSPILock();
+            ledDisp.Set_Brightness(ledBrightness);      
+            doSPIUnlock();      
+            return 2;
+        default:
+            break;
+    }
+    return 0;
+}
+
+uint8_t menuSetOledBrightness(uint8_t key) {
+    switch (key) {
+        case KEYPAD_KEY_START_STOP:
+            return 0;
+            break;
+        case KEYPAD_KEY_ENTER:
+            oledBrightness=oledBrightnessTmp;
+            return 1;
+            break;
+        case KEYPAD_KEY_DOWN:
+            if(oledBrightnessTmp>0) {
+                oledBrightnessTmp-=25;
+                while(SPILock);
+                doSPILock();
+                oledDisp1.setContrast(oledBrightnessTmp);
+                oledDisp2.setContrast(oledBrightnessTmp);
+                oledDisp3.setContrast(oledBrightnessTmp);
+                oledDisp4.setContrast(oledBrightnessTmp);
+                doSPIUnlock();
+            }
+            break;
+        case KEYPAD_KEY_UP:
+            if(oledBrightnessTmp<250) {
+                oledBrightnessTmp+=25;
+                while(SPILock);
+                doSPILock();
+                oledDisp1.setContrast(oledBrightnessTmp);
+                oledDisp2.setContrast(oledBrightnessTmp);
+                oledDisp3.setContrast(oledBrightnessTmp);
+                oledDisp4.setContrast(oledBrightnessTmp);
+                doSPIUnlock();
+            }
+            break;
+        case KEYPAD_KEY_ESC:
+            while(SPILock);
+            doSPILock();
+            oledDisp1.setContrast(oledBrightness);
+            oledDisp2.setContrast(oledBrightness);
+            oledDisp3.setContrast(oledBrightness);
+            oledDisp4.setContrast(oledBrightness);     
+            doSPIUnlock();      
+            return 2;
+        default:
+            break;
+    }
+    return 0;
 }

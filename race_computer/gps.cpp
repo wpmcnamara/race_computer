@@ -307,10 +307,12 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
   gpsData.siv = ubxDataStruct->numSV;
   gpsData.lat = ubxDataStruct->lat / 10000000.0;
   gpsData.lon = ubxDataStruct->lon / 10000000.0;
+  gpsData.fixValid=ubxDataStruct->flags.bits.gnssFixOK;
   gpsData.gpsTime.hour = ubxDataStruct->hour;
   gpsData.gpsTime.minute = ubxDataStruct->min;
   gpsData.gpsTime.second = ubxDataStruct->sec;
   gpsData.gpsTime.millis = ubxDataStruct->nano / 1000000;
+  gpsData.timeValid=ubxDataStruct->valid.bits.validTime;
   //speed is reported in mm/s.  We are going to store in m/s to make things a bit more logical
   //elsewhere.  If we aren't actively tracking a leg, then force the speed to zero.  This keeps
   //the speed display from bouncing around at small values due to GPS wander.

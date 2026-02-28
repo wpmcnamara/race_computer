@@ -23,6 +23,13 @@ enum stateMachineStatesEnum {
   stateCheckFirmwareUpdate,
   stateConfirmFirmwareUpdate,
   stateDoFirmwareUpdate,
+  stateSetLedBrightness,
+  stateSetOledBrightness,
+  stateSetScreenBlankTime,
+  stateScreenBlank,
+  stateSaveSettings,
+  stateLoadSettings,
+  stateEditRaceLeg,
   stateUnknown
 };
 
