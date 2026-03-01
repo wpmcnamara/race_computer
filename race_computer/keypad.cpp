@@ -22,6 +22,10 @@ int startStopBreathColor=0;
 int startStopBreathCount=0;
 int startStopBreathDir=1;
 bool startStopBreathActive=false;
+bool keypadBreathActive=false;
+int keypadBreathColor=0;
+int keypadBreathCount=0;
+int keypadBreathDir=1;
 int startStopBlinkColor=0x00FF00;
 bool startStopBlinkState=false;
 bool startStopBlinkActive=false;
@@ -34,6 +38,7 @@ uint32_t buttonColors[4]={0,0,0,0};
 std::list<uint8_t> keyPresses;
 //event_t breathEvent(startStopBreath, eventRepeat, false, false, 0, 1);
 event_t *breathEvent;
+event_t *keypadBreathEvent;
 event_t *blinkEvent;
 event_t *startStopOffEvent;
 event_t *keyDebounceEvent;
@@ -72,6 +77,33 @@ void startStopBreath(void) {
       }      
     }
   }
+}
+
+void keypadBreath(void) {
+  if(keypadBreathDir==1) {
+    if(keypadBreathColor<255) {
+      keypadBreathColor++;
+      setAllButtonColor(((keypadBreathColor<<16)+(keypadBreathColor<<8)+keypadBreathColor)&COLOR_YELLOW);
+    } else {
+        keypadBreathDir=0;
+    }
+  } else {
+    if(keypadBreathColor>0) {
+      keypadBreathColor--;
+      setAllButtonColor(((keypadBreathColor<<16)+(keypadBreathColor<<8)+keypadBreathColor)&COLOR_YELLOW);
+    } else {
+        keypadBreathDir=1;      
+    }
+  }
+}
+
+void keypadStartBreath(void) {
+  keypadBreathEvent->active=true;
+}
+
+void keypadStopBreath(void) {
+  keypadBreathEvent->active=false;
+  setAllButtonColor(COLOR_BLACK);
 }
 
 void startStopFastBlink(void) {
@@ -157,6 +189,7 @@ void keypadSetup(void) {
   attachInterrupt(digitalPinToInterrupt(KEYPAD_INT),keyPressInt, FALLING); 
   new event_t(readKeypad, eventRepeat, true, false, 0, 2, &Serial, "readKeypad");
   breathEvent=new event_t(startStopBreath, eventRepeat, false, false, 0, 1, &Serial, "breathEvent");
+  keypadBreathEvent=new event_t(keypadBreath, eventRepeat, false, false, 0, 1, &Serial, "keypadBreathEvent");
   blinkEvent=new event_t(startStopFastBlink, eventRepeat, false, false, 0, 20, &Serial, "blinkEvent");
   startStopOffEvent=new event_t(startStopOff , eventSingle, false, false, 0, 10, &Serial, "startStopOffEvent");
   keyDebounceEvent=new event_t(keyDebounce, eventSingle, false, false, 0, 15, &Serial, "keyDebounceEvent");

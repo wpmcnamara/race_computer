@@ -1228,6 +1228,12 @@ void ledDispEights(void) {
   ledDisp.ShowMe("88888888");
 }
 
+void ledDispBlank(void) {
+  ledDisp.RefreshMe();
+  ledDisp.Set_Position(0);
+  ledDisp.ShowMe("        ");
+}
+
 
 void ledDispStartCountdown(void) {
   timeStamp_t *ts=getTimeStamp();

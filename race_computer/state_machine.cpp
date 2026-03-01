@@ -7,6 +7,7 @@
 
 
 class stateMachine stateMachine;
+unsigned long lastKeyPress;
 
 stateMachine::stateMachine(void) {
   state=stateInit;
@@ -86,6 +87,9 @@ void stateMachine::run(void) {
       case stateScreenBlank:
         Serial.print("from: stateScreenBlank");
         break; 
+      case stateScreenWake:
+        Serial.print("from: stateScreenWake");
+        break;         
       case stateSaveSettings:
         Serial.print("from: stateSaveSettings");
         break; 
@@ -102,6 +106,7 @@ void stateMachine::run(void) {
     switch(state) {
       case stateInit:
         Serial.println("  to: stateInit");
+        lastKeyPress=millis()/1000;
         break;
       case stateLoadRaceCheckPoint:
         Serial.println("  to: stateLoadRaceCheckPoint");
@@ -267,7 +272,14 @@ void stateMachine::run(void) {
         break; 
       case stateScreenBlank:
         Serial.println("  to: stateScreenBlank");
+        displayList.erase(displayList.begin(), displayList.end());
+        ledDispFunc=ledDispBlank;    
+        keypadStartBreath();    
         break; 
+      case stateScreenWake:
+        Serial.println("  to: stateScreenWake");
+        keypadStopBreath();
+        break;
       case stateSaveSettings:
         Serial.println("  to: stateSaveSettings");
         break; 
@@ -295,6 +307,9 @@ void stateMachine::run(void) {
       state=stateMainMenu;  
       break;      
     case stateMainMenu:
+      if((millis()/1000)-lastKeyPress>30) {
+        state=stateScreenBlank;
+      }
       break;
     case stateRaceStart:
       if(status.flags.delayedStart==true) {
@@ -356,9 +371,11 @@ void stateMachine::run(void) {
     case stateSetScreenBlankTime:
       state=stateMainMenu;  
       break; 
-    case stateScreenBlank:
-      state=stateMainMenu;  
+    case stateScreenBlank:  
       break; 
+    case stateScreenWake:
+      state=stateMainMenu;
+      break;
     case stateSaveSettings:
       state=stateMainMenu;  
       break; 
@@ -377,9 +394,15 @@ void stateMachine::run(void) {
   if(keys==0 && (status.value==lastStatus.value)) {
     return;
   }
-
+  lastKeyPress=millis()/1000;
   //state machine evaluation based on keypad input.  The only state transitions here should be
   //driven by a key press.  No actions or status updates allowed in this block.  State transitions only.
+  //note that if we just transitioned into stateDisplayBlank, on this pass through the loop, and a key
+  //was also pressed, that keystroke will get swallowed by the transition into and out of screen blanking
+  //even though the screen will never blank.  We could do a special case of that detection by comparing 
+  //the current state with the last state, and if they differ AND the current state is stateDisplayBlank
+  //then we drop back to the last state, which should be stateMainMenu.  Will see how often it comes up
+  //before putting the code in.
   switch(state) {
     case stateInit:
       break;
@@ -620,8 +643,10 @@ void stateMachine::run(void) {
 
       break; 
     case stateScreenBlank:
-
+      state=stateScreenWake;
       break; 
+    case stateScreenWake:
+      break;
     case stateSaveSettings:
 
       break; 
