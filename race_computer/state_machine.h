@@ -27,6 +27,7 @@ enum stateMachineStatesEnum {
   stateSetOledBrightness,
   stateSetScreenBlankTime,
   stateScreenBlank,
+  stateScreenWake,
   stateSaveSettings,
   stateLoadSettings,
   stateEditRaceLeg,

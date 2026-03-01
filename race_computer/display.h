@@ -153,6 +153,7 @@ void ledDispLegDeltaSpeed(void);
 void ledDispRaceDeltaSpeed(void);
 void ledDispDashes(void);
 void ledDispEights(void);
+void ledDispBlank(void);
 void ledDispStartCountdown(void);
 
 void displayError(const char *err);
