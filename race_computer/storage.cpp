@@ -1,5 +1,6 @@
 #include "storage.h"
-
+#include "display.h"
+#include <ArduinoJson.h>
 //setup global objects on the board.
 // set up variables using the SD utility library functions:
 Sd2Card sdCard;
@@ -63,3 +64,104 @@ void storageSetup(void) {
   SD.begin(SDCARD_CS);
 }
 
+void saveSettings(void) {
+  JsonDocument doc;
+  JsonArray oledDisp;
+  File settings;
+  if(!sdCardPresent) {
+    Serial.println("No SD card.  Unable to checkpoint race");
+    return;
+  }
+  //disable display and GPS use of the SPI bus to prevent collisions
+  doSPILock();
+  if(!SD.exists("orc")) {
+    doSPIUnlock();
+    return;
+  }
+
+  Serial.println("Saving settings...");
+  doc["displayTimeout"]=displayTimeout;
+  doc["oledBrightness"]=oledBrightness;
+  doc["ledBrightness"]=ledBrightness;
+  oledDisp=doc["oledDisp"].to<JsonArray>();
+  oledDisp[0]=OLEDDisplayActive[0];
+  oledDisp[1]=OLEDDisplayActive[1];
+  oledDisp[2]=OLEDDisplayActive[2];
+  oledDisp[3]=OLEDDisplayActive[3];
+  doc["ledDisp"]=LEDDisplayActive;
+  if(SD.exists("orc/settings.dat")) {
+    Serial.println("clearing saved settings");
+    SD.remove("orc/settings.dat");
+  }
+  settings=SD.open("orc/settings.dat", FILE_WRITE);
+  if(!settings) {
+    Serial.println("Settings open failed");
+    doSPIUnlock();
+    return;
+  }
+  serializeJsonPretty(doc, settings);
+  serializeJsonPretty(doc, Serial);
+  Serial.println();
+  settings.close();
+  doSPIUnlock();
+
+};
+void loadSettings(void) {
+  JsonDocument doc;
+  JsonArray oledDisp;
+  File settings;
+  DeserializationError error;
+  if(!sdCardPresent) {
+    Serial.println("No SD card.  Unable to load saved settings");
+    return;
+  }
+  //disable display and GPS use of the SPI bus to prevent collisions
+  doSPILock();
+  if(!SD.exists("orc/settings.dat")) {
+    doSPIUnlock();
+    Serial.println("No settings file found.");
+    return;
+  }  
+  Serial.println("Found settings file");
+  settings=SD.open("orc/settings.dat");
+  error=deserializeJson(doc, settings);
+  settings.close();
+  doSPIUnlock();
+  if (error) {
+    Serial.println("deserialization error");
+    Serial.println(error.c_str());
+    return;
+  }
+  if(!doc["displayTimeout"].isNull()) {
+    displayTimeout=doc["displayTimeout"].as<uint8_t>();
+    Serial.printf("displayTimeout=%d\n", displayTimeout);
+  }
+  if(!doc["oledBrightness"].isNull()) {
+    oledBrightness=doc["oledBrightness"].as<uint8_t>();
+    Serial.printf("oledBrightness=%d\n", oledBrightness);
+    oledDisp1.setContrast(oledBrightness);
+    oledDisp2.setContrast(oledBrightness);
+    oledDisp3.setContrast(oledBrightness);
+    oledDisp4.setContrast(oledBrightness);
+  }
+  if(!doc["ledBrightness"].isNull()) {
+    ledBrightness=doc["ledBrightness"].as<uint8_t>();
+    Serial.printf("ledBrightness=%d\n", ledBrightness);
+    ledDisp.Set_Brightness(ledBrightness);
+  }
+  if(!doc["oledDisp"].isNull()) {
+    oledDisp=doc["oledDisp"].as<JsonArray>();
+    OLEDDisplayActive[0]=oledDisp[0].as<int>();
+    Serial.printf("OLED Display 1=%d\n", OLEDDisplayActive[0]);
+    OLEDDisplayActive[1]=oledDisp[1].as<int>();
+    Serial.printf("OLED Display 2=%d\n", OLEDDisplayActive[1]);
+    OLEDDisplayActive[2]=oledDisp[2].as<int>();
+    Serial.printf("OLED Display 3=%d\n", OLEDDisplayActive[2]);
+    OLEDDisplayActive[3]=oledDisp[3].as<int>();
+    Serial.printf("OLED Display 4=%d\n", OLEDDisplayActive[3]);
+  }
+  if(!doc["ledDisp"].isNull()) {  
+    LEDDisplayActive=doc["ledDisp"].as<int>();
+    Serial.printf("LED Display=%d\n", LEDDisplayActive);
+  }
+};

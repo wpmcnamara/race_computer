@@ -4,10 +4,12 @@
 #include "race.h"
 #include "bsp.h"
 #include "menu.h"
+#include "storage.h"
 
 
 class stateMachine stateMachine;
 unsigned long lastKeyPress;
+bool dispSelectChange=false;
 
 stateMachine::stateMachine(void) {
   state=stateInit;
@@ -221,6 +223,7 @@ void stateMachine::run(void) {
         break;
       case stateDispSelect:
         Serial.println("  to: stateDispSelect");
+        dispSelectChange=false;
         LEDDisplaySelect=LEDDisplayActive;
         for (int idx=0; idx<4; idx++) {
           OLEDDisplaySelect[idx]=OLEDDisplayActive[idx];
@@ -269,6 +272,12 @@ void stateMachine::run(void) {
         break; 
       case stateSetScreenBlankTime:
         Serial.println("  to: stateSetScreenBlankTime");
+        displayTimeoutTmp=displayTimeout;
+        displayList.erase(displayList.begin(), displayList.end());
+        ledDispFunc=ledDispDashes;
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetDisplayTimeout));     
         break; 
       case stateScreenBlank:
         Serial.println("  to: stateScreenBlank");
@@ -282,9 +291,11 @@ void stateMachine::run(void) {
         break;
       case stateSaveSettings:
         Serial.println("  to: stateSaveSettings");
+        saveSettings();
         break; 
       case stateLoadSettings:
         Serial.println("  to: stateLoadSettings");
+        loadSettings();
         break; 
       case stateEditRaceLeg:
         Serial.println("  to: stateEditRaceLeg");
@@ -301,13 +312,13 @@ void stateMachine::run(void) {
   //No actions or status updates allowed in this block.  State transitions only.
   switch(state) {
     case stateInit:
-      state=stateLoadRaceCheckPoint;
+      state=stateLoadSettings;
       break;
     case stateLoadRaceCheckPoint:
       state=stateMainMenu;  
       break;      
     case stateMainMenu:
-      if((millis()/1000)-lastKeyPress>30) {
+      if(displayTimeout>0 && (millis()/1000)-lastKeyPress>(displayTimeout*60)) {
         state=stateScreenBlank;
       }
       break;
@@ -369,7 +380,6 @@ void stateMachine::run(void) {
     case stateSetOledBrightness:
       break; 
     case stateSetScreenBlankTime:
-      state=stateMainMenu;  
       break; 
     case stateScreenBlank:  
       break; 
@@ -380,7 +390,7 @@ void stateMachine::run(void) {
       state=stateMainMenu;  
       break; 
     case stateLoadSettings:
-      state=stateMainMenu;  
+      state=stateLoadRaceCheckPoint; 
       break; 
     case stateEditRaceLeg:
       state=stateMainMenu;  
@@ -441,11 +451,16 @@ void stateMachine::run(void) {
         case menuActionOLEDBrightness:
           state=stateSetOledBrightness;
           break;
-        case menuActionScreenBlank:
+        case menuActionScreenTimeout:
           state=stateSetScreenBlankTime;
           break;
         case menuActionEditRaceLeg:
           state=stateEditRaceLeg;
+          break;
+        case menuActionSystemInfo:
+          break;
+        case menuActionReboot:
+          doReboot();
           break;
         default:
           break;
@@ -525,7 +540,11 @@ void stateMachine::run(void) {
     case stateDispSelect:
       if(displaySelectLineMode==false) {
         if(keys & KEYPAD_KEY_ESC) {
-          state=stateMainMenu;
+          if(dispSelectChange) {
+            state=stateSaveSettings;
+          } else {
+            state=stateMainMenu;
+          }
         }
         if(keys & KEYPAD_KEY_UP) {
           if(displaySelectLine==0) {
@@ -588,6 +607,7 @@ void stateMachine::run(void) {
         
         if(keys & KEYPAD_KEY_ENTER) {
           displaySelectLineMode=false;
+          dispSelectChange=true;
           if(displaySelectLine==0) {
             LEDDisplayActive=LEDDisplaySelect;
           } else {
@@ -640,7 +660,20 @@ void stateMachine::run(void) {
       }
       break; 
     case stateSetScreenBlankTime:
-
+      menuAction=menuSetScreenTimeout(keys);
+      switch(menuAction) {
+        case 0:
+          break;
+        case 1:
+          state=stateSaveSettings;
+          break;
+        case 2:
+          state=stateMainMenu;
+          break;
+        default:
+          break;
+      }
+      break; 
       break; 
     case stateScreenBlank:
       state=stateScreenWake;

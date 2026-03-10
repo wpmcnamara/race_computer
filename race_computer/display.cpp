@@ -42,6 +42,8 @@ uint8_t ledBrightness;
 uint8_t oledBrightness;
 uint8_t ledBrightnessTmp;
 uint8_t oledBrightnessTmp;
+uint8_t displayTimeout;
+uint8_t displayTimeoutTmp;
 
 int OLEDDisplayActive[4]={GPSSpeedLarge,
                                 LegDeltaTimeLarge,
@@ -116,6 +118,7 @@ void displayContent::display(void) {
 }
 
 void displaySetup(void) {
+  displayTimeout=30;
   dispRace=NULL;
   dispRaceLeg=NULL;
   oledDisp1.setBufferPtr(new uint8_t[oledDisp1.getBufferSize()]);
@@ -1144,6 +1147,17 @@ void displaySetOledBrightness(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, disp
   display.drawStr(x,20,buffer);
   display.drawFrame(27,32,200,16);
   display.drawBox(27,32,(200.0/250.0)*(float)oledBrightnessTmp,16);
+  return;
+}
+
+void displaySetDisplayTimeout(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  int x;
+  display.setFont(u8g2_font_spleen8x16_mf);
+  sprintf(buffer, "Timeout: %d min", displayTimeoutTmp);
+  x=128-(display.getStrWidth(buffer)/2);
+  display.drawStr(x,20,buffer);
+  display.drawFrame(27,32,200,16);
+  display.drawBox(27,32,(200.0/60)*(float)displayTimeoutTmp,16);
   return;
 }
 

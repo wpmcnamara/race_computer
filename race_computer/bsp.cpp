@@ -95,3 +95,7 @@ bool doFirmwareUpdate(void) {
   REBOOT;
   return false;
 }
+
+void doReboot(void) {
+  REBOOT;
+}

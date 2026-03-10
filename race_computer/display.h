@@ -87,6 +87,8 @@ extern uint8_t ledBrightnessTmp;
 extern uint8_t oledBrightnessTmp;
 extern event_t *displayUpdateEvent;
 extern event_t *displayUpdateFastEvent;
+extern uint8_t displayTimeout;
+extern uint8_t displayTimeoutTmp;
 
 
 extern void (*OLEDDisplayFuncs[OLEDDispFuncMaxValue])(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
@@ -146,6 +148,7 @@ void displayFirmwareConfirm(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPo
 void displayFirmwareUpdate(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displaySetLedBrightness(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displaySetOledBrightness(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+void displaySetDisplayTimeout(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 
 void ledDispLegTime(void);
 void ledDispRaceTime(void);
