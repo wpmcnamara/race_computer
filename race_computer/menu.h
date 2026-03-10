@@ -17,8 +17,10 @@ enum menuAction {
   menuActionLEDBrightness,
   menuActionOLEDBrightness,
   menuActionFirmwareUpdate,
-  menuActionScreenBlank,
-  menuActionEditRaceLeg
+  menuActionScreenTimeout,
+  menuActionEditRaceLeg,
+  menuActionSystemInfo,
+  menuActionReboot
 };
 
 typedef enum menuAction menuAction_t;
@@ -70,12 +72,17 @@ extern menu_t cancelRaceMenu;
 extern menu_t configDisplayMenu;
 extern menu_t ledBrightMenu;
 extern menu_t oledBrightMenu;
+extern menu_t screenTimeoutMenu;
 
 extern menu_t firmwareUpdateMenu;
+extern menu_t systemInformationMenu;
+extern menu_t rebootMenu;
 
 extern std::vector<menu_t*> menuStack;
 
 uint8_t menuSetLedBrightness(uint8_t key);
 uint8_t menuSetOledBrightness(uint8_t key);
+uint8_t menuSetScreenTimeout(uint8_t key);
+
 
 #endif

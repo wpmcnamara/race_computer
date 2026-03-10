@@ -41,7 +41,7 @@ inline void doSPILock (void) {SPILock=true;}
 inline void doSPIUnlock (void) {SPILock=false;}
 bool checkForUpdate(void);
 bool doFirmwareUpdate(void);
-
+void doReboot(void);
 
 #define SPI_SPEED 4000000
 

@@ -14,5 +14,7 @@ extern SdFile root;
 extern bool sdCardPresent;
 
 void storageSetup(void);
+void saveSettings(void);
+void loadSettings(void);
 
 #endif
