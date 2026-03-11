@@ -75,11 +75,12 @@ void raceLegStop() {
 }
 
 void loadRaces() {
-  File entry;
+  File32 entry;
   JsonDocument doc;
   DeserializationError error;
   race_t *raceFile;
   raceLeg_t *raceLegFile;
+  char fileName[256];
   //see if we have an SD card or not.  If we don't we are going to fall back to a hardcoded set of
   //races and legs.
   if(!sdCardPresent) {
@@ -91,11 +92,11 @@ void loadRaces() {
   doSPILock();
   //race data files will be stored in a directory called "orc"
   //if it doesn't exist, then we've got races to load.
-  if(!SD.exists("orc")) {
+  if(!sdCard.exists("orc")) {
     doSPIUnlock();
     return;
   }
-  File orcDir=SD.open("orc");
+  File32 orcDir=sdCard.open("orrc/races");
   //process the orc directory.  Anything that ends in .csv will be considered a race file.
   while (true) {
     entry =  orcDir.openNextFile();
@@ -106,10 +107,11 @@ void loadRaces() {
     if(entry.isDirectory()) {
       continue;
     }
-    if(strstr(entry.name(), ".jsn")==NULL) {
+    entry.getName(fileName,256);
+    if(strstr(fileName, ".jsn")==NULL) {
       continue;
     }
-    Serial.printf("Found race file: %s\n", entry.name());
+    Serial.printf("Found race file: %s\n", fileName);
     error=deserializeJson(doc, entry);
     if (error) {
       Serial.println("deserialization error");
@@ -118,7 +120,8 @@ void loadRaces() {
     }
     //do these before we close the file, or entry.name() return empty.
     raceFile=new race_t;
-    raceFile->fileName=entry.name();
+    entry.getName(fileName, 256);
+    raceFile->fileName=fileName;
     entry.close();
     Serial.printf("race filename: %s\n", raceFile->fileName.c_str());
     raceFile->descr=doc["descr"].as<String>();
@@ -262,15 +265,15 @@ void loadRacePoints(raceLeg_t *raceLeg) {
   int index=0;
   JsonDocument doc;
   DeserializationError error;
-  sprintf(path, "orc/%s", race.activeLeg->pointsFile.c_str());
+  sprintf(path, "orrc/races/%s", race.activeLeg->pointsFile.c_str());
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
-  if(!SD.exists(path)) {
+  if(!sdCard.exists(path)) {
     doSPIUnlock();
     return;
   }
   Serial.printf("Loading point file: %s\n", path);
-  File pointFile=SD.open(path);
+  File32 pointFile=sdCard.open(path);
   if(!pointFile) {
     Serial.println("  file open error");
     doSPIUnlock();
@@ -366,20 +369,20 @@ void dumpRaceData(raceData_t *data) {
 
 void raceCheckPoint(void) {
   JsonDocument doc;
-  File checkPoint;
+  File32 checkPoint;
   if(!sdCardPresent) {
     Serial.println("No SD card.  Unable to checkpoint race");
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
-  if(!SD.exists("orc")) {
+  if(!sdCard.exists("orc")) {
     doSPIUnlock();
     return;
   }
-  if(SD.exists("orc/race.dat")) {
+  if(sdCard.exists("orrc/system/race.dat")) {
     Serial.println("clearing race checkpoint");
-    SD.remove("orc/race.dat");
+    sdCard.remove("orrc/system/race.dat");
   }
   if(race.inProgress!=true) {
     Serial.println("no race in progress");
@@ -395,7 +398,7 @@ void raceCheckPoint(void) {
   doc["distanceComplete"]=race.distanceComplete;
   doc["timeSec"]=race.timeComplete.seconds;
   doc["timeMilli"]=race.timeComplete.millis;
-  checkPoint=SD.open("orc/race.dat", FILE_WRITE);
+  checkPoint=sdCard.open("orrc/system/race.dat", FILE_WRITE);
   if(!checkPoint) {
     Serial.println("Checkpoint open failed");
 
@@ -413,7 +416,7 @@ void loadRaceCheckPoint(void) {
   std::vector<raceLeg_t *>::iterator raceLegIt;
   int raceLegId;
   JsonDocument doc;
-  File checkPoint;
+  File32 checkPoint;
   DeserializationError error;
   if(!sdCardPresent) {
     Serial.println("No SD card.  Unable to load race checkpoint");
@@ -421,12 +424,12 @@ void loadRaceCheckPoint(void) {
   }
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
-  if(!SD.exists("orc/race.dat")) {
+  if(!sdCard.exists("orrc/system/race.dat")) {
     doSPIUnlock();
     return;
   }  
   Serial.println("Found race checkpoint");
-  checkPoint=SD.open("orc/race.dat");
+  checkPoint=sdCard.open("orrc/systems/race.dat");
   error=deserializeJson(doc, checkPoint);
   checkPoint.close();
   doSPIUnlock();

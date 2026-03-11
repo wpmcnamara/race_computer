@@ -1172,7 +1172,7 @@ void displayUpdateFast(void) {
 }
 
 void ledDispLegTime(void) {
-  timeStamp_t *ts=getTimeStamp();
+  volatile timeStamp_t *ts=getTimeStamp();
   timeStamp dispTs;
   unsigned long millis=(ts->seconds*1000)+ts->millis;
   millis-=(race.legData->timerOffset.seconds*1000)+race.legData->timerOffset.millis;
@@ -1194,7 +1194,7 @@ void ledDispLegTime(void) {
 }
 
 void ledDispRaceTime(void) {
-  timeStamp_t *ts=getTimeStamp();
+  volatile timeStamp_t *ts=getTimeStamp();
   timeStamp dispTs;
   unsigned long millis=(ts->seconds*1000)+ts->millis;
   millis-=(race.legData->timerOffset.seconds*1000)+race.legData->timerOffset.millis;
@@ -1250,7 +1250,7 @@ void ledDispBlank(void) {
 
 
 void ledDispStartCountdown(void) {
-  timeStamp_t *ts=getTimeStamp();
+  volatile timeStamp_t *ts=getTimeStamp();
   long sec=ts->seconds;
   long millis=ts->millis;
   millis+=sec*1000;

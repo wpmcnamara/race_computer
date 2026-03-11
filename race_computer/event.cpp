@@ -28,7 +28,7 @@ event::event(void (*eventAction)(void), eventType_t eventType, bool eventActive,
   delayReload=delay;
   countReload=count;
   if(serialPort != NULL && name != NULL) {
-    serialPort->print(F("event creation: "));
+    serialPort->print("event creation: ");
     serialPort->println(name);
   }
   intervalTimerAddCallback(this);

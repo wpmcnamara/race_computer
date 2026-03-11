@@ -43,13 +43,13 @@ bool checkForUpdate(void) {
   }
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
-  if(!SD.exists("orc/firmware.hex")) {
+  if(!sdCard.exists("orrc/system/race_computer.ino.hex")) {
     doSPIUnlock();
     Serial.println("No firmware file found.");
     return false;
   }  
     doSPIUnlock();
-    Serial.println("Found orc/firmware.hex");
+    Serial.println("Found orrc/system/racec_omputer.ino.hex");
     return true;
 }
 
@@ -66,7 +66,7 @@ bool doFirmwareUpdate(void) {
   setAllButtonColor(COLOR_BLACK);
   startStopOff();
 
-  File firmwareFile=SD.open("orc/firmware.hex");
+  File32 firmwareFile=sdCard.open("orrc/system/race_computer.ino.hex");
   if(!firmwareFile) {
     Serial.println("  file open error");
     doSPIUnlock();

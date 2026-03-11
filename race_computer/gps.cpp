@@ -56,15 +56,15 @@ void gpsSetup(void) {
 
   if (gps.begin(SPI, GPS_CS, SPI_SPEED) == false)  //Connect to the u-blox module using Wire port
   {
-    Serial.println(F("u-blox GNSS not detected on SPI bus. Please check wiring. Freezing."));
+    Serial.println("u-blox GNSS not detected on SPI bus. Please check wiring. Freezing.");
     displayError("GPS not detected");
     while (1);
   }
-  Serial.print(F("NEO-8MU protocol version:"));
+  Serial.print("NEO-8MU protocol version:");
 
   gps.getProtocolVersion();
   Serial.print(gps.getProtocolVersionHigh());
-  Serial.print(F("."));
+  Serial.print(".");
   Serial.println(gps.getProtocolVersionLow());
 
   gps.getPowerSaveMode(false);
@@ -81,19 +81,19 @@ void gpsSetup(void) {
   UBX_CFG_ITFM_data_t jammingConfig; // Create storage for the jamming configuration
   if (gps.getJammingConfiguration(&jammingConfig)) // Read the jamming configuration
   {
-    Serial.print(F("The jamming / interference monitor is "));
+    Serial.print("The jamming / interference monitor is ");
     if (jammingConfig.config.bits.enable == 0) // Check if the monitor is already enabled
-      Serial.print(F("not "));
-    Serial.println(F("enabled"));
+      Serial.print("not ");
+    Serial.println("enabled");
 
     if (jammingConfig.config.bits.enable == 1) // Check if the monitor is already enabled
     {
-      Serial.print(F("Disabling the jamming / interference monitor: "));
+      Serial.print("Disabling the jamming / interference monitor: ");
       (jammingConfig.config.bits.enable = 0); // Enable the monitor
       if (gps.setJammingConfiguration(&jammingConfig)) // Set the jamming configuration
-        Serial.println(F("success"));
+        Serial.println("success");
       else
-        Serial.println(F("failed!"));
+        Serial.println("failed!");
     }
   }
 
@@ -103,19 +103,19 @@ void gpsSetup(void) {
 
   // Get the time pulse parameters
   if (gps.getTimePulseParameters(&timePulseParameters) == false) {
-    Serial.println(F("getTimePulseParameters failed! Freezing..."));
+    Serial.println("getTimePulseParameters failed! Freezing...");
     displayError("TimePulse Param Error");
     while (1);  // Do nothing more
   }
 
   // Print the CFG TP5 version
-  Serial.print(F("UBX_CFG_TP5 version: "));
+  Serial.print("UBX_CFG_TP5 version: ");
   Serial.println(timePulseParameters.version);
   if (gps.setDynamicModel(DYN_MODEL_AUTOMOTIVE) == false)  // Set the dynamic model to PORTABLE
   {
-    Serial.println(F("*** Warning: setDynamicModel failed ***"));
+    Serial.println("*** Warning: setDynamicModel failed ***");
   } else {
-    Serial.println(F("Dynamic platform model changed successfully!"));
+    Serial.println("Dynamic platform model changed successfully!");
   }
 
   //By default, the odometer is disabled. We need to enable it.
@@ -125,7 +125,7 @@ void gpsSetup(void) {
   if (gps.getOdometerConfig(&flags, &odoCfg, &cogMaxSpeed, &cogMaxPosAcc, &velLpGain, &cogLpGain)) {
     flags = UBX_CFG_ODO_USE_ODO;                                                            // Enable the odometer
     odoCfg = UBX_CFG_ODO_CAR;                                                               // Use the car profile (others are RUN, CYCLE, SWIM, CUSTOM)
-    Serial.print(F("cogMaxSpeed: "));
+    Serial.print("cogMaxSpeed: ");
     Serial.println(cogMaxSpeed);
     gps.setOdometerConfig(flags, odoCfg, cogMaxSpeed, cogMaxPosAcc, velLpGain, cogLpGain);  // Set the configuration
   } else {
@@ -157,9 +157,9 @@ void gpsSetup(void) {
   timePulseParameters.flags.bits.gridUtcGnss = 0;  //Time pulse timestamps on UTC timegrid;
   // Now set the time pulse parameters
   if (gps.setTimePulseParameters(&timePulseParameters) == false) {
-    Serial.println(F("setTimePulseParameters failed!"));
+    Serial.println("setTimePulseParameters failed!");
   } else {
-    Serial.println(F("Success!"));
+    Serial.println("Success!");
   }
 
   gps.setAutoPVTcallbackPtr(&gpsNAVcallback);

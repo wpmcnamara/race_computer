@@ -3,78 +3,81 @@
 #include <ArduinoJson.h>
 //setup global objects on the board.
 // set up variables using the SD utility library functions:
-Sd2Card sdCard;
-SdVolume volume;
+SdFat32 sdCard;
+//SdVolume volume;
 bool sdCardPresent;
 
 void storageSetup(void) {
-  if (!sdCard.init(SPI_SPEED, SDCARD_CS)) {    
-    Serial.println("initialization failed. Things to check:");
-    Serial.println("* is a card inserted?");
-    Serial.println("* is your wiring correct?");
-    Serial.println("* did you change the chipSelect pin to match your shield or module?");
-    sdCardPresent=false;
+  uint32_t size;
+  uint32_t sizeMB;
+  doSPILock();
+  if (!sdCard.begin(SDCARD_CS, SPI_SPEED)) {  
+    sdCardPresent=false; 
+    if (sdCard.card()->errorCode()) { 
+      Serial.println("initialization failed. Things to check:");
+      Serial.println("* is a card inserted?");
+      Serial.println("* is your wiring correct?");
+      Serial.println("* did you change the chipSelect pin to match your shield or module?");
+      Serial.printf("errorCode: 0x%0X\n",int(sdCard.card()->errorCode()));
+      Serial.printf("errorData: 0x%0X\n",int(sdCard.card()->errorData()));
+      doSPIUnlock();
+      return;
+    }
+    Serial.println("Card successfully initialized.\n");
+    if (sdCard.vol()->fatType() == 0) {
+      Serial.println("Can't find a valid FAT16/FAT32/exFAT partition.\n");
+      doSPIUnlock();
+      return;
+    }
+    Serial.println("Can't determine error type\n");
+    doSPIUnlock();
     return;
   } else {
    Serial.println("Wiring is correct and a card is present.");
    sdCardPresent=true;
   }
 
-  // print the type of card
-  Serial.print("\nCard type: ");
-  switch(sdCard.type()) {
-    case SD_CARD_TYPE_SD1:
-      Serial.println("SD1");
-      break;
-    case SD_CARD_TYPE_SD2:
-      Serial.println("SD2");
-      break;
-    case SD_CARD_TYPE_SDHC:
-      Serial.println("SDHC");
-      break;
-    default:
-      Serial.println("Unknown");
-  }
-
-  // Now we will try to open the 'volume'/'partition' - it should be FAT16 or FAT32
-  if (!volume.init(sdCard)) {
-    Serial.println("Could not find FAT16/FAT32 partition.\nMake sure you've formatted the card");
-    sdCardPresent=false;
+  size = sdCard.card()->sectorCount();
+  if (size == 0) {
+    Serial.println("Can't determine the card size.\n");
+    doSPIUnlock();
     return;
-  } else {
-    // print the type and size of the first FAT-type volume
-    uint32_t volumesize;
-    Serial.print("\nVolume type is FAT");
-    Serial.println(volume.fatType(), DEC);
-    Serial.println();
-    
-    volumesize = volume.blocksPerCluster();    // clusters are collections of blocks
-    volumesize *= volume.clusterCount();       // we'll have a lot of clusters
-    if (volumesize < 8388608ul) {
-      Serial.print("Volume size (bytes): ");
-      Serial.println(volumesize * 512);        // SD card blocks are always 512 bytes
-    }
-    Serial.print("Volume size (Kbytes): ");
-    volumesize /= 2;
-    Serial.println(volumesize);
-    Serial.print("Volume size (Mbytes): ");
-    volumesize /= 1024;
-    Serial.println(volumesize);
   }
-  SD.begin(SDCARD_CS);
+  sizeMB = 0.000512 * size + 0.5;
+  Serial.printf("Card size: %d\n", sizeMB);
+  if (sdCard.fatType() <= 32) {
+    Serial.printf("Volume is FAT%d", int(sdCard.fatType()));
+  } else {
+    Serial.println("Volume is exFAT");
+  }
+  Serial.printf(", Cluster size (bytes): %d\n", sdCard.vol()->bytesPerCluster());
+
+  Serial.println("Files found (date time size name):");
+  sdCard.ls(LS_R | LS_DATE | LS_SIZE);
+
+  if ((sizeMB > 1100 && sdCard.vol()->sectorsPerCluster() < 64) ||
+      (sizeMB < 2200 && sdCard.vol()->fatType() == 32)) {
+    Serial.println("\nThis card should be reformatted for best performance.");
+    Serial.println("Use a cluster size of 32 KB for cards larger than 1 GB.");
+    Serial.println("Only cards larger than 2 GB should be formatted FAT32.\n");
+    doSPIUnlock();
+    return;
+  }
+  doSPIUnlock();
+  return;
 }
 
 void saveSettings(void) {
   JsonDocument doc;
   JsonArray oledDisp;
-  File settings;
+  File32 settings;
   if(!sdCardPresent) {
-    Serial.println("No SD card.  Unable to checkpoint race");
+    Serial.println("No SD card.  Unable to save settings.");
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
-  if(!SD.exists("orc")) {
+  if(!sdCard.exists("orc")) {
     doSPIUnlock();
     return;
   }
@@ -89,11 +92,11 @@ void saveSettings(void) {
   oledDisp[2]=OLEDDisplayActive[2];
   oledDisp[3]=OLEDDisplayActive[3];
   doc["ledDisp"]=LEDDisplayActive;
-  if(SD.exists("orc/settings.dat")) {
+  if(sdCard.exists("orrc/system/settings.dat")) {
     Serial.println("clearing saved settings");
-    SD.remove("orc/settings.dat");
+    sdCard.remove("orrc/systemsettings.dat");
   }
-  settings=SD.open("orc/settings.dat", FILE_WRITE);
+  settings=sdCard.open("orrc/system/settings.dat", FILE_WRITE);
   if(!settings) {
     Serial.println("Settings open failed");
     doSPIUnlock();
@@ -109,7 +112,7 @@ void saveSettings(void) {
 void loadSettings(void) {
   JsonDocument doc;
   JsonArray oledDisp;
-  File settings;
+  File32 settings;
   DeserializationError error;
   if(!sdCardPresent) {
     Serial.println("No SD card.  Unable to load saved settings");
@@ -117,13 +120,13 @@ void loadSettings(void) {
   }
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
-  if(!SD.exists("orc/settings.dat")) {
+  if(!sdCard.exists("orrc/system/settings.dat")) {
     doSPIUnlock();
     Serial.println("No settings file found.");
     return;
   }  
   Serial.println("Found settings file");
-  settings=SD.open("orc/settings.dat");
+  settings=sdCard.open("orrc/system/settings.dat");
   error=deserializeJson(doc, settings);
   settings.close();
   doSPIUnlock();
