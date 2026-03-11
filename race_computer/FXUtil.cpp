@@ -57,12 +57,6 @@ void update_firmware( Stream *in, Stream *out,
   while (!hex.eof)  {
 
     read_ascii_line( in, line, sizeof(line) );
-    // reliability of transfer via USB is improved by this printf/flush
-    if (in == out && out == (Stream*)&Serial) {
-      out->printf( "%s\n", line );
-      out->flush();
-    }
-
     if (parse_hex_line( (const char*)line, hex.data, &hex.addr, &hex.num, &hex.code ) == 0) {
       out->printf( "abort - bad hex line %s\n", line );
     }
@@ -88,7 +82,6 @@ void update_firmware( Stream *in, Stream *out,
       }
     }
     hex.lines++;
-    out->printf( "%d\n", hex.lines++);
     firmwareProgress+=strnlen(line,sizeof(line));
     if(hex.lines%100==0) {
       displayUpdate(); 
@@ -97,18 +90,6 @@ void update_firmware( Stream *in, Stream *out,
   displayUpdate(); 
   out->printf( "\nhex file: %1d lines %1lu bytes (%08lX - %08lX)\n",
 			hex.lines, hex.max-hex.min, hex.min, hex.max );
-
-  // check FSEC value in new code -- abort if incorrect
-  #if defined(KINETISK) || defined(KINETISL)
-  uint32_t value = *(uint32_t *)(0x40C + buffer_addr);
-  if (value == 0xfffff9de) {
-    out->printf( "new code contains correct FSEC value %08lX\n", value );
-  }
-  else {
-    out->printf( "abort - FSEC value %08lX should be FFFFF9DE\n", value );
-    return;
-  } 
-  #endif
 
   // check FLASH_ID in new code - abort if not found
   if (check_flash_id( buffer_addr, hex.max - hex.min )) {

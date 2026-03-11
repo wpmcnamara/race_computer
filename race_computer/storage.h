@@ -1,16 +1,16 @@
 #ifndef __STORAGE__
 #define __STORAGE__
 
-#include <SD.h>
 
 #include "bsp.h"
+#include <string.h>
 #include "helpers.h"
+#include <SdFat.h>
 
-//setup global objects on the board.
-// set up variables using the SD utility library functions:
-extern Sd2Card sdCard;
-extern SdVolume volume;
-extern SdFile root;
+#define SD_FAT_TYPE 1
+#define SD_CONFIG SdSpiConfig(SDCARD_CS, SHARED_SPI, SPI_SPEED)
+
+extern SdFat32 sdCard;
 extern bool sdCardPresent;
 
 void storageSetup(void);
