@@ -1,0 +1,21 @@
+---
+descr: Big Bend Open Road Race - 115mph class
+speed: 115
+speed_range: 0.05
+distance: 118
+tmark: 10
+legs:
+- id: 1
+  descr: BBORR Southbound
+  speed: 115
+  speed_range: 0.05
+  distance: 59
+  drive_distance: 58.935
+  points: bborr/southbound_leg.csv
+- id: 2
+  descr: BBORR Northbound
+  speed: 115
+  speed_range: 0.05
+  distance: 59
+  drive_distance: 58.926
+  points: bborr/northbound_leg.csv

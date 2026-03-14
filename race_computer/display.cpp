@@ -1161,6 +1161,40 @@ void displaySetDisplayTimeout(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, disp
   return;
 }
 
+void displayAdjustLeg(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  int x;
+  int y;
+  display.setFont(u8g2_font_spleen12x24_mf);
+  sprintf(buffer, " Time:  %02ld:%02ld:%02ld.%03ld", 
+    legAdjustTime/3600000, 
+    (legAdjustTime/60000)%60,
+    (legAdjustTime/1000)%60,
+    legAdjustTime%1000);
+  display.drawStr(0,20,buffer);
+  sprintf(buffer, " Dist: %7.3f", legAdjustDist);
+  display.drawStr(0,40,buffer);
+  sprintf(buffer, "Speed: %7.3f", legAdjustSpeed);
+  display.drawStr(0,60,buffer);
+  display.setFont(u8g2_font_spleen8x16_mf);
+  display.drawStr(169,40,"mi");
+  display.drawStr(169,60,"mph");
+  y=(legAdjustRow*20)+2;
+  if(legAdjustRow==0) {
+    x=(legAdjustColumn*-12)+191;
+  } else {
+    x=(legAdjustColumn*-12)+119;
+  }
+  if(legAdjustMode) {
+    if(legAdjustMode==2) {
+      display.setDrawColor(2);
+      display.drawBox(x, y, 14, 20);
+      display.setDrawColor(1);
+    } else {
+      display.drawFrame(x, y, 14, 20);
+    }
+  }
+}
+
 void displayUpdateFast(void) {
   if(SPILock) {
     //Serial.println("displayUpdateFast: SPI Collision");

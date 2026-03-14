@@ -1,0 +1,85 @@
+turn,dir,distance,descr1,descr2
+1,Right,0.6,Right hand sweeper into short ,straight
+2,Left,1.1,Left hand corner goes into ,immediate left sweeper
+3,Left,1.4,"Left hand sweeper, bridge just ",before entrance
+,,2.5,bridge,Rough bridge surface
+4,Left,2.8,Long left hand corner into short,straight
+5,Right,3.5,Right hand turn into very short,straight
+6,Left,3.9,Slight left hand bend,
+7,Left,4.7,Left hand turn,
+8,Right,5.1,Right hand corner uphill into ,short straight
+9,Left,5.7,Left hand corner uphill into ,immediate long left
+10,Right,5.9,Long right hand  uphill into ,"immediate left, 3 lanes wide"
+11,Left,6.4,Left hand corner uphill to very ,short straight
+12,Right,6.7,Right approaching double cut ,into blind right. 4 lanes at exit
+13,Right,6.9,Blind sweeper thru double cut ,"to very short straight, 3 lanes"
+14,Right,7.4,Right hand downhill corner into ,long straight
+,,8.8,Downie Draw Bridge,Rough bridge surface
+,,9.1,Pecos County Line,Pavement change
+15,Left,9.4,"Left hand corner, uphill",CAUTION
+16,Right,10.1,Slight right hand bend,Right lane rough
+,,11,Ranch house on left,Right lane rough
+17,Right,11.5,Long right  uphill into short ,straight. Widens 3 three lanes
+18,Left,12.5,Left hand corner to steep uphill,with blind crest
+19,Left,13,Slight blind left hand bend to ,immediate right
+20,Right,13.1,Right turn over crest into short,straight. Narrows to 3 lanes
+,,13.3,Highway FM2400 on right,
+21,Left,13.5,Long left hand thru cut into,slight right.  Narrow to 2 lanes
+22,Right,14,Slight right bend three lanes,wide.  Watch speed next three
+23,Right,14.3,Right hand  thru cut downhill ,into left.  4 lanes wide.
+24,Left,14.6,Left hand corner into very short,straight. Narrows to 3 lanes
+25,Right,15,Long right hand corner downhill ,into straightaway
+,,16.2,Clark Place Draw Bridge,Rough bridge surface
+26,Right,16.5,Right hand turn uphill,
+27,Left,17.6,Blind downhill to short straight,Tight -- may need to slow
+28,Right,18.9,Right hand to short straight,
+,,19.1,Middle Fork Big Canyon Bridge,Rough bridge surface
+29,Left,19.5,Left hand bend to short straight,
+30,Left,20,Left hand turn uphill,
+31,Right,20.7,Very slight right bend,
+32,Left,21.5,Blind left at end of straight,to immediate left
+33,Left,21.9,Left hand turn,
+,,22.3,Big Canyon Bridge,Rough bridge surface
+34,Right,22.7,Right hand sweeper into very ,short straight
+35,Left,23.2,Left hand bend into straight,
+,,25.4,Blind crest - straight,
+36,Right,25.9,Right hand turn - into immediate,left. 
+37,Left,26.1,Left hand uphill into immediate,right.  Roadside park on right
+38,Right,26.5,Right hand steep uphill into ,very short straight. 3 lanes wide
+39,Right,26.8,Blind right hand corner narrows ,thru cut on exit
+,,28,Blind crest - straight,four lanes wide
+,,28.3,Blind crest into narrowing road,two lanes wide
+40,Right,29.3,"Long right hand sweeper, dip on","entrance,  Escondido Draw"
+41,Left,30.7,Long left hand sweeper uphill,exit over crest
+,,31.1,crest near exit,
+,,31.8,Cerf Ranch on right,
+42,Left,33,Left hand corner,tower on right
+,,34.2,Marsh Lea Ranch on right,
+43,Right,35.5,Slight right hand bend,Mitchell Road on right
+44,Left,36.6,Left hand over Monument Draw ,Bridge into very short straight
+45,Left,36.9,Slight left bend,
+,,38.1,Nineteen Draw Bridge,Rough bridge surface
+,,38.6,Bunger Cameron Ranch on right,
+46,Right,39.1,Right hand bend,
+47,Right,39.7,Long right hand corner uphill,
+48,Left,40.4,Left hand bend into very short ,straight
+49,Left,40.8,Short left hand turn uphill into,immediate blind right
+50,Right,41,Blind right hand turn into short,straight - may need to slow
+51,Right,41.3,Right hand turn,
+52,Left,42.3,Left hand bend to very short ,straight
+53,Left,42.7,Left hand bend,
+54,Left,43.6,Left up and over hill into very ,short straight.  Narrows to 3.
+55,Right,44.1,Right hand sweeper downhill,"Look up!, 2 lanes after exit"
+56,Left,45.9,Left up steep hill - to short ,straight.  3 lanes wide.
+57,Right,46.6,Blind right out of cut - long,4 lanes wide
+,,47,Back to two lanes,
+,,48.2,Blind crest thru cut - straight,tower on right
+,,48.7,Rough in right lane,
+,,50.6,Bridge (culvert),
+58,Left,50.7,Blind slight left bend - to very,long straight
+,,51.3,Six Shooter Draw Straight,
+,,51.7,Sign - Ft. Stockton 10 miles,Start time correction
+59,Right,55.3,Right hand sweeper - slight ,uphill - into long straight
+,,56.7,Rough spot,
+60,Left,57.8,Left hand sweeper into finish ,line straight heading home
+,,59,FINISH LINE,

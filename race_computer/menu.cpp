@@ -4,12 +4,13 @@
 #include <vector>
 #include <iterator>
 #include <span>
+#include <math.h>
 
 std::vector<menuEntry_t> mainMenuEntries={
     {"Start", menuActionStart, NULL},
-    {"Race Menu", menuActionNone, &raceMenu},
-    {"Configuration Menu", menuActionNone, &configMenu},
-    {"System Menu", menuActionNone, &systemMenu}
+    {"Race Menu", menuActionMainMenu, &raceMenu},
+    {"Configuration Menu", menuActionMainMenu, &configMenu},
+    {"System Menu", menuActionMainMenu, &systemMenu}
 };
 
 std::vector<menuEntry_t> raceMenuEntries={
@@ -32,17 +33,24 @@ std::vector<menuEntry_t> systemMenuEntries={
     {"Reboot", menuActionReboot, &rebootMenu},
 };
 
+std::vector<menuEntry_t> adjustLegMenuEntries={
+    {"Adjust Time", menuActionAdjustTime,&adjustTimeMenu},
+    {"Adjust Distance", menuActionAdjustDistance,&adjustDistanceMenu},
+    {"Adjust Target Speed", menuActionAdjustSpeed,&adjustSpeedMenu},
+    {"Save Adjustments", menuActionAdjustSave, nullptr},
+};
+
 std::vector<menuEntry_t> dummyMenuEntries;
 
 menu_t mainMenu("Main Menu", mainMenuEntries, 4);
 menu_t raceMenu("Race Menu", raceMenuEntries, 4);
 menu_t configMenu("Configuration Menu", configMenuEntries, 4);
-menu_t systemMenu("System Menu", systemMenuEntries, 4);
+menu_t systemMenu("System Menu", systemMenuEntries, 3);
 
 menu_t selectRaceMenu("Select Race", dummyMenuEntries, 0);
 menu_t selectLegMenu("Select Leg", dummyMenuEntries, 0);
-menu_t adjustLegMenu("Adjust Leg", dummyMenuEntries, 0);
-menu_t cancelRaceMenu("Adjust Leg", dummyMenuEntries, 0);
+menu_t adjustLegMenu("Adjust Leg", adjustLegMenuEntries, 4);
+menu_t cancelRaceMenu("Cancel Race", dummyMenuEntries, 0);
 
 menu_t configDisplayMenu("Config Display", dummyMenuEntries, 0);
 menu_t ledBrightMenu("LED Brightness", dummyMenuEntries, 0);
@@ -54,8 +62,28 @@ menu_t firmwareUpdateMenu("Firmware Update", dummyMenuEntries, 0);
 menu_t systemInformationMenu("System Information", dummyMenuEntries, 0);
 menu_t rebootMenu("Reboot", dummyMenuEntries, 0);
 
+menu_t adjustTimeMenu("Adjust Leg Time", dummyMenuEntries, 0);
+menu_t adjustDistanceMenu("Adjust Leg Distance", dummyMenuEntries, 0);
+menu_t adjustSpeedMenu("Adjust Leg Speed", dummyMenuEntries, 0);
+menu_t adjustSaveMenu("Save Adjustments", dummyMenuEntries, 0);
+
+
 //Main menu is always on the stack.  It's our starting point.
 std::vector<menu_t*> menuStack = { &mainMenu };
+
+int legAdjustRow=0;
+int legAdjustColumn=0;
+int legAdjustMode=0;
+long int legAdjustTime;
+long int legAdjustTimeTmp;
+long int legAdjustTimeBackup;
+double legAdjustDist;
+double legAdjustDistTmp;
+double legAdjustDistBackup;
+double legAdjustSpeed;
+double legAdjustSpeedTmp;
+double legAdjustSpeedBackup;
+
 
 menu::menu(std::string menuTitle, std::vector<menuEntry_t> menuEntries, uint8_t displayLines) {
     title=menuTitle;
@@ -82,7 +110,8 @@ uint8_t menu::keypress(uint8_t key) {
     if(lines==0) {
         if(menuStack.size()>1) {
             menuStack.pop_back();
-            return (*menuStack.back()).keypress(key);
+            //return (*menuStack.back()).keypress(key);
+            return((*menuStack.back()).entries[activeEntry].action);
         }        
         //This case shouldn't happen, but it it does, we reload the main menu and go there.
         menuStack.push_back(&mainMenu);
@@ -93,7 +122,7 @@ uint8_t menu::keypress(uint8_t key) {
             return menuActionNone;
             break;
         case KEYPAD_KEY_ENTER:
-            if(entries[activeEntry].subMenu!=NULL) {
+            if(entries[activeEntry].subMenu!=nullptr) {
                 menuStack.push_back(entries[activeEntry].subMenu);
             }
             return(entries[activeEntry].action);
@@ -122,7 +151,7 @@ uint8_t menu::keypress(uint8_t key) {
             if(menuStack.size()>1) {
                 menuStack.pop_back();
             }
-            return menuActionNone;
+            return menuActionEsc;
             break;
         
         default:
@@ -265,4 +294,403 @@ uint8_t menuSetScreenTimeout(uint8_t key) {
             break;
     }
     return 0;
+}
+
+uint8_t menuAdjustLegTime(uint8_t key) {
+    int ret=0;
+    switch (key) {
+        case KEYPAD_KEY_START_STOP:
+            ret=0;
+            break;
+        case KEYPAD_KEY_ENTER:
+            if(legAdjustMode==1) {
+                legAdjustMode=2;
+                legAdjustTimeTmp=legAdjustTime;
+            } else {
+                legAdjustMode=1;
+            }
+            ret=0;
+            break;
+        case KEYPAD_KEY_DOWN:
+            if(legAdjustMode==1) {
+                if(legAdjustColumn>-3) {
+                    if(legAdjustColumn==7 || legAdjustColumn==4 || legAdjustColumn==1) {
+                        legAdjustColumn-=2;
+                    } else {   
+                        legAdjustColumn--;
+                    }
+                }   
+            } else {
+                switch(legAdjustColumn) {
+                    case -3:
+                        if(legAdjustTime>1) {
+                            legAdjustTime-=1;
+                        }
+                        break;
+                    case -2:
+                        if(legAdjustTime>=10) {
+                            legAdjustTime-=10;
+                        }
+                        break;                        
+                    case -1:
+                        if(legAdjustTime>=100) {
+                            legAdjustTime-=100;
+                        }
+                        break;
+                    case 1:
+                        if(legAdjustTime>=1000) {
+                            legAdjustTime-=1000;
+                        }
+                        break;    
+                    case 2:
+                        if(legAdjustTime>=10000) {
+                            legAdjustTime-=10000;
+                        }
+                        break;    
+                    case 4:
+                        if(legAdjustTime>=60000) {
+                            legAdjustTime-=60000;
+                        }
+                        break;         
+                    case 5:
+                        if(legAdjustTime>=600000) {
+                            legAdjustTime-=600000;
+                        }
+                        break;         
+                    case 7:
+                        if(legAdjustTime>=3600000) {
+                            legAdjustTime-=3600000;
+                        }
+                    case 8:
+                        if(legAdjustTime>=36000000) {
+                            legAdjustTime-=36000000;
+                        }                        
+                        break;         
+                }
+            }
+            ret=0;
+            break;
+        case KEYPAD_KEY_UP:
+            if(legAdjustMode==1) {
+                if(legAdjustColumn<8) {
+                    if(legAdjustColumn==-1 || legAdjustColumn==2 || legAdjustColumn==5) {
+                        legAdjustColumn+=2;
+                    } else {   
+                        legAdjustColumn++;
+                    }
+                }   
+            } else {
+                switch(legAdjustColumn) {
+                    case -3:
+                        if(legAdjustTime<359999999) {
+                            legAdjustTime+=1;
+                        }
+                        break;
+                    case -2:
+                        if(legAdjustTime<359999990) {
+                            legAdjustTime+=10;
+                        }
+                        break;                        
+                    case -1:
+                        if(legAdjustTime<359999900) {
+                            legAdjustTime+=100;
+                        }
+                        break;
+                    case 1:
+                        if(legAdjustTime<359999000) {
+                            legAdjustTime+=1000;
+                        }
+                        break;    
+                    case 2:
+                        if(legAdjustTime<359990000) {
+                            legAdjustTime+=10000;
+                        }
+                        break;    
+                    case 4:
+                        if(legAdjustTime<359939999) {
+                            legAdjustTime+=60000;
+                        }
+                        break;         
+                    case 5:
+                        if(legAdjustTime<359399999) {
+                            legAdjustTime+=600000;
+                        }
+                        break;         
+                    case 7:
+                        if(legAdjustTime<356399999) {
+                            legAdjustTime+=3600000;
+                        }
+                    case 8:
+                        if(legAdjustTime<323999999) {
+                            legAdjustTime+=36000000;
+                        }                        
+                        break;         
+                }
+            }   
+            ret=0;
+            break;
+        case KEYPAD_KEY_ESC:
+            if(legAdjustMode==2) {
+                legAdjustMode=1;
+                legAdjustTime=legAdjustTimeTmp;
+                ret=0;
+            } else {
+                ret=2;
+            }
+        default:
+            break;
+    }
+    return ret;
+}
+
+uint8_t menuAdjustLegDistance(uint8_t key) {
+    int ret=0;
+    switch (key) {
+        case KEYPAD_KEY_START_STOP:
+            ret=0;
+            break;
+        case KEYPAD_KEY_ENTER:
+            if(legAdjustMode==1) {
+                legAdjustMode=2;
+                legAdjustDistTmp=legAdjustDist;
+            } else {
+                legAdjustMode=1;
+            }
+            ret=0;
+            break;
+        case KEYPAD_KEY_DOWN:
+            if(legAdjustMode==1) {
+                if(legAdjustColumn>-3) {
+                    if(legAdjustColumn==1) {
+                        legAdjustColumn-=2;
+                    } else {   
+                        legAdjustColumn--;
+                    }
+                }   
+            } else {
+                switch(legAdjustColumn) {
+                    case -3:
+                        if(legAdjustDist>0.001) {
+                            legAdjustDist-=0.001;
+                        }
+                        break;
+                    case -2:
+                        if(legAdjustDist>=0.01) {
+                            legAdjustDist-=0.01;
+                        }
+                        break;                        
+                    case -1:
+                        if(legAdjustDist>=0.1) {
+                            legAdjustDist-=0.1;
+                        }
+                        break;
+                    case 1:
+                        if(legAdjustDist>=1) {
+                            legAdjustDist-=1;
+                        }
+                        break;    
+                    case 2:
+                        if(legAdjustDist>=10) {
+                            legAdjustDist-=10;
+                        }
+                        break;    
+                    case 3:
+                        if(legAdjustDist>=100) {
+                            legAdjustDist-=100;
+                        }
+                        break;                                            
+                }
+                //Distance changed, so recalculate target time.  Speed over distance will give time in hours
+                //Convert to seconds and the scale by 1000 for the fixed point representation of seconds.
+                legAdjustTime=(legAdjustDist/legAdjustSpeed)*3600*1000;                  
+            }
+
+            ret=0;
+            break;
+        case KEYPAD_KEY_UP:
+            if(legAdjustMode==1) {
+                if(legAdjustColumn<3) {
+                    if(legAdjustColumn==-1) {
+                        legAdjustColumn+=2;
+                    } else {   
+                        legAdjustColumn++;
+                    }
+                }   
+            } else {
+                switch(legAdjustColumn) {
+                    case -3:
+                        if(legAdjustDist<999.999) {
+                            legAdjustDist+=0.001;
+                        }
+                        break;
+                    case -2:
+                        if(legAdjustDist<999.99) {
+                            legAdjustDist+=0.01;
+                        }
+                        break;                        
+                    case -1:
+                        if(legAdjustDist<999.9) {
+                            legAdjustDist+=0.1;
+                        }
+                        break;
+                    case 1:
+                        if(legAdjustDist<999) {
+                            legAdjustDist+=1;
+                        }
+                        break;    
+                    case 2:
+                        if(legAdjustDist<990) {
+                            legAdjustDist+=10;
+                        }
+                        break;    
+                    case 3:
+                        if(legAdjustDist<900) {
+                            legAdjustDist+=100;
+                        }
+                        break;          
+                }
+                //Distance changed, so recalculate target time.  Speed over distance will give time in hours
+                //Convert to seconds and the scale by 1000 for the fixed point representation of seconds.
+                legAdjustTime=(legAdjustDist/legAdjustSpeed)*3600*1000; 
+            }   
+            ret=0;
+            break;
+        case KEYPAD_KEY_ESC:
+            if(legAdjustMode==2) {
+                legAdjustMode=1;
+                legAdjustDist=legAdjustDistTmp;
+                legAdjustTime=legAdjustTimeTmp;
+                ret=0;
+            } else {
+                ret=2;
+            }
+        default:
+            break;
+    }
+    return ret;}
+
+uint8_t menuAdjustLegSpeed(uint8_t key) {
+    int ret=0;
+    switch (key) {
+        case KEYPAD_KEY_START_STOP:
+            ret=0;
+            break;
+        case KEYPAD_KEY_ENTER:
+            if(legAdjustMode==1) {
+                legAdjustMode=2;
+                legAdjustSpeedTmp=legAdjustSpeed;
+            } else {
+                legAdjustMode=1;
+            }
+            ret=0;
+            break;
+        case KEYPAD_KEY_DOWN:
+            if(legAdjustMode==1) {
+                if(legAdjustColumn>-3) {
+                    if(legAdjustColumn==1) {
+                        legAdjustColumn-=2;
+                    } else {   
+                        legAdjustColumn--;
+                    }
+                }   
+            } else {
+                switch(legAdjustColumn) {
+                    case -3:
+                        if(legAdjustSpeed>0.001) {
+                            legAdjustSpeed-=0.001;
+                        }
+                        break;
+                    case -2:
+                        if(legAdjustSpeed>=0.01) {
+                            legAdjustSpeed-=0.01;
+                        }
+                        break;                        
+                    case -1:
+                        if(legAdjustSpeed>=0.1) {
+                            legAdjustSpeed-=0.1;
+                        }
+                        break;
+                    case 1:
+                        if(legAdjustSpeed>=1) {
+                            legAdjustSpeed-=1;
+                        }
+                        break;    
+                    case 2:
+                        if(legAdjustSpeed>=10) {
+                            legAdjustSpeed-=10;
+                        }
+                        break;    
+                    case 3:
+                        if(legAdjustSpeed>=100) {
+                            legAdjustSpeed-=100;
+                        }
+                        break;                                            
+                }
+                //Speed changed, so recalculate target time.  Speed over distance will give time in hours
+                //Convert to seconds and the scale by 1000 for the fixed point representation of seconds.
+                legAdjustTime=(legAdjustDist/legAdjustSpeed)*3600*1000; 
+            }
+            ret=0;
+            break;
+        case KEYPAD_KEY_UP:
+            if(legAdjustMode==1) {
+                if(legAdjustColumn<3) {
+                    if(legAdjustColumn==-1) {
+                        legAdjustColumn+=2;
+                    } else {   
+                        legAdjustColumn++;
+                    }
+                }   
+            } else {
+                switch(legAdjustColumn) {
+                    case -3:
+                        if(legAdjustSpeed<999.999) {
+                            legAdjustSpeed+=0.001;
+                        }
+                        break;
+                    case -2:
+                        if(legAdjustSpeed<999.99) {
+                            legAdjustSpeed+=0.01;
+                        }
+                        break;                        
+                    case -1:
+                        if(legAdjustSpeed<999.9) {
+                            legAdjustSpeed+=0.1;
+                        }
+                        break;
+                    case 1:
+                        if(legAdjustSpeed<999) {
+                            legAdjustSpeed+=1;
+                        }
+                        break;    
+                    case 2:
+                        if(legAdjustSpeed<990) {
+                            legAdjustSpeed+=10;
+                        }
+                        break;    
+                    case 3:
+                        if(legAdjustSpeed<900) {
+                            legAdjustSpeed+=100;
+                        }
+                        break;    
+                } 
+                //Speed changed, so recalculate target time.  Speed over distance will give time in hours
+                //Convert to seconds and the scale by 1000 for the fixed point representation of seconds.
+                legAdjustTime=(legAdjustDist/legAdjustSpeed)*3600*1000; 
+            }   
+            ret=0;
+            break;
+        case KEYPAD_KEY_ESC:
+            if(legAdjustMode==2) {
+                legAdjustMode=1;
+                legAdjustSpeed=legAdjustSpeedTmp;
+                legAdjustTime=legAdjustTimeTmp;
+                ret=0;
+            } else {
+                ret=2;
+            }
+        default:
+            break;
+    }
+    return ret;
 }

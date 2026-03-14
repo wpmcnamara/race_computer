@@ -6,8 +6,10 @@
 #include "state_machine.h"
 #include "display.h"
 #include <ArduinoJson.h>
+#include <CSV_Parser.h>
 
 raceData_t race;
+raceData_t tmpLeg;
 event_t *delayedStartEvent;
 std::list<race_t *> races; 
 std::list<race_t *>::iterator selectedRace;
@@ -77,10 +79,14 @@ void raceLegStop() {
 void loadRaces() {
   File32 entry;
   JsonDocument doc;
+  YAMLNode yamlnode;
   DeserializationError error;
   race_t *raceFile;
   raceLeg_t *raceLegFile;
   char fileName[256];
+  bool noRaceFound=true;
+  unsigned char *buffer;
+  uint32_t len;
   //see if we have an SD card or not.  If we don't we are going to fall back to a hardcoded set of
   //races and legs.
   if(!sdCardPresent) {
@@ -92,37 +98,53 @@ void loadRaces() {
   doSPILock();
   //race data files will be stored in a directory called "orc"
   //if it doesn't exist, then we've got races to load.
-  if(!sdCard.exists("orc")) {
+  if(!sdCard.exists("orrc")) {
+    Serial.println("Data directory not found.  Loading default race definitions.");
     doSPIUnlock();
+    loadDefaultRaces();
     return;
   }
   File32 orcDir=sdCard.open("orrc/races");
+  doSPIUnlock();
   //process the orc directory.  Anything that ends in .csv will be considered a race file.
   while (true) {
+    doSPILock();
     entry =  orcDir.openNextFile();
     if (! entry) {
       break;
     }
     //We are looking for files right now, so skip directories.
     if(entry.isDirectory()) {
+      doSPIUnlock();
       continue;
     }
     entry.getName(fileName,256);
-    if(strstr(fileName, ".jsn")==NULL) {
+    if(strstr(fileName, ".yml")==NULL) {
+      doSPIUnlock();
       continue;
     }
+    noRaceFound=false;
     Serial.printf("Found race file: %s\n", fileName);
-    error=deserializeJson(doc, entry);
-    if (error) {
-      Serial.println("deserialization error");
-      entry.close();
-      continue;
+    len=entry.fileSize();
+    buffer=(unsigned char *)malloc(len+1);
+    if(buffer==0) {
+      Serial.println("malloc failed!");
+      while(1);
     }
-    //do these before we close the file, or entry.name() return empty.
+    len=entry.read(buffer, len);
+    buffer[len]=0;
     raceFile=new race_t;
     entry.getName(fileName, 256);
     raceFile->fileName=fileName;
     entry.close();
+    doSPIUnlock();
+    error=deserializeYml(doc,(const char *) buffer);
+    free(buffer);
+    if (error) {
+      Serial.println("deserialization error");
+      delete raceFile;
+      continue;
+    }
     Serial.printf("race filename: %s\n", raceFile->fileName.c_str());
     raceFile->descr=doc["descr"].as<String>();
     Serial.printf("race descr: %s\n", raceFile->descr.c_str());
@@ -175,10 +197,14 @@ void loadRaces() {
       Serial.println("next leg");
     } 
   }
+  if(noRaceFound) {
+    Serial.println("No race files found.  Loading default race definitions");
+    loadDefaultRaces();
+    return;   
+  }
   selectedRace=races.begin();
   selectedRaceLeg=(*selectedRace)->raceLegs.begin();
   Serial.println((*selectedRace)->descr);
-  doSPIUnlock();
 }
 
 void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
@@ -219,13 +245,20 @@ void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
   race.startTs.millis=0;
   race.endTs.seconds=0;
   race.endTs.millis=0;
-}
 
-void prepRace(void) {
+  //leg definitions will have data stored in miles, and miles/hour.  We track things internally
+  //in meters and m/s because that's what comes out of the GPS.  Convert the leg definition values
+  //to internal values for tracking the race.
+
+  //mph->m/s
   race.legData->targetSpeed=(race.activeLeg->speed)/2.23694;
+  //mph->m/s
   race.legData->speedTargetBand=(race.activeLeg->speedRange)/2.23694;
+  //miles->meters
   race.legData->totalDistance=(race.activeLeg->distance)/0.000621372;
+  //miles->meters
   race.legData->driveDistance=(race.activeLeg->driveDistance)/0.000621372;
+  //we don't translate distance remaining?
   race.legData->distanceRemaining=race.legData->driveDistance;
   race.legData->startMark=race.activeLeg->mark;
   //let calculate the actual target speed we need, in order to hit the race target.
@@ -238,6 +271,9 @@ void prepRace(void) {
   //now figure the adjusted targer based on how long the leg should take, and the 
   //actual distance we will drive.
   race.legData->adjustedTargetSpeed=(double)race.legData->driveDistance/race.legData->time;
+}
+
+void prepRace(void) {
   race.legData->distance=0;
   race.legData->distanceComplete=0;
   race.legData->driveDistanceComplete=0;
@@ -262,52 +298,59 @@ void prepRace(void) {
 void loadRacePoints(raceLeg_t *raceLeg) {
   racePoint_t *point;
   char path[256];
-  int index=0;
-  JsonDocument doc;
-  DeserializationError error;
+
+  CSV_Parser cp(/*format*/ "udsfss", /*has_header*/ true, /*delimiter*/ ',');
   sprintf(path, "orrc/races/%s", race.activeLeg->pointsFile.c_str());
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
   if(!sdCard.exists(path)) {
     doSPIUnlock();
+    Serial.println("point file not found");
     return;
   }
   Serial.printf("Loading point file: %s\n", path);
+
+  //We are using the SdFat library, so we can;t call CSV_Parser::readSDfile() because it won't understand
+  //long file names, so we implement effectively the same code directly here.
   File32 pointFile=sdCard.open(path);
   if(!pointFile) {
     Serial.println("  file open error");
     doSPIUnlock();
     return;
   }
-  error=deserializeJson(doc, pointFile);
-  if (error) {
-    Serial.println("deserialization error");
-    Serial.println(error.c_str());
-    pointFile.close();
-    doSPIUnlock();
-    return;
+  while (pointFile.available()) {
+    cp << (char)pointFile.read();
   }
   pointFile.close();
   doSPIUnlock();
-  for (JsonObject jsonPoint : doc["points"].as<JsonArray>()) {
+  // ensure that the last value of the file is parsed (even if the file doesn't end with '\n')
+  cp.parseLeftover();
+  cp.print(); // assumes that "Serial.begin()" was called before (otherwise it won't work)
+  uint16_t *turn=(uint16_t *)cp["turn"];
+  char **dir=(char **)cp["dir"];
+  float *distance=(float *)cp["distance"];
+  char **descr1=(char **)cp["descr1"];
+  char **descr2=(char **)cp["descr2"];
+  for(int row = 0; row < cp.getRowsCount(); row++) {
     point=new racePoint_t;
-    point->id=index;
+    point->id=row;
     Serial.printf(" point %d\n", point->id);
-    point->turn=jsonPoint["turn"].as<int>();
+    point->turn=turn[row];
     Serial.printf("   turn: %d\n", point->turn);
-    point->turnDir=jsonPoint["dir"].as<bool>();
+    if(strcmp(dir[row], "Right")==0) {
+      point->turnDir=1;
+    } else {
+      point->turnDir=0;
+    }
     Serial.printf("   dir: %d\n", point->turnDir);
-    point->distance=jsonPoint["distance"].as<float>()/0.000621372;
+    point->distance=distance[row]/0.000621372;
     Serial.printf("   distance: %d\n", point->distance);
-    point->descrLine1=jsonPoint["descr1"].as<String>();
+    point->descrLine1=descr1[row];
     Serial.printf("   descr1: %s\n", point->descrLine1.c_str());
-    point->descrLine2=jsonPoint["descr2"].as<String>();
+    point->descrLine2=descr2[row];
     Serial.printf("   descr2: %s\n", point->descrLine2.c_str());  
-    
-    index++;
-    raceLeg->points.push_back(point);   
-  } 
-
+    raceLeg->points.push_back(point);     
+  }  
 }
 
 void clearRacePoints(raceLeg_t *raceLeg) {
@@ -376,13 +419,13 @@ void raceCheckPoint(void) {
   }
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
-  if(!sdCard.exists("orc")) {
+  if(!sdCard.exists("orrc")) {
     doSPIUnlock();
     return;
   }
-  if(sdCard.exists("orrc/system/race.dat")) {
+  if(sdCard.exists("orrc/system/race_checkpoint.yml")) {
     Serial.println("clearing race checkpoint");
-    sdCard.remove("orrc/system/race.dat");
+    sdCard.remove("orrc/system/race_checkpoint.yml");
   }
   if(race.inProgress!=true) {
     Serial.println("no race in progress");
@@ -398,13 +441,13 @@ void raceCheckPoint(void) {
   doc["distanceComplete"]=race.distanceComplete;
   doc["timeSec"]=race.timeComplete.seconds;
   doc["timeMilli"]=race.timeComplete.millis;
-  checkPoint=sdCard.open("orrc/system/race.dat", FILE_WRITE);
+  checkPoint=sdCard.open("orrc/system/race_checkpoint.yml", FILE_WRITE);
   if(!checkPoint) {
     Serial.println("Checkpoint open failed");
 
   }
-  serializeJsonPretty(doc, checkPoint);
-  serializeJsonPretty(doc, Serial);
+  serializeYml(doc, checkPoint);
+  serializeYml(doc, Serial);
   Serial.println();
   checkPoint.close();
   doSPIUnlock();
@@ -418,21 +461,31 @@ void loadRaceCheckPoint(void) {
   JsonDocument doc;
   File32 checkPoint;
   DeserializationError error;
+  unsigned char *buffer;
+  uint32_t len;
   if(!sdCardPresent) {
     Serial.println("No SD card.  Unable to load race checkpoint");
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
-  if(!sdCard.exists("orrc/system/race.dat")) {
+  if(!sdCard.exists("orrc/system/race_checkpoint.yml")) {
     doSPIUnlock();
     return;
   }  
   Serial.println("Found race checkpoint");
-  checkPoint=sdCard.open("orrc/systems/race.dat");
-  error=deserializeJson(doc, checkPoint);
+  checkPoint=sdCard.open("orrc/system/race_checkpoint.yml");
+  len=checkPoint.fileSize();
+  buffer=(unsigned char *)malloc(len+1);
+  if(buffer==0) {
+    Serial.println("malloc failed!");
+    while(1);
+  }
+  len=checkPoint.read(buffer, len);
+  buffer[len]=0;
   checkPoint.close();
   doSPIUnlock();
+  error=deserializeYml(doc, (const char *)buffer);
   if (error) {
     Serial.println("deserialization error");
     Serial.println(error.c_str());

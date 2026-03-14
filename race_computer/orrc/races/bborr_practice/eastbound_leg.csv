@@ -1,0 +1,15 @@
+turn,dir,distance,descr1,descr2
+1,Left,0.1,Left sweeper,
+2,Right,1,Long right sweeper,
+,,1.4,Short straightaway,
+3,Right,3,Right sweeper,
+4,Left,3.4,Left curve into straightway,
+5,Left,3.7,Left curve,
+6,Right,3.9,Right sharp curve into ,straight away
+7,Right,4.6,right sweeper,
+8,Right,5.3,Right sweeper,
+9,Right,5.9,Right curve into rough bridge,
+10,Left,5.9,Left curve,
+11,Left,6.5,"Double low, left curve",
+12,Left,7.4,Long left sweeper,
+,,7.9,FINISH LINE,

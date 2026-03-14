@@ -5,6 +5,8 @@
 #include <list>
 #include <string>
 
+#include <YAMLDuino.h>
+
 typedef class racePoint racePoint_t;
 typedef class raceLeg raceLeg_t;
 typedef class race race_t;
@@ -33,6 +35,7 @@ extern std::list<race_t *>::iterator selectedRace;
 extern std::list<race_t *>::iterator selectedRaceSave;
 extern std::vector<raceLeg_t *>::iterator selectedRaceLeg;
 extern std::list<race_t *> races; 
+extern raceData_t tmpLeg;
 
 class racePoint {
   public:
@@ -58,6 +61,8 @@ class raceLeg {
     //actual distance driven for leg.  Used to properly calculated target
     //speed.
     float driveDistance;
+    //target time to complete the leg -- in seconds.
+    float targetTime;
     unsigned int id;
     String descr;
     String pointsFile;

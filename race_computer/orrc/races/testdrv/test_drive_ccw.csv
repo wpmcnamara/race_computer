@@ -1,0 +1,11 @@
+turn,dir,distance,descr1,descr2
+1,Right,0.015,Right turn onto Bishop,20MPH (30MPH Speed Limit)
+2,Left,0.115,Left on High Shoals,
+3,Left,0.52,Left turn onto Teel Pkwy,45MPH Speed Limit
+4,Left,1.12,Left turn onto Main Street,45MPH Speed Limit
+5,Left,2.7,Left turn onto Hwyv423,45MPH Speed Limit
+6,Left,3.4,Left turn onto Stonebrook Pkwy,45MPH Speed Limit
+7,Left,5.11,Left turn onto Teel Pkwy,45MPH Speed Limit
+8,Left,6.1,Left on Angel Falls,30MPH Speed Limit
+9,Left,6.6,Left  on Dunafan,20MPH (30MPH Speed Limit)
+10,Left,6.61,Left into alleyway,

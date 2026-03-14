@@ -20,7 +20,6 @@ void setup() {
   Wire.setClock(400000);
   keypadSetup();
   displaySetup();
-
   storageSetup();
   gpsSetup();
   timerSetup();
