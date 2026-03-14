@@ -1,0 +1,16 @@
+descr: BBORR Practice - 110mph
+speed: 110
+speed_range: 0.1
+distance: 15.9
+tmark: 0
+legs:
+- id: 1
+  descr: BBORR Practice Westbound
+  speed: 110
+  distance: 8
+  points: bbor_practice/westbound_leg.csv
+- id: 2
+  descr: BBORR Practice Eastbound
+  speed: 110
+  distance: 7.9
+  points: bborr_practice/eastbound_leg.csv

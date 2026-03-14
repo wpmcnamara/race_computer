@@ -5,6 +5,7 @@
 #include "bsp.h"
 #include "menu.h"
 #include "storage.h"
+#include "math.h"
 
 
 class stateMachine stateMachine;
@@ -101,6 +102,24 @@ void stateMachine::run(void) {
       case stateEditRaceLeg:
         Serial.print("from: stateEditRaceLeg");
         break; 
+      case stateAdjustLegTime:
+        Serial.print("from: stateAdjustLegTime");
+        break; 
+      case stateAdjustLegDistance:
+        Serial.print("from: stateAdjustLegDistance");
+        break; 
+      case stateAdjustLegSpeed:
+        Serial.print("from: stateAdjustLegSpeed");
+        break; 
+      case stateAdjustLegSave:
+        Serial.print("from: stateAdjustLegSave");
+        break;       
+      case stateAdjustLegRestore:
+        Serial.print("from: stateAdjustLegRestore");
+        break;    
+      case   stateAdjustLegCaptureValues:
+        Serial.printf("from: stateAdjustLegCaptureValues"); 
+        break;          
       case stateUnknown:
         Serial.print("from: stateUnknown");
         break; 
@@ -123,7 +142,7 @@ void stateMachine::run(void) {
         menuItem=0;
         raceSelectHighlight=false;
         raceLegSelectHighlight=false;
-        //This is pop any dummy menus of the stack and return us the the active menu tree.
+        //This is to pop any dummy menus of the stack and return us the the active menu tree.
         //If we weren't in a dummy menu, then this is a no op.
         (*menuStack.back()).keypress(0);
         setAllButtonColor(COLOR_BLACK);
@@ -299,7 +318,78 @@ void stateMachine::run(void) {
         break; 
       case stateEditRaceLeg:
         Serial.println("  to: stateEditRaceLeg");
+        legAdjustMode=0;
+        //This is to pop any dummy menus of the stack and return us the the active menu tree.
+        //If we weren't in a dummy menu, then this is a no op.
+        (*menuStack.back()).keypress(0);
+        displayList.erase(displayList.begin(), displayList.end());
+        ledDispFunc=ledDispDashes;
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayAdjustLeg));     
         break; 
+      case stateAdjustLegTime:
+        Serial.println("to: stateAdjustLegTime");
+        //only editing one, but we need to backup all three current values because we will restore
+        //all three values if we escape out of the edit.  Don't want to restore the wrong contents for
+        //either none edited value.
+        legAdjustDistBackup=legAdjustDistBackup;
+        legAdjustSpeedBackup=legAdjustSpeed;
+        legAdjustTimeBackup=legAdjustTime;
+        legAdjustRow=0;
+        legAdjustColumn=-1;
+        legAdjustMode=1;
+        break; 
+      case stateAdjustLegDistance:
+        Serial.println("to: stateAdjustLegDistance");
+        //only editing one, but we need to backup all three current values because we will restore
+        //all three values if we escape out of the edit.  Don't want to restore the wrong contents for
+        //either none edited value.        
+        legAdjustDistBackup=legAdjustDistBackup;
+        legAdjustSpeedBackup=legAdjustSpeed;
+        legAdjustTimeBackup=legAdjustTime;
+        legAdjustRow=1;
+        legAdjustColumn=-1;
+        legAdjustMode=1;
+        break; 
+      case stateAdjustLegSpeed:
+        Serial.println("to: stateAdjustLegSpeed");
+        //only editing one, but we need to backup all three current values because we will restore
+        //all three values if we escape out of the edit.  Don't want to restore the wrong contents for
+        //either none edited value.
+        legAdjustDistBackup=legAdjustDistBackup;
+        legAdjustSpeedBackup=legAdjustSpeed;
+        legAdjustTimeBackup=legAdjustTime;
+        legAdjustRow=2;
+        legAdjustColumn=-1;
+        legAdjustMode=1;
+        break; 
+      case stateAdjustLegSave:
+        Serial.println("to: stateAdjustLegSave");
+        race.legData->driveDistance=legAdjustDist/0.000621372;
+        race.legData->adjustedTargetSpeed=legAdjustSpeed/2.23694;
+        race.legData->time=(double)legAdjustTime/1000.0;
+        legAdjustMode=0;
+        break;       
+      case stateAdjustLegRestore:
+        Serial.println("to: stateAdjustLegRestore");
+        //To keep from having three different states, we simply restore all the values if we escape out
+        //of any edit.  This works because we backed up the current value for all three fields when we
+        //entered edit more for any of them.
+        legAdjustDist=legAdjustDistBackup;
+        legAdjustSpeed=legAdjustSpeedBackup;
+        legAdjustTime=legAdjustTimeBackup;  
+        legAdjustMode=0;         
+      case stateAdjustLegCaptureValues:
+        Serial.println("to: stateAdjustLegCaptureValues");
+        //grab the leg values we can edit.  We will convert them to miles and mph here as it will make the
+        //edit routines not have to continually convert.  We will convert back when we save them.
+        //We multiply by 1000, the round to the nearest integer, then divide by 1000 to round these values
+        //to three digits after the decimal.
+        legAdjustDist=round(race.legData->driveDistance*0.000621372*1000)/1000;
+        legAdjustSpeed=round(race.legData->adjustedTargetSpeed*2.23694*1000)/1000;
+        legAdjustTime=race.legData->time*1000;
+        break;
       case stateUnknown:
         Serial.println("  to: stateUnknown");
         break;
@@ -393,8 +483,22 @@ void stateMachine::run(void) {
       state=stateLoadRaceCheckPoint; 
       break; 
     case stateEditRaceLeg:
-      state=stateMainMenu;  
       break; 
+    case stateAdjustLegTime:
+      break; 
+    case stateAdjustLegDistance:
+      break; 
+    case stateAdjustLegSpeed:
+      break; 
+    case stateAdjustLegSave:
+      state=stateMainMenu;
+      break;       
+    case stateAdjustLegRestore:
+      state=stateMainMenu;
+      break;
+    case stateAdjustLegCaptureValues:
+      state=stateEditRaceLeg;
+      break;
     case stateUnknown:
       break;
   }
@@ -419,6 +523,7 @@ void stateMachine::run(void) {
     case stateLoadRaceCheckPoint:
       break;            
     case stateMainMenu:
+    case stateEditRaceLeg:
       menuAction=(*menuStack.back()).keypress(keys);
       switch(menuAction) {
         case menuActionStart:
@@ -454,14 +559,37 @@ void stateMachine::run(void) {
         case menuActionScreenTimeout:
           state=stateSetScreenBlankTime;
           break;
-        case menuActionEditRaceLeg:
-          state=stateEditRaceLeg;
+        case menuActionAdjustLeg:
+          state=stateAdjustLegCaptureValues;
           break;
         case menuActionSystemInfo:
           break;
         case menuActionReboot:
           doReboot();
           break;
+        case menuActionAdjustTime:
+          state=stateAdjustLegTime;
+          break;
+        case menuActionAdjustDistance:
+          state=stateAdjustLegDistance;
+          break;
+        case menuActionAdjustSpeed:
+          state=stateAdjustLegSpeed;
+          break;
+        case menuActionAdjustSave:
+          //We are currently in the leg adjustment menu and "Save" was selected.  We need to exit
+          //this menu to signify that settings were saved.  We simulate an ESC being pressed and
+          //pop the adjustment menu off the menu stack and return to the main menu state.
+          menuStack.pop_back();
+          state=stateAdjustLegSave;
+          break;          
+        case menuActionEsc:
+          if(state==stateEditRaceLeg) {
+            state=stateAdjustLegRestore;
+          }
+          break;
+        case menuActionMainMenu:
+          state=stateMainMenu;
         default:
           break;
       }
@@ -674,20 +802,65 @@ void stateMachine::run(void) {
           break;
       }
       break; 
-      break; 
     case stateScreenBlank:
       state=stateScreenWake;
       break; 
     case stateScreenWake:
       break;
     case stateSaveSettings:
-
       break; 
     case stateLoadSettings:
-
       break; 
-    case stateEditRaceLeg:
-    
+    case stateAdjustLegTime:
+      menuAction=menuAdjustLegTime(keys);
+      switch(menuAction) {
+        case 0:
+          break;
+        case 1:
+          state=stateEditRaceLeg;
+          break;
+        case 2:
+          state=stateEditRaceLeg;
+          break;
+        default:
+          break;
+      }
+      break;
+    case stateAdjustLegDistance:
+      menuAction=menuAdjustLegDistance(keys);
+      switch(menuAction) {
+        case 0:
+          break;
+        case 1:
+          state=stateEditRaceLeg;
+          break;
+        case 2:
+          state=stateEditRaceLeg;
+          break;
+        default:
+          break;
+      }  
+      break;
+    case stateAdjustLegSpeed:
+      menuAction=menuAdjustLegSpeed(keys);
+      switch(menuAction) {
+        case 0:
+          break;
+        case 1:
+          state=stateEditRaceLeg;
+          break;
+        case 2:
+          state=stateEditRaceLeg;
+          break;
+        default:
+          break;
+      }      
+      break; 
+    case stateAdjustLegSave:
+      break;       
+    case stateAdjustLegRestore:
+      break;
+    case stateAdjustLegCaptureValues:
       break;
     case stateUnknown:
       break;

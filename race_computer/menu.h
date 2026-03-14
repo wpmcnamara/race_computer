@@ -20,7 +20,13 @@ enum menuAction {
   menuActionScreenTimeout,
   menuActionEditRaceLeg,
   menuActionSystemInfo,
-  menuActionReboot
+  menuActionReboot,
+  menuActionAdjustTime,
+  menuActionAdjustDistance,
+  menuActionAdjustSpeed,
+  menuActionAdjustSave,
+  menuActionEsc,
+  menuActionMainMenu,
 };
 
 typedef enum menuAction menuAction_t;
@@ -78,11 +84,34 @@ extern menu_t firmwareUpdateMenu;
 extern menu_t systemInformationMenu;
 extern menu_t rebootMenu;
 
+extern menu_t adjustTimeMenu;
+extern menu_t adjustDistanceMenu;
+extern menu_t adjustSpeedMenu;
+extern menu_t adjustSaveMenu;
+
+
 extern std::vector<menu_t*> menuStack;
+
+extern int legAdjustRow;
+extern int legAdjustColumn;
+extern int legAdjustMode;
+extern long int legAdjustTime;
+extern long int legAdjustTimeTmp;
+extern long int legAdjustTimeBackup;
+extern double legAdjustDist;
+extern double legAdjustDistTmp;
+extern double legAdjustDistBackup;
+extern double legAdjustSpeed;
+extern double legAdjustSpeedTmp;
+extern double legAdjustSpeedBackup;
+
 
 uint8_t menuSetLedBrightness(uint8_t key);
 uint8_t menuSetOledBrightness(uint8_t key);
 uint8_t menuSetScreenTimeout(uint8_t key);
+uint8_t menuAdjustLegTime(uint8_t key);
+uint8_t menuAdjustLegDistance(uint8_t key);
+uint8_t menuAdjustLegSpeed(uint8_t key);
 
 
 #endif

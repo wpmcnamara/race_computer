@@ -1,0 +1,13 @@
+turn,dir,distance,descr1,descr2
+1,Right,0.9,Right hand sweeper into short,straight
+2,Right,1.2,Right hand turn,two lanes wide
+,,1.8,Rought bridge,
+3,Left,2.2,Left short sweeper into short,straightway
+4,Left,2.4,Left sweeper into long straight,
+5,Left,3.2,Left hand sweeper,
+6,Left,4.1,Left to right S curve into short,straight
+,,4.8,Straight S curve,
+,,6.2,Sanderson Canyon Bridge rough,
+7,Left,6.4,Left sweeper,
+8,Left,6.8,Left curve,
+9,Right,8,Right sweeper,

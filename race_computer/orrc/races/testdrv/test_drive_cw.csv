@@ -1,0 +1,11 @@
+turn,dir,distance,descr1,descr2
+1,Right,0.01,Right turn onto Dunafan,30MPH Speed Limit
+,,0.26,Stop sign,
+2,Right,0.51,Right turn onto Teel Pkwy,45MPH Speed Limit
+3,Right,1.41,Right turn onto Stonebrook Parkway,45MPH Speed Limit
+4,Right,3.01,Right turn onto Hwy423,45MPH Speed Limit
+5,Right,3.61,Right turn onto Main St,45MPH Speed Limit
+6,Right,5.11,Right turn onto Teel Pkwy,45MPH Speed Limit
+7,Right,5.71,Right on High Shoals,30MPH Speed Limit
+8,Right,6.11,Right on Bishop,20MPH (30MPH Speed Limit)
+9,Left,6.21,Left on Greenwood,

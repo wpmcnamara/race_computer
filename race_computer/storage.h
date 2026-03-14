@@ -6,9 +6,11 @@
 #include <string.h>
 #include "helpers.h"
 #include <SdFat.h>
+#include <ArduinoYaml.h>
+#include <YAMLDuino.h>
 
 #define SD_FAT_TYPE 1
-#define SD_CONFIG SdSpiConfig(SDCARD_CS, SHARED_SPI, SPI_SPEED)
+
 
 extern SdFat32 sdCard;
 extern bool sdCardPresent;

@@ -77,11 +77,11 @@ void saveSettings(void) {
   }
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
-  if(!sdCard.exists("orc")) {
+  if(!sdCard.exists("orrc")) {
     doSPIUnlock();
     return;
   }
-
+  doSPIUnlock();
   Serial.println("Saving settings...");
   doc["displayTimeout"]=displayTimeout;
   doc["oledBrightness"]=oledBrightness;
@@ -92,44 +92,59 @@ void saveSettings(void) {
   oledDisp[2]=OLEDDisplayActive[2];
   oledDisp[3]=OLEDDisplayActive[3];
   doc["ledDisp"]=LEDDisplayActive;
-  if(sdCard.exists("orrc/system/settings.dat")) {
+  doSPILock();
+  if(sdCard.exists("orrc/system/settings.yml")) {
     Serial.println("clearing saved settings");
-    sdCard.remove("orrc/systemsettings.dat");
+    sdCard.remove("orrc/system/settings.yml");
   }
-  settings=sdCard.open("orrc/system/settings.dat", FILE_WRITE);
+  settings=sdCard.open("orrc/system/settings.yml", FILE_WRITE);
   if(!settings) {
     Serial.println("Settings open failed");
     doSPIUnlock();
     return;
   }
-  serializeJsonPretty(doc, settings);
-  serializeJsonPretty(doc, Serial);
+  serializeYml(doc, settings);
+  serializeYml(doc, Serial);
   Serial.println();
   settings.close();
   doSPIUnlock();
 
 };
+
 void loadSettings(void) {
   JsonDocument doc;
   JsonArray oledDisp;
   File32 settings;
   DeserializationError error;
+  unsigned char *buffer;
+  uint32_t len;
   if(!sdCardPresent) {
     Serial.println("No SD card.  Unable to load saved settings");
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
   doSPILock();
-  if(!sdCard.exists("orrc/system/settings.dat")) {
+  if(!sdCard.exists("orrc/system/settings.yml")) {
     doSPIUnlock();
     Serial.println("No settings file found.");
     return;
   }  
   Serial.println("Found settings file");
-  settings=sdCard.open("orrc/system/settings.dat");
-  error=deserializeJson(doc, settings);
+  settings=sdCard.open("orrc/system/settings.yml");
+  len=settings.fileSize();
+  Serial.printf("file size: %d\n", len);
+  buffer=(unsigned char *)malloc(len+1);
+  if(buffer==0) {
+    Serial.println("malloc failed!");
+    while(1);
+  }
+  len=settings.read(buffer, len);
+  buffer[len]=0;
   settings.close();
   doSPIUnlock();
+
+  error=deserializeYml(doc, (const char *)buffer);
+  free(buffer);
   if (error) {
     Serial.println("deserialization error");
     Serial.println(error.c_str());
