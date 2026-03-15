@@ -361,12 +361,16 @@ uint8_t menuAdjustLegTime(uint8_t key) {
                         if(legAdjustTime>=3600000) {
                             legAdjustTime-=3600000;
                         }
+                        break;
                     case 8:
                         if(legAdjustTime>=36000000) {
                             legAdjustTime-=36000000;
                         }                        
                         break;         
                 }
+                //Time changed, so recalculate target speed.  Time is in thousandths of a second.
+                //Scale time to hours to calculate miles per hour.
+                legAdjustSpeed=((double)legAdjustDist/((double)legAdjustTime/3600000.0));
             }
             ret=0;
             break;
@@ -420,12 +424,16 @@ uint8_t menuAdjustLegTime(uint8_t key) {
                         if(legAdjustTime<356399999) {
                             legAdjustTime+=3600000;
                         }
+                        break;
                     case 8:
                         if(legAdjustTime<323999999) {
                             legAdjustTime+=36000000;
                         }                        
                         break;         
                 }
+                //Time changed, so recalculate target speed.  Time is in thousandths of a second.
+                //Scale time to hours to calculate miles per hour.
+                legAdjustSpeed=((double)legAdjustDist/((double)legAdjustTime/3600000.0));
             }   
             ret=0;
             break;
@@ -500,9 +508,9 @@ uint8_t menuAdjustLegDistance(uint8_t key) {
                         }
                         break;                                            
                 }
-                //Distance changed, so recalculate target time.  Speed over distance will give time in hours
-                //Convert to seconds and the scale by 1000 for the fixed point representation of seconds.
-                legAdjustTime=(legAdjustDist/legAdjustSpeed)*3600*1000;                  
+                //Distance changed, so recalculate target speed.  Time is in thousandths of a second.
+                //Scale time to hours to calculate miles per hour.
+                legAdjustSpeed=((double)legAdjustDist/((double)legAdjustTime/3600000.0));                 
             }
 
             ret=0;
@@ -549,9 +557,9 @@ uint8_t menuAdjustLegDistance(uint8_t key) {
                         }
                         break;          
                 }
-                //Distance changed, so recalculate target time.  Speed over distance will give time in hours
-                //Convert to seconds and the scale by 1000 for the fixed point representation of seconds.
-                legAdjustTime=(legAdjustDist/legAdjustSpeed)*3600*1000; 
+                //Distance changed, so recalculate target speed.  Time is in thousandths of a second.
+                //Scale time to hours to calculate miles per hour.
+                legAdjustSpeed=((double)legAdjustDist/((double)legAdjustTime/3600000.0));
             }   
             ret=0;
             break;
