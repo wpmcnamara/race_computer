@@ -25,6 +25,7 @@ enum menuAction {
   menuActionAdjustDistance,
   menuActionAdjustSpeed,
   menuActionAdjustSave,
+  menuActionAdjustReset,
   menuActionEsc,
   menuActionMainMenu,
 };
@@ -48,6 +49,8 @@ class menu {
     int8_t getActiveLine(void);
     const char * operator[](uint8_t i);
     const char * getMenuTitle(void);
+    bool moreUp(void);
+    bool moreDown(void);
   private:
     std::vector<menuEntry_t> entries;
     std::string title;

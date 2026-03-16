@@ -37,6 +37,7 @@ enum stateMachineStatesEnum {
   stateAdjustLegSave,
   stateAdjustLegRestore,
   stateAdjustLegCaptureValues,
+  stateAdjustLegResetValues,
   stateUnknown
 };
 

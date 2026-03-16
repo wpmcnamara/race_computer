@@ -120,6 +120,9 @@ void stateMachine::run(void) {
       case   stateAdjustLegCaptureValues:
         Serial.printf("from: stateAdjustLegCaptureValues"); 
         break;          
+      case stateAdjustLegResetValues:
+        Serial.printf("from: stateAdjustLegResetValues"); 
+        break;             
       case stateUnknown:
         Serial.print("from: stateUnknown");
         break; 
@@ -390,6 +393,11 @@ void stateMachine::run(void) {
         legAdjustSpeed=round(race.legData->adjustedTargetSpeed*2.23694*1000)/1000;
         legAdjustTime=race.legData->time*1000;
         break;
+      case stateAdjustLegResetValues:
+        //probably could just use stateSaveSelection as it is the same action, but if we need to do something
+        //different, we won't need to split the states.
+        Serial.println("to: stateAdjustLegResetValues");
+        setRace((*selectedRace), (*selectedRaceLeg));
       case stateUnknown:
         Serial.println("  to: stateUnknown");
         break;
@@ -499,6 +507,9 @@ void stateMachine::run(void) {
     case stateAdjustLegCaptureValues:
       state=stateEditRaceLeg;
       break;
+    case stateAdjustLegResetValues:
+      state=stateMainMenu;
+      break;
     case stateUnknown:
       break;
   }
@@ -590,6 +601,14 @@ void stateMachine::run(void) {
           break;
         case menuActionMainMenu:
           state=stateMainMenu;
+          break;
+        case menuActionAdjustReset:
+          //We are currently in the leg adjustment menu and "Reset" was selected.  We need to exit
+          //this menu to signify that settings were saved.  We simulate an ESC being pressed and
+          //pop the adjustment menu off the menu stack and return to the main menu state.
+          menuStack.pop_back();        
+          state=stateAdjustLegResetValues;
+          break;
         default:
           break;
       }
@@ -861,6 +880,8 @@ void stateMachine::run(void) {
     case stateAdjustLegRestore:
       break;
     case stateAdjustLegCaptureValues:
+      break;
+    case stateAdjustLegResetValues:
       break;
     case stateUnknown:
       break;

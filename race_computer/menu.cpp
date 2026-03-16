@@ -38,6 +38,7 @@ std::vector<menuEntry_t> adjustLegMenuEntries={
     {"Adjust Distance", menuActionAdjustDistance,&adjustDistanceMenu},
     {"Adjust Target Speed", menuActionAdjustSpeed,&adjustSpeedMenu},
     {"Save Adjustments", menuActionAdjustSave, nullptr},
+    {"Reset All Adjustments", menuActionAdjustReset, nullptr},
 };
 
 std::vector<menuEntry_t> dummyMenuEntries;
@@ -182,6 +183,20 @@ const char * menu::getMenuTitle(void) {
     return title.c_str();
 }
 
+bool menu::moreUp(void) {
+    if(displayTop!=0) {
+        return true;
+    } 
+    return false;
+}
+
+bool menu::moreDown(void) {
+    if(displayTop+4<entryCount) {
+        return true;
+    }
+    return false;
+}
+
 uint8_t menuSetLedBrightness(uint8_t key) {
     switch (key) {
         case KEYPAD_KEY_START_STOP:
@@ -306,6 +321,7 @@ uint8_t menuAdjustLegTime(uint8_t key) {
             if(legAdjustMode==1) {
                 legAdjustMode=2;
                 legAdjustTimeTmp=legAdjustTime;
+                legAdjustSpeedTmp=legAdjustSpeed;
             } else {
                 legAdjustMode=1;
             }
@@ -441,6 +457,7 @@ uint8_t menuAdjustLegTime(uint8_t key) {
             if(legAdjustMode==2) {
                 legAdjustMode=1;
                 legAdjustTime=legAdjustTimeTmp;
+                legAdjustSpeed=legAdjustSpeedTmp;
                 ret=0;
             } else {
                 ret=2;
@@ -461,6 +478,7 @@ uint8_t menuAdjustLegDistance(uint8_t key) {
             if(legAdjustMode==1) {
                 legAdjustMode=2;
                 legAdjustDistTmp=legAdjustDist;
+                legAdjustSpeedTmp=legAdjustSpeed;
             } else {
                 legAdjustMode=1;
             }
@@ -567,7 +585,7 @@ uint8_t menuAdjustLegDistance(uint8_t key) {
             if(legAdjustMode==2) {
                 legAdjustMode=1;
                 legAdjustDist=legAdjustDistTmp;
-                legAdjustTime=legAdjustTimeTmp;
+                legAdjustSpeed=legAdjustSpeedTmp;
                 ret=0;
             } else {
                 ret=2;
@@ -587,6 +605,7 @@ uint8_t menuAdjustLegSpeed(uint8_t key) {
             if(legAdjustMode==1) {
                 legAdjustMode=2;
                 legAdjustSpeedTmp=legAdjustSpeed;
+                legAdjustTimeTmp=legAdjustTime;
             } else {
                 legAdjustMode=1;
             }

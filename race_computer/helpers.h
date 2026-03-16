@@ -8,7 +8,7 @@
 #define IMR_INDEX   5
 #define ISR_INDEX   6
 
-#define VERSION_STRING "firmware: 0.6.0"
+#define VERSION_STRING "firmware: 0.6.1"
 
 inline void disableInterrupt(uint8_t pin) {
 	if (pin >= CORE_NUM_DIGITAL) return;
