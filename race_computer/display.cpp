@@ -684,6 +684,24 @@ void displayMenu(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, d
     } else {
       display.drawButtonUTF8(1, y, U8G2_BTN_BW0, 255,  0,  0, (*menuStack.back())[i]);
     }
+    if(i==0) {
+      if((*menuStack.back()).moreUp()) {
+        display.setFont(u8g2_font_open_iconic_arrow_1x_t);
+        display.setDrawColor(2);
+        display.drawStr(248,14,"\x43");
+        display.setDrawColor(1);
+        display.setFont(u8g2_font_spleen6x12_mf);
+      }
+    }
+    if(i==3) {
+      if((*menuStack.back()).moreDown()) {
+        display.setFont(u8g2_font_open_iconic_arrow_1x_t);
+        display.setDrawColor(2);
+        display.drawStr(248,53,"\x40");
+        display.setDrawColor(1);
+        display.setFont(u8g2_font_spleen6x12_mf);
+      }
+    }
     y+=13;
   }
 

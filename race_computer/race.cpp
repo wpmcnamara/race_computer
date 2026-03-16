@@ -214,7 +214,7 @@ void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
   race.targetSpeed=(selectedRace->speed)/2.23694;
   race.speedTargetBand=(selectedRace->speedRange)/2.23694;
   race.totalDistance=(selectedRace->distance)/0.000621372;
-  race.distanceRemaining=race.totalDistance;
+  //race.distanceRemaining=race.totalDistance;
   race.startMark=selectedRace->mark;
 
   //Figure out how long the entire race will take, in seconds;
@@ -230,7 +230,7 @@ void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
   //time.  Should result in the race average speed over the official race
   //distance.
   race.adjustedTargetSpeed=(double)race.driveDistance/race.time;
-  
+  race.distanceRemaining=race.driveDistance;
   race.averageSpeed=0;
   race.distanceComplete=0;
   race.driveDistanceComplete=0;
@@ -290,7 +290,7 @@ void prepRace(void) {
   race.legData->startTs.millis=0;
   race.legData->endTs.seconds=0;
   race.legData->endTs.millis=0;  
-
+  race.legData->distanceRemaining=race.legData->driveDistance;
   loadRacePoints(race.activeLeg);
   race.legData->activePoint=race.activeLeg->points.begin();
 }
