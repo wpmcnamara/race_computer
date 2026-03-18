@@ -4,6 +4,8 @@
 #include "display.h"
 #include "FXUtil.h"
 #include "keypad.h"
+#include <EEPROM.h>
+
 extern "C" {
   #include "FlashTxx.h"         // TLC/T3x/T4x/TMM flash primitives
 }
@@ -13,8 +15,11 @@ bool SPILock=false;
 uint32_t firmwareSize=0;
 uint32_t firmwareProgress=0;
 uint8_t firmwareUpdateState=0;
+hardwareVersionStruct_t hardwareVersion;
+
 
 void bsp_setup(void) {
+  uint8_t ret;
 
   pinMode(SDCARD_CS, OUTPUT);
   digitalWrite(SDCARD_CS, HIGH);
@@ -33,6 +38,41 @@ void bsp_setup(void) {
   digitalWrite(OLED_DISP3_CS, HIGH);
   pinMode(OLED_DISP3_CS, OUTPUT);
   digitalWrite(OLED_DISP1_CS, HIGH);
+
+  ret=loadHardwareVersionStruct();
+  switch(ret) {
+    case 0:
+      Serial.println("Hardware version structure uninitialized.");
+      hardwareVersion.pcbMajor=2;
+      hardwareVersion.pcbMinor=1;
+      strncpy(hardwareVersion.pcbOther, "beta",16);
+      hardwareVersion.pcbOther[15]=0;
+      hardwareVersion.serialNo=2;
+      hardwareVersion.serialOther[0]=0;
+      storeHardwareVersionStruct(&hardwareVersion);  
+      break;
+    case 1:
+      Serial.println("Hardware version structure valid.");
+      Serial.printf("HW Version: %d.%d", hardwareVersion.pcbMajor, hardwareVersion.pcbMinor);
+      if(strlen(hardwareVersion.pcbOther)!=0) {
+        Serial.printf("-%s\n", hardwareVersion.pcbOther);
+      } else {
+        Serial.println("");
+      }
+      Serial.printf("Serial #: %06d", hardwareVersion.serialNo);
+      if(strlen(hardwareVersion.serialOther)!=0) {
+        Serial.printf("-%s\n", hardwareVersion.serialNo);
+      } else {
+        Serial.println("");
+      }   
+      break;
+    case 2:
+      Serial.println("Hardware version structure checksum invalid.");   
+      break;
+    case 3:
+      Serial.printf("Hardware version structure -- unexpected version: 0x%0X\n", EEPROM.read(HWVERSTRUCTADDR));
+      break;
+  }
 }
 
 bool checkForUpdate(void) {
@@ -98,4 +138,66 @@ bool doFirmwareUpdate(void) {
 
 void doReboot(void) {
   REBOOT;
+}
+
+uint8_t loadHardwareVersionStruct(void) {
+  uint16_t addr=HWVERSTRUCTADDR;
+  uint16_t offset;
+  uint32_t checkSum=0;
+  uint8_t *hwVerPtr=(uint8_t*)&hardwareVersion;
+  hwVerPtr[0]=EEPROM.read(addr);
+  if(hardwareVersion.structVer==0 || hardwareVersion.structVer==0xFF) {
+    //hardware version is uninitialized in EEPROM
+    return 0;
+  }
+  if (hardwareVersion.structVer != HWVERSTRUCTVER) {
+    //We got back an version of the data structure that we don't expect
+    //Don't try and read further as we won't know what to do with it or
+    //how much data is there.
+    return 3;
+  }
+
+  //Read the whole structure now.
+  for(offset=0; offset<sizeof(hardwareVersionStruct_t); offset++) {
+    hwVerPtr[offset]=EEPROM.read(addr+offset);
+  }
+
+  //calculate simple check sum 
+  for(offset=0; offset<sizeof(hardwareVersionStruct_t)-4; offset++) {
+    checkSum+=hwVerPtr[offset];
+  }
+  //checksum is invalid.  Assume EEPROM is corrupted
+  if(checkSum!=hardwareVersion.chkSum) {
+    return 2;
+  }
+  //got a valid hardwareVesion
+  return 1;
+
+}
+
+bool storeHardwareVersionStruct(hardwareVersionStruct_t* hwVer) {
+  uint16_t addr=HWVERSTRUCTADDR;
+  uint16_t offset;
+  uint32_t checkSum=0;
+  uint8_t *hwVerPtr=(uint8_t*)hwVer;
+  hwVer->pad=0;
+  //don't assume the caller has set the structure version value
+  hwVer->structVer=HWVERSTRUCTVER;
+  //calculate the simply checksum
+  for(offset=0; offset<sizeof(hardwareVersionStruct_t)-4; offset++) {
+    checkSum+=hwVerPtr[offset];
+  }
+  hwVer->chkSum=checkSum;
+  //now write to EEPROM
+  for(offset=0; offset<sizeof(hardwareVersionStruct_t); offset++) {
+    EEPROM.write(addr+offset, hwVerPtr[offset]);
+  }
+
+  //read back to confirm save was successfull
+  for(offset=0; offset<sizeof(hardwareVersionStruct_t); offset++) {
+    if(EEPROM.read(addr+offset)!=hwVerPtr[offset]) {
+      return false;
+    }
+  }
+  return true; 
 }

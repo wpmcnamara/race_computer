@@ -6,6 +6,7 @@
 #include "event.h"
 #include "race.h"
 #include "menu.h"
+#include "bsp.h"
 
 //8 digit LED display
 CK_MAX ledDisp(LED_DISP_LOAD);
@@ -1211,6 +1212,24 @@ void displayAdjustLeg(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t po
       display.drawFrame(x, y, 14, 20);
     }
   }
+}
+
+void displaySystemInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  display.setFont(u8g2_font_spleen8x16_mf);
+  if(strlen(hardwareVersion.pcbOther)!=0) {
+    sprintf(buffer, "HW Version: %d.%d-%s", hardwareVersion.pcbMajor, hardwareVersion.pcbMinor, hardwareVersion.pcbOther);
+  } else {
+    sprintf(buffer, "HW Version: %d.%d", hardwareVersion.pcbMajor, hardwareVersion.pcbMinor);
+  }
+  display.drawStr(0,20,buffer);
+  display.drawStr(0,40,VERSION_STRING);
+  if(strlen(hardwareVersion.serialOther)!=0) {
+    sprintf(buffer, "Serial #: %06ld-%s", hardwareVersion.serialNo, hardwareVersion.serialOther);
+  } else {
+    sprintf(buffer, "Serial #: %06ld", hardwareVersion.serialNo);
+  }
+  display.drawStr(0,60,buffer);
+  return;
 }
 
 void displayUpdateFast(void) {
