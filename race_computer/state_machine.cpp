@@ -123,6 +123,9 @@ void stateMachine::run(void) {
       case stateAdjustLegResetValues:
         Serial.printf("from: stateAdjustLegResetValues"); 
         break;             
+      case stateShowSystemInfo:
+        Serial.printf("from: stateShowSystemInfo"); 
+        break;         
       case stateUnknown:
         Serial.print("from: stateUnknown");
         break; 
@@ -398,6 +401,14 @@ void stateMachine::run(void) {
         //different, we won't need to split the states.
         Serial.println("to: stateAdjustLegResetValues");
         setRace((*selectedRace), (*selectedRaceLeg));
+      case stateShowSystemInfo:
+        Serial.println("to: stateShowSystemInfo");      
+        displayList.erase(displayList.begin(), displayList.end());
+        ledDispFunc=ledDispDashes;
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySystemInfo));        
+        break;     
       case stateUnknown:
         Serial.println("  to: stateUnknown");
         break;
@@ -510,6 +521,8 @@ void stateMachine::run(void) {
     case stateAdjustLegResetValues:
       state=stateMainMenu;
       break;
+    case stateShowSystemInfo:
+        break;
     case stateUnknown:
       break;
   }
@@ -574,6 +587,7 @@ void stateMachine::run(void) {
           state=stateAdjustLegCaptureValues;
           break;
         case menuActionSystemInfo:
+          state=stateShowSystemInfo;
           break;
         case menuActionReboot:
           doReboot();
@@ -883,6 +897,9 @@ void stateMachine::run(void) {
       break;
     case stateAdjustLegResetValues:
       break;
+    case stateShowSystemInfo:
+      state=stateMainMenu;
+      break;
     case stateUnknown:
       break;
   }
@@ -980,8 +997,8 @@ void stateMachine::run(void) {
         break;
     }
   }
-/*
-  if(status.flags.buttonColor != lastStatus.flags.buttonColor) {
+
+  if(status.flags.buttonColor != lastStatus.flags.buttonColor && race.legData->inProgress) {
     Serial.printf("set all buttons: %d\n",status.flags.buttonColor);
     switch(status.flags.buttonColor) {
       case 0:
@@ -997,6 +1014,6 @@ void stateMachine::run(void) {
         setAllButtonColor(COLOR_GREEN);
     }
   }
-*/
+
   lastStatus.value=status.value;
 }

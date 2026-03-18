@@ -258,7 +258,6 @@ void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
   race.legData->totalDistance=(race.activeLeg->distance)/0.000621372;
   //miles->meters
   race.legData->driveDistance=(race.activeLeg->driveDistance)/0.000621372;
-  //we don't translate distance remaining?
   race.legData->distanceRemaining=race.legData->driveDistance;
   race.legData->startMark=race.activeLeg->mark;
   //let calculate the actual target speed we need, in order to hit the race target.

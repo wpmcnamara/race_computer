@@ -13,11 +13,11 @@
 
 
 void setup() {
-  bsp_setup();
   // put your setup code here, to run once:
   Serial.begin(1000000);
   Wire.begin();
   Wire.setClock(400000);
+  bsp_setup();
   keypadSetup();
   displaySetup();
   storageSetup();

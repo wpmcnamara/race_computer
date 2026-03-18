@@ -31,10 +31,30 @@
 
 #define SDCARD_CS 1
 
+
+#define HWVERSTRUCTVER 1
+#define HWVERSTRUCTADDR 0
+
+struct hardwareVersionStruct {
+    uint8_t structVer;
+    uint8_t pcbMajor;
+    uint8_t pcbMinor;
+    uint8_t pad;
+    char pcbOther[16];
+    uint32_t serialNo;
+    char serialOther[16];
+    uint32_t chkSum;
+};
+
+typedef struct hardwareVersionStruct hardwareVersionStruct_t;
+
 extern bool SPILock;
 extern "C" uint32_t firmwareSize;
 extern "C" uint32_t firmwareProgress;
 extern "C" uint8_t firmwareUpdateState;
+extern hardwareVersionStruct_t hardwareVersion;
+
+
 
 void bsp_setup(void);
 inline void doSPILock (void) {SPILock=true;}
@@ -42,8 +62,11 @@ inline void doSPIUnlock (void) {SPILock=false;}
 bool checkForUpdate(void);
 bool doFirmwareUpdate(void);
 void doReboot(void);
+uint8_t loadHardwareVersionStruct(void);
+bool storeHardwareVersionStruct(hardwareVersionStruct_t* hwVerPtr);
 
 #define SPI_SPEED 4000000
+
 
 
 

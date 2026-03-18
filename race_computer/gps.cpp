@@ -214,7 +214,7 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
           //delay routine seems to run about 1.3 to 1.4x slow due to things being done in it.  We scale the
           //start delay appropriately, to get it close to correct.  Actual timing will be correct, we just
           //want the display to look right-ish
-          delayedStartEvent->setDelay(startDelay / 12);
+          delayedStartEvent->setDelay(startDelay / 13);
           delayedStartEvent->active = true;
         }
       }
@@ -268,7 +268,7 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     targetTime=(double)race.legData->distance / race.legData->adjustedTargetSpeed;
     //Our time delta is the difference between how long it should have taken and how long it did take.
     //Delta will be negative if we are faster, positive if we are slower.
-    race.legData->timeDelta=targetTime-elapsedTime;
+    race.legData->timeDelta=(targetTime-elapsedTime)*1000.0;
 
     //redo the same time delta calculations as above, only for the entire race distance instead of 
     //just the current leg.
