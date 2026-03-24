@@ -183,3 +183,91 @@ void loadSettings(void) {
     Serial.printf("LED Display=%d\n", LEDDisplayActive);
   }
 };
+
+void logRace(raceData_t *race, uint8_t type) {
+  bool ret;
+  bool writeHeader=false;
+  char * buffer;
+  char legStr[]="leg";
+  char raceStr[]="race";
+  char *entryType;
+  float targetSpeed=ROUND3(race->targetSpeed*2.23694);
+  float adjustedTargetSpeed=ROUND3(race->adjustedTargetSpeed*2.23694);
+  float averageSpeed=ROUND3(race->averageSpeed*2.23694);
+  float speedDelta=ROUND3(race->speedDelta*2.23694);
+  float adjustedTargetTime=ROUND3((race->driveDistance/race->adjustedTargetSpeed));
+  float speedTargetBand=ROUND3(race->speedTargetBand*2.23694);
+
+  float totalDistance=ROUND3(race->totalDistance*0.000621372);
+  float driveDistance=ROUND3(race->driveDistance*0.000621372);
+
+  float distanceComplete=ROUND3(race->distanceComplete*0.000621372);
+  float driveDistanceComplete=ROUND3(race->driveDistanceComplete*0.000621372);
+  //double timeComplete;
+  float distance=ROUND3(race->distance*0.000621372);
+  //double startTime;
+  //double endTime;
+  double timeDelta=(double)race->timeDelta/1000.0;
+  double time=(float (((race->endTs.seconds*1000)+race->endTs.millis) - ((race->startTs.seconds*1000)+race->startTs.millis)))/1000.0;
+  File32 logFile;
+  if(!sdCardPresent) {
+    Serial.println("No SD card.  Unable to log race leg");
+    return;
+  }
+  //disable display and GPS use of the SPI bus to prevent collisions
+  doSPILock();
+  if(!sdCard.exists("orrc/logs")) {
+    ret=sdCard.mkdir("orrc/logs");
+    if(!ret) {
+      Serial.println("error creating orrc/logs");
+      doSPIUnlock();
+      return;
+    }
+  }  
+  if(!sdCard.exists("orrc/logs/race_log.csv")) {
+    writeHeader=true;
+  }
+  if(!logFile.open("orrc/logs/race_log.csv", O_WRITE | O_APPEND | O_CREAT)) {
+    doSPIUnlock();
+    Serial.println("Error opening log file");
+    return;
+  }
+  if(writeHeader) {
+    logFile.write("type,targetTime,targetSpeed,adjustedTargetSpeed,adjustedTargetTime,averageSpeed,speedDelta,speedTargetBand,totalDistance,driveDistance,distanceComplete,driveDistanceComplete,timeComplete,distance,startTime,endTime,timeDelta,time\n");
+  }
+  if(type==0) {
+    entryType=legStr;
+  } else {
+    entryType=raceStr;
+  }
+  buffer=(char *)malloc(384);
+  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0ld.%03d,%0.3f,%0ld.%03d,%0ld.%03d,%0.3f,%0.3f\n",
+                          entryType,
+                          ROUND3(race->time),
+                          targetSpeed,
+                          adjustedTargetSpeed,
+                          adjustedTargetTime, //adjustedTargetTime
+                          averageSpeed,
+                          speedDelta,
+                          speedTargetBand,
+                          totalDistance,
+                          driveDistance,
+                          distanceComplete,
+                          driveDistanceComplete,
+                          race->timeComplete.seconds, //timeComplete
+                          race->timeComplete.millis,
+                          distance,
+                          race->startTs.seconds, //startTime
+                          race->startTs.millis,
+                          race->endTs.seconds,   //endTime
+                          race->endTs.millis,
+                          timeDelta,
+                          time
+                        );
+  logFile.write(buffer, strlen(buffer));
+  logFile.sync();
+  logFile.close();
+
+  doSPIUnlock();
+  free(buffer);
+}

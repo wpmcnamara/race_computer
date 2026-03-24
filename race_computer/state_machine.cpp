@@ -126,6 +126,9 @@ void stateMachine::run(void) {
       case stateShowSystemInfo:
         Serial.printf("from: stateShowSystemInfo"); 
         break;         
+      case stateSetHwVer:
+        Serial.println("from: stateSetHwVer");
+        break;
       case stateUnknown:
         Serial.print("from: stateUnknown");
         break; 
@@ -184,6 +187,8 @@ void stateMachine::run(void) {
         startStopStartsRace=false;
         updateRace();
         raceCheckPoint();
+        logRace(race.legData, 0);
+        logRace(&race, 1);
         clearRacePoints(race.activeLeg);
         ledDispFunc=ledDispDashes;
         displayList.erase(displayList.begin(), displayList.end());
@@ -409,6 +414,12 @@ void stateMachine::run(void) {
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
         displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySystemInfo));        
         break;     
+      case stateSetHwVer:
+        Serial.println("  to: stateSetHwVer");  
+        displayList.erase(displayList.begin(), displayList.end());
+        ledDispFunc=ledDispDashes;
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySystemInfo));                 
+        break;             
       case stateUnknown:
         Serial.println("  to: stateUnknown");
         break;
@@ -421,7 +432,11 @@ void stateMachine::run(void) {
   //No actions or status updates allowed in this block.  State transitions only.
   switch(state) {
     case stateInit:
-      state=stateLoadSettings;
+      if(initHwVer) {
+        state=stateSetHwVer;
+      } else {
+        state=stateLoadSettings;
+      }
       break;
     case stateLoadRaceCheckPoint:
       state=stateMainMenu;  
@@ -523,6 +538,8 @@ void stateMachine::run(void) {
       break;
     case stateShowSystemInfo:
         break;
+    case stateSetHwVer:
+        break;
     case stateUnknown:
       break;
   }
@@ -558,11 +575,21 @@ void stateMachine::run(void) {
         case menuActionSelectRace:
           if(!race.inProgress) {
             state=stateSelectRace;
+          } else {
+            //we can't prevent entering the menu, but we don't want to go in there since there isn't a race 
+            //selected, so we force a return back up one level of the menu stack.  It will appear as though
+            //nothing happened when we selected the menu.
+            menuStack.pop_back();
           }
           break;
         case menuActionSelectLeg:
           if(race.activeRace!=NULL && !race.inProgress) {
-              state=stateSelectRaceLeg;
+            state=stateSelectRaceLeg;
+          } else {
+            //we can't prevent entering the menu, but we don't want to go in there since there isn't a race 
+            //selected, so we force a return back up one level of the menu stack.  It will appear as though
+            //nothing happened when we selected the menu.
+            menuStack.pop_back();
           }
           break;
         case menuActionConfigDisplay:
@@ -899,6 +926,12 @@ void stateMachine::run(void) {
       break;
     case stateShowSystemInfo:
       state=stateMainMenu;
+      break;
+    case stateSetHwVer:
+      menuAction=menuSetHwVer(keys);
+      if(menuAction==1) {
+        state=stateLoadSettings;
+      }
       break;
     case stateUnknown:
       break;

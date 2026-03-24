@@ -721,3 +721,29 @@ uint8_t menuAdjustLegSpeed(uint8_t key) {
     }
     return ret;
 }
+
+uint8_t menuSetHwVer(uint8_t key) {
+    switch (key) {
+        case KEYPAD_KEY_START_STOP:
+            storeHardwareVersionStruct(&hardwareVersion); 
+            return 1;
+            break;
+        case KEYPAD_KEY_ENTER:
+            return 0;
+            break;
+        case KEYPAD_KEY_DOWN:
+            if(hardwareVersion.serialNo>1) {
+                hardwareVersion.serialNo--; 
+            }
+            break;
+        case KEYPAD_KEY_UP:
+            hardwareVersion.serialNo++;
+            break;
+        case KEYPAD_KEY_ESC:
+            return 0;
+        default:
+            break;
+    }
+    return 0;
+}
+

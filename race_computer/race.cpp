@@ -111,6 +111,7 @@ void loadRaces() {
     doSPILock();
     entry =  orcDir.openNextFile();
     if (! entry) {
+      doSPIUnlock();
       break;
     }
     //We are looking for files right now, so skip directories.

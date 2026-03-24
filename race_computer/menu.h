@@ -116,5 +116,6 @@ uint8_t menuAdjustLegTime(uint8_t key);
 uint8_t menuAdjustLegDistance(uint8_t key);
 uint8_t menuAdjustLegSpeed(uint8_t key);
 
+uint8_t menuSetHwVer(uint8_t key);
 
 #endif
