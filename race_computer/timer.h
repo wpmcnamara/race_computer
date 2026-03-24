@@ -8,6 +8,7 @@
 
 
 #define TS_TO_FLOAT(ts) ((float)ts.seconds+((float)ts.millis/1000.0))
+#define TS_TO_DOUBLE(ts) ( ((double)(ts.seconds*1000)+ts.millis/1000.0))
 #define TSPTR_TO_FLOAT(ts) ((float)ts->seconds+((float)ts->millis/1000.0))
 typedef struct timeStamp timeStamp_t;
 

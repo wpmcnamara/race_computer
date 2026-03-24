@@ -16,6 +16,8 @@ uint32_t firmwareSize=0;
 uint32_t firmwareProgress=0;
 uint8_t firmwareUpdateState=0;
 hardwareVersionStruct_t hardwareVersion;
+bool initHwVer=false;
+
 
 
 void bsp_setup(void) {
@@ -48,8 +50,8 @@ void bsp_setup(void) {
       strncpy(hardwareVersion.pcbOther, "beta",16);
       hardwareVersion.pcbOther[15]=0;
       hardwareVersion.serialNo=2;
-      hardwareVersion.serialOther[0]=0;
-      storeHardwareVersionStruct(&hardwareVersion);  
+      hardwareVersion.serialOther[0]=0; 
+      initHwVer=true;
       break;
     case 1:
       Serial.println("Hardware version structure valid.");
@@ -88,9 +90,9 @@ bool checkForUpdate(void) {
     Serial.println("No firmware file found.");
     return false;
   }  
-    doSPIUnlock();
-    Serial.println("Found orrc/system/racec_omputer.ino.hex");
-    return true;
+  doSPIUnlock();
+  Serial.println("Found orrc/system/racec_omputer.ino.hex");
+  return true;
 }
 
 bool doFirmwareUpdate(void) {

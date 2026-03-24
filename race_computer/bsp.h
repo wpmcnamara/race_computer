@@ -53,6 +53,7 @@ extern "C" uint32_t firmwareSize;
 extern "C" uint32_t firmwareProgress;
 extern "C" uint8_t firmwareUpdateState;
 extern hardwareVersionStruct_t hardwareVersion;
+extern bool initHwVer;
 
 
 
