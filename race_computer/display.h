@@ -89,6 +89,7 @@ extern event_t *displayUpdateEvent;
 extern event_t *displayUpdateFastEvent;
 extern uint8_t displayTimeout;
 extern uint8_t displayTimeoutTmp;
+extern bool displayTimeOutEnable;
 
 
 extern void (*OLEDDisplayFuncs[OLEDDispFuncMaxValue])(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);

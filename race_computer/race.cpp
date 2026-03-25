@@ -374,6 +374,7 @@ void updateRace(void) {
   uint32_t elapsedRaceTime=timeComplete+(endTs-startTs);
   race.activeLeg->complete=true;
   race.distanceComplete+=race.legData->totalDistance;
+  race.driveDistanceComplete+=race.legData->driveDistance;
   race.distance = race.distanceComplete;
   race.distanceRemaining = race.totalDistance - race.distance;  
   race.timeComplete.seconds=elapsedRaceTime/1000;
@@ -439,6 +440,7 @@ void raceCheckPoint(void) {
   doc["legInProgress"]=race.activeLeg->inProgress;
   doc["legComplete"]=race.activeLeg->complete;
   doc["distanceComplete"]=race.distanceComplete;
+  doc["driveDistanceComplete"]=race.driveDistanceComplete;
   doc["timeSec"]=race.timeComplete.seconds;
   doc["timeMilli"]=race.timeComplete.millis;
   checkPoint=sdCard.open("orrc/system/race_checkpoint.yml", FILE_WRITE);
@@ -526,6 +528,7 @@ void loadRaceCheckPoint(void) {
   race.activeRace->inProgress=doc["raceInProgress"].as<bool>();
   race.inProgress=race.activeRace->inProgress;
   race.distanceComplete=doc["distanceComplete"].as<int>();
+  race.driveDistanceComplete=doc["driveDistanceComplete"].as<int>();
   race.timeComplete.seconds=doc["timeSec"].as<int>();
   race.timeComplete.millis=doc["timeMilli"].as<int>(); 
   selectedRace=raceIt;
