@@ -45,6 +45,7 @@ uint8_t ledBrightnessTmp;
 uint8_t oledBrightnessTmp;
 uint8_t displayTimeout;
 uint8_t displayTimeoutTmp;
+bool displayTimeOutEnable=false;
 
 int OLEDDisplayActive[4]={GPSSpeedLarge,
                                 LegDeltaTimeLarge,

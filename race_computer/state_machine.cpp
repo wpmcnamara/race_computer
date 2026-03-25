@@ -144,6 +144,7 @@ void stateMachine::run(void) {
         break;
       case stateMainMenu:
         Serial.println("  to: stateMainMenu");
+        displayTimeOutEnable=true;
         status.flags.startStopState=stateOff;
         startStopStartsRace=false;        
         dispRace=race.activeRace;
@@ -164,6 +165,7 @@ void stateMachine::run(void) {
         break;
       case stateRaceStart:
         Serial.println("  to: stateRaceStart");
+        displayTimeOutEnable=false;
         status.flags.startStopState=stateBreath;
         prepRace();
         startStopStartsRace=true;
