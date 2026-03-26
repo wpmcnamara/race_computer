@@ -272,8 +272,9 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
 
     //redo the same time delta calculations as above, only for the entire race distance instead of 
     //just the current leg.
-    targetTime=(double)race.distance / race.adjustedTargetSpeed;
-    race.timeDelta=targetTime-(TS_TO_FLOAT(race.timeComplete) + elapsedTime);
+    targetTime=(double)race.distance / race.targetSpeed;
+    //time delta is in milliseconds
+    race.timeDelta=(targetTime-(TS_TO_FLOAT(race.timeComplete) + elapsedTime))*1000;
 
     if((race.legData->speedDelta)<(race.legData->speedTargetBand*-1.0)) {
       stateMachine.status.flags.buttonColor=1;
