@@ -237,7 +237,8 @@ void stateMachine::run(void) {
         break;
       case stateSaveSelection:
         Serial.println("  to: stateSaveSelection");
-        setRace((*selectedRace), (*selectedRaceLeg));
+        setRace((*selectedRace));
+        setLeg((*selectedRaceLeg));
         break;
       case stateCancelSelection:
         Serial.println("  to: stateCancelSelection");
@@ -248,6 +249,7 @@ void stateMachine::run(void) {
         selectedRaceLeg++;
         if(selectedRaceLeg != (*selectedRace)->raceLegs.end()) {
           race.activeLeg=(*selectedRaceLeg);
+          setLeg((*selectedRaceLeg));
         } else {
           race.activeLeg=NULL;
         }
@@ -393,6 +395,7 @@ void stateMachine::run(void) {
         legAdjustSpeed=legAdjustSpeedBackup;
         legAdjustTime=legAdjustTimeBackup;  
         legAdjustMode=0;         
+        break;
       case stateAdjustLegCaptureValues:
         Serial.println("to: stateAdjustLegCaptureValues");
         //grab the leg values we can edit.  We will convert them to miles and mph here as it will make the
@@ -407,7 +410,8 @@ void stateMachine::run(void) {
         //probably could just use stateSaveSelection as it is the same action, but if we need to do something
         //different, we won't need to split the states.
         Serial.println("to: stateAdjustLegResetValues");
-        setRace((*selectedRace), (*selectedRaceLeg));
+        setLeg((*selectedRaceLeg));
+        break;
       case stateShowSystemInfo:
         Serial.println("to: stateShowSystemInfo");      
         displayList.erase(displayList.begin(), displayList.end());

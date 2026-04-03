@@ -1,6 +1,6 @@
 descr: BBORR Practice - 115mph
 speed: 115
-speed_range: 0.1
+speedRange: 0.1
 distance: 15.9
 tmark: 0
 legs:

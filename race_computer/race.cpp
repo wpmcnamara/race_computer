@@ -153,7 +153,7 @@ void loadRaces() {
     Serial.printf("race distance: %f\n", raceFile->distance);       
     raceFile->speed=doc["speed"].as<float>();
     Serial.printf("race speed: %f\n", raceFile->speed);  
-    raceFile->speedRange=doc["speed_range"].as<float>();
+    raceFile->speedRange=doc["speedRange"].as<float>();
     Serial.printf("race speed range: %f\n", raceFile->speedRange);
     raceFile->mark=doc["tmark"].as<int>();
     Serial.printf("race mark: %d\n\n", raceFile->mark);    
@@ -172,17 +172,17 @@ void loadRaces() {
         raceLegFile->speedRange=raceFile->speedRange;
         Serial.printf("   speed range (from race): %f\n\n\n", raceLegFile->speedRange);
       } else {
-        raceLegFile->speedRange=jsonLeg["speed_range"].as<float>();
+        raceLegFile->speedRange=jsonLeg["speedRange"].as<float>();
         Serial.printf("   speed range: %f\n\n\n", raceLegFile->speedRange);
       }
       Serial.printf("   leg speed: %f\n", raceLegFile->speed);
       raceLegFile->distance=jsonLeg["distance"].as<float>();
       Serial.printf("   leg distance: %f\n\n\n", raceLegFile->distance);
-      if(jsonLeg["drive_distance"].isNull()) {
+      if(jsonLeg["driveDistance"].isNull()) {
         raceLegFile->driveDistance=raceLegFile->distance;
         Serial.printf("   drive distance is leg distance: %f\n\n\n", raceLegFile->driveDistance);
       } else {
-        raceLegFile->driveDistance=jsonLeg["drive_distance"].as<float>();
+        raceLegFile->driveDistance=jsonLeg["driveDistance"].as<float>();
         Serial.printf("   drive distance: %f\n\n\n", raceLegFile->driveDistance);
       }
       if(jsonLeg["tmark"].isNull()) {
@@ -208,10 +208,9 @@ void loadRaces() {
   Serial.println((*selectedRace)->descr);
 }
 
-void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
+void setRace(race_t *selectedRace) {
   std::vector<raceLeg_t *>::iterator raceLegIt;
   race.activeRace=selectedRace;
-  race.activeLeg=selectedRaceLeg;
   race.targetSpeed=(selectedRace->speed)/2.23694;
   race.speedTargetBand=(selectedRace->speedRange)/2.23694;
   race.totalDistance=(selectedRace->distance)/0.000621372;
@@ -246,7 +245,10 @@ void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
   race.startTs.millis=0;
   race.endTs.seconds=0;
   race.endTs.millis=0;
+}
 
+void setLeg(raceLeg_t *selectedRaceLeg) {
+  race.activeLeg=selectedRaceLeg;
   //leg definitions will have data stored in miles, and miles/hour.  We track things internally
   //in meters and m/s because that's what comes out of the GPS.  Convert the leg definition values
   //to internal values for tracking the race.
@@ -267,7 +269,7 @@ void setRace(race_t *selectedRace, raceLeg_t *selectedRaceLeg) {
   //contant is the time.  We need to cover the drive distance in the time specified by
   //the leg distance.
   //leg time in seconds.
-  race.legData->time=(double)race.legData->totalDistance/race.legData->targetSpeed;
+  race.legData->time=((double)race.legData->totalDistance/race.legData->targetSpeed)-((double)race.timeDelta/1000.0);
   //now figure the adjusted targer based on how long the leg should take, and the 
   //actual distance we will drive.
   race.legData->adjustedTargetSpeed=(double)race.legData->driveDistance/race.legData->time;
@@ -374,11 +376,15 @@ void updateRace(void) {
   uint32_t elapsedRaceTime=timeComplete+(endTs-startTs);
   race.activeLeg->complete=true;
   race.distanceComplete+=race.legData->totalDistance;
+  race.legData->distanceComplete=race.legData->totalDistance;
   race.driveDistanceComplete+=race.legData->driveDistance;
+  race.legData->driveDistanceComplete=race.legData->driveDistance;
   race.distance = race.distanceComplete;
   race.distanceRemaining = race.totalDistance - race.distance;  
   race.timeComplete.seconds=elapsedRaceTime/1000;
   race.timeComplete.millis=elapsedRaceTime%1000;
+  race.legData->timeComplete.seconds=(endTs-startTs)/1000;
+  race.legData->timeComplete.millis=(endTs-startTs)%1000;
   //Serial.println("Current race");
   //dumpRaceData(&race);
   //Serial.println("\n\nCurrent leg");
@@ -524,7 +530,8 @@ void loadRaceCheckPoint(void) {
     return;
   }
   Serial.println("Setting race checkpoint");
-  setRace((*raceIt), (*raceLegIt));
+  setRace((*raceIt));
+  setLeg((*raceLegIt));
   race.activeRace->inProgress=doc["raceInProgress"].as<bool>();
   race.inProgress=race.activeRace->inProgress;
   race.distanceComplete=doc["distanceComplete"].as<int>();
