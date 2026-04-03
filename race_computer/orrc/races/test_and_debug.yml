@@ -1,17 +1,19 @@
 ---
 descr: Test and debugging drive
-speed: 31.9
-speed_range: 0.5
-distance: 12.8
+speed: 33
+speedRange: 0.5
+distance: 13.0
 tmark: 0
 legs:
 - id: 1
   descr: Test Drive -- clockwise
-  speed: 31.9
-  distance: 6.4
+  speed: 34
+  distance: 6.5
+  driveDistance: 6.4
   points: testdrv/test_drive_cw.csv
 - id: 2
   descr: Test Drive -- counterclockwise
-  speed: 31.9
-  distance: 6.62
+  speed: 32
+  distance: 6.5
+  driveDistance: 6.4
   points: testdrv/test_drive_ccw.csv
