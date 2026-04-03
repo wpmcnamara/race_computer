@@ -378,7 +378,7 @@ void updateRace(void) {
   race.distanceComplete+=race.legData->totalDistance;
   race.legData->distanceComplete=race.legData->totalDistance;
   race.driveDistanceComplete+=race.legData->driveDistance;
-  race.legData->driveDistanceComplete=race.legData->driveDistance;
+  race.legData->driveDistanceComplete=race.legData->distance;
   race.distance = race.distanceComplete;
   race.distanceRemaining = race.totalDistance - race.distance;  
   race.timeComplete.seconds=elapsedRaceTime/1000;
