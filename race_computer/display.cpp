@@ -842,7 +842,7 @@ void displayLegSummaryActual(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispP
   display.drawCircle(x+6, y-6, 0); 
 
   display.setFont(u8g2_font_spleen8x16_mf);	
-  sprintf(buffer, " %7.3f", SPEED_INTERNAL_TO_MPH(race.legData->targetSpeed));
+  sprintf(buffer, " %7.3f", SPEED_INTERNAL_TO_MPH(race.legData->adjustedTargetSpeed));
   display.drawStr(x+31,y, buffer);
   display.setFont(u8g2_font_spleen6x12_mf);	
   display.drawStr(x+97,y,"mph");	
@@ -963,7 +963,7 @@ void displayLegSummaryAdjusted(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dis
   display.drawCircle(x+6, y-6, 0); 
 
   display.setFont(u8g2_font_spleen8x16_mf);	
-  sprintf(buffer, " %7.3f", SPEED_INTERNAL_TO_MPH(race.legData->adjustedTargetSpeed));
+  sprintf(buffer, " %7.3f", SPEED_INTERNAL_TO_MPH(race.legData->targetSpeed));
   display.drawStr(x+31,y, buffer);
   display.setFont(u8g2_font_spleen6x12_mf);	
   display.drawStr(x+97,y,"mph");	
@@ -999,7 +999,7 @@ void displayLegSummaryAdjusted(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dis
 
 void displayRaceSummary1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   int32_t raceTime=(int)round(race.timeComplete);
-  int32_t targetTime=(int)round(race.distanceComplete/race.targetSpeed);
+  int32_t targetTime=(int)round(race.distanceComplete/race.activeLeg->raceSpeed);
   int32_t timeDelta=raceTime-targetTime;  
   display.setFont(u8g2_font_spleen12x24_mf);
   sprintf(buffer, "Race:  %02ld:%02ld:%02ld.%03ld", 
@@ -1036,7 +1036,7 @@ void displayRaceSummary2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t
   display.drawStr(0,20,buffer);
   sprintf(buffer, "  \xd8S: %8.3f", SPEED_INTERNAL_TO_MPH(averageSpeed));
   display.drawStr(0,40,buffer);
-  sprintf(buffer, "   S: %+8.3f",SPEED_INTERNAL_TO_MPH(averageSpeed-race.targetSpeed));
+  sprintf(buffer, "   S: %+8.3f",SPEED_INTERNAL_TO_MPH(averageSpeed-race.activeLeg->raceSpeed));
   display.drawStr(0,60,buffer);
   display.drawTriangle(14,60, 23,45, 33,60);
   display.setDrawColor(0);
@@ -1244,7 +1244,6 @@ void displaySystemInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t p
 
 void displayUpdateFast(void) {
   if(SPILock) {
-    //Serial.println("displayUpdateFast: SPI Collision");
     return;
   }
   if(ledDispFunc!=NULL) {
@@ -1373,7 +1372,32 @@ void displayDisplayConfig(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_
       display.drawStr(42,24+(oled*12), OLEDDisplayDescr[OLEDDisplaySelect[oled]]);
     }  
   }
+}
 
-  
+void displaySetLegTimeAdjust(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  int x;
+  int w;
+  display.setFont(u8g2_font_spleen6x12_mf);
+  sprintf(buffer, "Leg Timing Update Mode");
+  x=128-(display.getStrWidth(buffer)/2);
+  display.drawStr(x,20,buffer);
+  sprintf(buffer, "Automatic");
+  w=display.getStrWidth(buffer);
+  x=128-(w/2);
+  display.drawStr(x, 52, buffer);
+  display.drawStr(x, 40, "Manual");
+  display.setDrawColor(2);  
+  if(autoAdjustLegTime) {
+    display.drawBox(x-1,43,w+1,10);  
+  } else {
+    display.drawBox(x-1,31,w+1,10); 
+  }
+  display.setDrawColor(1);
+  if(autoAdjustLegTimeSave) {
+    display.drawDisc(x-10,46,3,U8G2_DRAW_ALL);
+  } else {
+    display.drawDisc(x-10,34,3,U8G2_DRAW_ALL);
+  }  
 
 }
+  

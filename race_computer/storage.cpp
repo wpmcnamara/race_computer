@@ -92,6 +92,7 @@ void saveSettings(void) {
   oledDisp[2]=OLEDDisplayActive[2];
   oledDisp[3]=OLEDDisplayActive[3];
   doc["ledDisp"]=LEDDisplayActive;
+  doc["adjustLegTime"]=autoAdjustLegTime;
   doSPILock();
   if(sdCard.exists("orrc/system/settings.yml")) {
     Serial.println("clearing saved settings");
@@ -182,6 +183,11 @@ void loadSettings(void) {
     LEDDisplayActive=doc["ledDisp"].as<int>();
     Serial.printf("LED Display=%d\n", LEDDisplayActive);
   }
+  if(!doc["adjustLegTime"].isNull()) {  
+    autoAdjustLegTime=doc["adjustLegTime"].as<bool>();
+    Serial.printf("Auto Adjust Leg Time=%d\n", autoAdjustLegTime);
+  }
+
 };
 
 void logRace(raceData_t *race, uint8_t type) {
@@ -270,4 +276,21 @@ void logRace(raceData_t *race, uint8_t type) {
 
   doSPIUnlock();
   free(buffer);
+}
+
+void resetSettings(void) {
+  bool ret;
+  if(sdCard.exists("orrc/system/settings.yml")) {
+    Serial.println("clearing saved settings");
+    doSPILock();
+    ret=sdCard.remove("orrc/system/settings.yml");
+    doSPIUnlock();
+    if(ret) {
+      Serial.println("success");
+    } else {
+      Serial.println("fail");
+      sdCard.errorPrint(&Serial);
+      printSdErrorText(&Serial, sdCard.sdErrorCode());
+    }
+  }
 }

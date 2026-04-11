@@ -26,6 +26,7 @@ enum stateMachineStatesEnum {
   stateSetLedBrightness,
   stateSetOledBrightness,
   stateSetScreenBlankTime,
+  stateSetLegTimeAdjust,
   stateScreenBlank,
   stateScreenWake,
   stateSaveSettings,
@@ -40,6 +41,8 @@ enum stateMachineStatesEnum {
   stateAdjustLegResetValues,
   stateShowSystemInfo,
   stateSetHwVer,
+  stateResetAllSettings,
+  stateReboot,
   stateUnknown
 };
 

@@ -81,6 +81,9 @@ void stateMachine::run(void) {
       case stateSetLedBrightness:
         Serial.print("from: stateSetLedBrightness");
         break; 
+      case stateSetLegTimeAdjust:
+        Serial.print("from: stateSetLegTimeAdjust");
+        break; 
       case stateSetOledBrightness:
         Serial.print("from: stateDoFirmwareUpdate");
         break; 
@@ -129,6 +132,12 @@ void stateMachine::run(void) {
       case stateSetHwVer:
         Serial.println("from: stateSetHwVer");
         break;
+      case stateReboot:
+        Serial.print("from: stateReboot");
+        break; 
+      case stateResetAllSettings:
+        Serial.print("from: resetAllSettings");
+        break;                 
       case stateUnknown:
         Serial.print("from: stateUnknown");
         break; 
@@ -313,6 +322,15 @@ void stateMachine::run(void) {
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
         displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetDisplayTimeout));     
         break; 
+      case stateSetLegTimeAdjust:
+        Serial.println("  to: stateSetLegTimeAdjust");
+        autoAdjustLegTimeSave=autoAdjustLegTime;
+        displayList.erase(displayList.begin(), displayList.end());
+        ledDispFunc=ledDispDashes;
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetLegTimeAdjust));     
+        break; 
       case stateScreenBlank:
         Serial.println("  to: stateScreenBlank");
         displayList.erase(displayList.begin(), displayList.end());
@@ -429,6 +447,14 @@ void stateMachine::run(void) {
         ledDispFunc=ledDispDashes;
         displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySystemInfo));                 
         break;             
+      case stateResetAllSettings:
+        Serial.println("  to: stateResetAllSettings");
+        resetSettings();
+        break;
+      case stateReboot:
+        Serial.println("  to: stateReboot");
+        doReboot();
+        break;
       case stateUnknown:
         Serial.println("  to: stateUnknown");
         break;
@@ -513,7 +539,9 @@ void stateMachine::run(void) {
     case stateSetOledBrightness:
       break; 
     case stateSetScreenBlankTime:
-      break; 
+      break;
+    case stateSetLegTimeAdjust:
+      break;
     case stateScreenBlank:  
       break; 
     case stateScreenWake:
@@ -548,6 +576,11 @@ void stateMachine::run(void) {
     case stateShowSystemInfo:
         break;
     case stateSetHwVer:
+        break;
+    case stateReboot:
+        break;
+    case stateResetAllSettings:
+        state=stateReboot;
         break;
     case stateUnknown:
       break;
@@ -619,6 +652,9 @@ void stateMachine::run(void) {
         case menuActionScreenTimeout:
           state=stateSetScreenBlankTime;
           break;
+        case menuActionAutoAdjustLeg:
+          state=stateSetLegTimeAdjust;
+          break;
         case menuActionAdjustLeg:
           state=stateAdjustLegCaptureValues;
           break;
@@ -626,7 +662,10 @@ void stateMachine::run(void) {
           state=stateShowSystemInfo;
           break;
         case menuActionReboot:
-          doReboot();
+          state=stateReboot;
+          break;
+        case menuActionResetSettings:
+          state=stateResetAllSettings;
           break;
         case menuActionAdjustTime:
           state=stateAdjustLegTime;
@@ -658,6 +697,9 @@ void stateMachine::run(void) {
           //pop the adjustment menu off the menu stack and return to the main menu state.
           menuStack.pop_back();        
           state=stateAdjustLegResetValues;
+          break;
+        case menuActionUp:
+          menuStack.pop_back();
           break;
         default:
           break;
@@ -871,6 +913,22 @@ void stateMachine::run(void) {
           break;
       }
       break; 
+    case stateSetLegTimeAdjust:
+      menuAction=menuAutoAjustLegTime(keys);
+      switch(menuAction) {
+        case 0:
+          break;
+        case 1:
+          state=stateSaveSettings;
+          break;
+        case 2:
+          state=stateMainMenu;
+          break;
+        default:
+          break;
+      }
+      break; 
+
     case stateScreenBlank:
       state=stateScreenWake;
       break; 
@@ -941,6 +999,10 @@ void stateMachine::run(void) {
       if(menuAction==1) {
         state=stateLoadSettings;
       }
+      break;
+    case stateReboot:
+      break;
+    case stateResetAllSettings:
       break;
     case stateUnknown:
       break;

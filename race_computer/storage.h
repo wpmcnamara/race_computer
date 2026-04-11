@@ -19,6 +19,7 @@ extern bool sdCardPresent;
 void storageSetup(void);
 void saveSettings(void);
 void loadSettings(void);
+void resetSettings(void);
 void logRace(raceData_t *race, uint8_t type);
 
 #endif
