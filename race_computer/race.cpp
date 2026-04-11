@@ -82,6 +82,8 @@ void loadRaces() {
   char fileName[256];
   bool noRaceFound=true;
   unsigned char *buffer;
+  double cumulativeRaceDistance=0;
+  double cumulativeRaceTime=0;
   uint32_t len;
   //see if we have an SD card or not.  If we don't we are going to fall back to a hardcoded set of
   //races and legs.
@@ -155,6 +157,8 @@ void loadRaces() {
     Serial.printf("race mark: %ds, %0.3fms\n\n", doc["tmark"].as<int>(),raceFile->mark);    
     raceFile->inProgress=false;
     races.push_back(raceFile);
+    cumulativeRaceDistance=0;
+    cumulativeRaceTime=0;
     for (JsonObject jsonLeg : doc["legs"].as<JsonArray>()) {
       raceLegFile=new raceLegDef_t;
       raceLegFile->descr=jsonLeg["descr"].as<String>();
@@ -173,7 +177,13 @@ void loadRaces() {
         Serial.printf("   speed range: %0.3fmph, %0.3fmm/ms\n", jsonLeg["speedRange"].as<float>(), raceLegFile->speedRange);
       }
       raceLegFile->distance=DISTANCE_MILES_TO_INTERNAL(jsonLeg["distance"].as<float>());
-      Serial.printf("   leg distance: %0.3fmi, %0.3fmm\n", jsonLeg["distance"].as<float>(), raceLegFile->distance);
+      Serial.printf("   leg distance: %0.3fmi, %0.3fmm\n", jsonLeg["distance"].as<float>(), raceLegFile->distance);      
+      cumulativeRaceDistance+=raceLegFile->distance;
+      raceLegFile->targetTime=raceLegFile->distance/raceLegFile->speed;
+      cumulativeRaceTime+=raceLegFile->targetTime;
+      raceLegFile->raceSpeed=cumulativeRaceDistance/cumulativeRaceTime;
+      Serial.printf("   leg race average speed: %0.3fmph, %03fmm/ms\n",SPEED_INTERNAL_TO_MPH(raceLegFile->raceSpeed), raceLegFile->raceSpeed);
+
       if(jsonLeg["driveDistance"].isNull()) {
         raceLegFile->driveDistance=raceLegFile->distance;
         Serial.printf("   drive distance is leg distance: %0.3f\n", raceLegFile->driveDistance);
@@ -193,6 +203,11 @@ void loadRaces() {
       raceLegFile->complete=false;
       raceFile->raceLegs.push_back(raceLegFile);
     } 
+    //Sanity check defined race speed against the calculated speed from the cumulative leg average.
+    if(abs(raceFile->speed-(cumulativeRaceDistance/cumulativeRaceTime))>0.0001) {
+      Serial.println("  race speed mismatch, using calculate value\n");
+      raceFile->speed=cumulativeRaceDistance/cumulativeRaceTime;
+    }
   }
   if(noRaceFound) {
     Serial.println("No race files found.  Loading default race definitions");
@@ -256,7 +271,6 @@ void setLeg(raceLegDef_t *selectedRaceLeg) {
   //contant is the time.  We need to cover the drive distance in the time specified by
   //the leg distance.
   race.legData->time=(race.legData->totalDistance/race.legData->targetSpeed)-race.timeDelta;
-  Serial.printf("leg target time: %f\n", race.legData->time);
   //now figure the adjusted targer based on how long the leg should take, and the 
   //actual distance we will drive.
   race.legData->adjustedTargetSpeed=race.legData->driveDistance/race.legData->time;
@@ -350,6 +364,7 @@ void clearRacePoints(raceLegDef_t *raceLeg) {
 
 
 void updateRace(void) {
+  double raceTargetTime=0;
   race.activeLeg->complete=true;
   race.legData->distanceComplete=race.legData->totalDistance;
   race.legData->driveDistanceComplete=race.legData->distance;
@@ -358,12 +373,13 @@ void updateRace(void) {
   race.legData->speedDelta=race.legData->averageSpeed-race.legData->targetSpeed;
 
 
-  race.driveDistanceComplete+=race.legData->driveDistance;
+  race.driveDistanceComplete+=race.legData->distance;
   race.distanceComplete+=race.legData->totalDistance;
   race.distance = race.distanceComplete;
   race.distanceRemaining = race.totalDistance - race.distance;  
   race.timeComplete+=race.legData->timeComplete;
-
+  raceTargetTime=race.distanceComplete/race.activeLeg->raceSpeed;
+  race.timeDelta=race.timeComplete-raceTargetTime;
 }
 
 void raceCheckPoint(void) {

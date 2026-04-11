@@ -21,7 +21,7 @@ void setRace(raceDef_t *);
 void setLeg(raceLegDef_t *);
 void prepRace(void);
 void updateRace(void);
-void dmmpRaceData(raceData_t *data);
+//void dumpRaceData(raceData_t *data);
 void raceCheckPoint(void);
 void loadRaceCheckPoint(void);
 void loadRacePoints(raceLegDef_t *raceLeg);
@@ -73,11 +73,14 @@ class racePoint {
 
 class raceLegDef {
   public:
-    //unit: mm/ms  target speed for this leg, based on public leg distance.
+    //unit: mm/ms  target speed for this leg, based on published leg speed.
     double speed;
+    //unit: mm/ms  target race average speed at the end of the leg.  Calculated from all preceding legs.  Allows us to
+    //properly calculate race time deltas during a race where leg target speeds vary.
+    double raceSpeed;
     //unit: mm/ms  How close to target is considered to be "on target".  
     double speedRange;
-    //unit: mm  publish leg distance
+    //unit: mm  published leg distance
     double distance;
     //unit: mm  actual distance driven for leg.  Used to properly calculated target speed.
     double driveDistance;
