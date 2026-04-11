@@ -191,11 +191,13 @@ void logRace(raceData_t *race, uint8_t type) {
   char legStr[]="leg";
   char raceStr[]="race";
   char *entryType;
+  double targetTime=race->totalDistance/race->targetSpeed;
   float targetSpeed=SPEED_INTERNAL_TO_MPH(race->targetSpeed);
-  float adjustedTargetSpeed=SPEED_INTERNAL_TO_MPH(race->adjustedTargetSpeed);
+  float adjustedTargetSpeed1=SPEED_INTERNAL_TO_MPH(race->driveDistance/targetTime);
+  float adjustedTargetSpeed2=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->time);
   float averageSpeed=SPEED_INTERNAL_TO_MPH(race->averageSpeed);
   float speedDelta=SPEED_INTERNAL_TO_MPH(race->speedDelta);
-  float adjustedTargetTime=TIME_INTERNAL_TO_SECONDS((race->driveDistance/race->adjustedTargetSpeed));
+  float adjustedTargetTime=TIME_INTERNAL_TO_SECONDS(race->time);
   float speedTargetBand=SPEED_INTERNAL_TO_MPH(race->speedTargetBand);
 
   float totalDistance=DISTANCE_INTERNAL_TO_MILES(race->totalDistance);
@@ -233,7 +235,7 @@ void logRace(raceData_t *race, uint8_t type) {
     return;
   }
   if(writeHeader) {
-    logFile.write("type,targetTime,targetSpeed,adjustedTargetSpeed,adjustedTargetTime,averageSpeed,speedDelta,speedTargetBand,totalDistance,driveDistance,distanceComplete,driveDistanceComplete,timeComplete,distance,startTime,endTime,timeDelta,time\n");
+    logFile.write("type,targetTime,targetSpeed,targetDistance,adjustedTargetSpeed1,adjustedTargetSpeed2,adjustedTargetTime,averageSpeed,speedDelta,speedTargetBand,distance,driveDistance,distanceComplete,driveDistanceComplete,timeComplete,startTime,endTime,timeDelta,time\n");
   }
   if(type==0) {
     entryType=legStr;
@@ -241,21 +243,22 @@ void logRace(raceData_t *race, uint8_t type) {
     entryType=raceStr;
   }
   buffer=(char *)malloc(384);
-  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n",
+  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n",
                           entryType,
-                          TIME_INTERNAL_TO_SECONDS(race->time),
+                          TIME_INTERNAL_TO_SECONDS(targetTime),
                           targetSpeed,
-                          adjustedTargetSpeed,
-                          adjustedTargetTime, //adjustedTargetTime
+                          totalDistance,
+                          adjustedTargetSpeed1,
+                          adjustedTargetSpeed2,
+                          adjustedTargetTime,
                           averageSpeed,
                           speedDelta,
                           speedTargetBand,
-                          totalDistance,
+                          distance,
                           driveDistance,
                           distanceComplete,
                           driveDistanceComplete,
                           TIME_INTERNAL_TO_SECONDS(race->timeComplete),
-                          distance,
                           TIME_INTERNAL_TO_SECONDS(race->startTs),
                           TIME_INTERNAL_TO_SECONDS(race->endTs),
                           timeDelta,
