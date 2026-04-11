@@ -14,8 +14,6 @@ SFE_UBLOX_GNSS gps;
 UBX_TIM_TM2_data_t startStopTimeStamp;
 UBX_TIM_TM2_data_t timeStamp;
 
-unsigned int speedSamples = 0;
-unsigned long speedSum = 0;
 std::vector<double>::iterator speedListInsert;
 std::vector<double> speedList;
 struct gpsDataStruct gpsData;
@@ -168,49 +166,41 @@ void gpsSetup(void) {
 }
 
 void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
-  timeStamp_t ts;
+  double ts;
   unsigned int startDelay;
   unsigned int mark;
-  ts.seconds = (ubxDataStruct->wnF * 604800) + (ubxDataStruct->towMsF / 1000);
-  ts.millis = ubxDataStruct->towMsF % 1000;
+  ts= (ubxDataStruct->wnF * 604800) + ubxDataStruct->towMsF;
   if (ubxDataStruct->flags.bits.newFallingEdge) {
     if (!race.legData->inProgress) {
       keysLocked=true;
-      //Serial.printf("TIMTM2 ts: %ds  %dms\n", ts.seconds, ts.millis);
-      //Serial.printf("clock:  %02d:%02d:%02d.%03d\n", gpsData.gpsTime.hour, gpsData.gpsTime.minute, gpsData.gpsTime.second, gpsData.gpsTime.millis);
       //save the start time stamp.  We may adjust this later if we are delaying start to
       //align with a timing mark.
-      race.legData->startTs.seconds = ts.seconds;
-      race.legData->startTs.millis = ts.millis;
+      race.legData->startTs=ts;
       //check to see if we are aligning the start to a timing mark.
       //if not then we just start the race timing on button push.  If we
       //are aligning timing the we have to check the various scenarios to
       //figure out how long to wait before beginning timing.
       if (race.legData->startMark == 0) {
-        race.legData->timerOffset.seconds = 0;
-        race.legData->timerOffset.millis = 0;
+        race.legData->timerOffset = 0;
         raceLegStart();
       } else {
-        mark = ts.seconds % race.legData->startMark;
+        mark = fmod(ts,race.legData->startMark);
         //calculate the delay before next starting mark, in milliseconds.  This will be invalid if the button
         //was pushed exactly on the current starting mark, but that will be handled in a special case.
-        startDelay = ((race.legData->startMark - mark) * 1000) - ts.millis;
+        startDelay = race.legData->startMark - mark;
         //calculate the possible timing delay based on whether the button push was
         //exactly on the second or not.
-        if (mark == 0 && ts.millis == 0) {
+        if (mark == 0) {
           //We managed to push the start button exactly on the timing mark, so start
           //the race.
           raceLegStart();
         } else {
           //delay the start of timing until the next timing mark.  Adjust the start timestamp
           //to align with that mark;
-          race.legData->startTs.millis = 0;
-          race.legData->startTs.seconds += (race.legData->startMark - mark);
+          race.legData->startTs += startDelay;
           race.legData->delayedStart = true;
           stateMachine.status.flags.delayedStart=true;
-          race.legData->timerOffset.seconds = startDelay / 1000;
-          race.legData->timerOffset.millis = startDelay % 1000;
-          //Serial.printf("startDelay: %d\n", startDelay);
+          race.legData->timerOffset = startDelay;
           //delay routine seems to run about 1.3 to 1.4x slow due to things being done in it.  We scale the
           //start delay appropriately, to get it close to correct.  Actual timing will be correct, we just
           //want the display to look right-ish
@@ -220,8 +210,7 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
       }
     } else {
       raceLegStop();
-      race.legData->endTs.seconds = ts.seconds;
-      race.legData->endTs.millis = ts.millis;
+      race.legData->endTs=ts;
       keysLocked=false;
     }
   }
@@ -239,43 +228,43 @@ void gpsUpdate(void) {
 void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   double targetTime;
   double elapsedTime;
-  gpsData.distance = ubxDataStruct->distance;
+  //GPS reports distance in meters.  We convert to millimeters for internal use.
+  gpsData.distance = (double)ubxDataStruct->distance*1000.0L;
   //Since we have an updated distamce, if we have a race in progress, then we should update
   //the average race stats since everything is based on time and distance travelled.
   //distance is in meters.  Time is in seconds.
   if (race.legData->inProgress) {
+    elapsedTime = getTimeStamp() - race.legData->timerOffset;
+    race.legData->timeComplete=elapsedTime;
     race.legData->distance = gpsData.distance - race.legData->distanceOffset;
     race.legData->distanceRemaining = race.legData->driveDistance - race.legData->distance;
+    race.legData->averageSpeed = race.legData->distance / elapsedTime;
+    //we use the adjustedTargetSpeed here as there isn't a good way to scale things from drive distance
+    //to leg distance.  We could technically do it, but the scaling factor is tiny (0.1% as an example)
+    //and ensuring no loss of precision isn't worth the hassle.
+    race.legData->speedDelta = race.legData->averageSpeed - race.legData->adjustedTargetSpeed;    
+    //Calculate how long it should have taken for us to travel the distance we have, at the target speed 
+    //for the race.
+    targetTime=race.legData->distance / race.legData->adjustedTargetSpeed;
+    //Our time delta is the difference between how long it should have taken and how long it did take.
+    //Delta will be negative if we are faster, positive if we are slower.
+    race.legData->timeDelta=targetTime-elapsedTime;
+
     //we use the drive values here as it wouldn't make sense to use published values for 
     //the race distance when the leg distance is actual distance driven.  Race values, using
     //published distance are only valid at the end of a leg.
     race.distance = race.driveDistanceComplete + race.legData->distance;
     race.distanceRemaining = race.driveDistance - race.distance;
-
- 
-    elapsedTime = TSPTR_TO_FLOAT(getTimeStamp()) - TS_TO_FLOAT(race.legData->timerOffset);
-    race.legData->averageSpeed = (double)race.legData->distance / elapsedTime;
-    //we use the adjustedTargetSpeed here as there isn't a good way to scale things from drive distance
-    //to leg distance.  We could technically do it, but the scaling factor is tiny (0.1% as an example)
-    //and ensuring no loss of precision isn't worth the hassle.
-    race.legData->speedDelta = race.legData->averageSpeed - race.legData->adjustedTargetSpeed;
-
-    race.averageSpeed = (double)race.distance / (TS_TO_FLOAT(race.timeComplete) + elapsedTime);
+    race.averageSpeed = race.distance / (race.timeComplete + elapsedTime);
     race.speedDelta = race.averageSpeed - race.adjustedTargetSpeed;
-
-    //Calculate how long it should have taken for us to travel the distance we have, at the target speed 
-    //for the race.
-    targetTime=(double)race.legData->distance / race.legData->adjustedTargetSpeed;
-    //Our time delta is the difference between how long it should have taken and how long it did take.
-    //Delta will be negative if we are faster, positive if we are slower.
-    race.legData->timeDelta=(targetTime-elapsedTime)*1000.0;
-
     //redo the same time delta calculations as above, only for the entire race distance instead of 
     //just the current leg.
-    targetTime=(double)race.distance / race.targetSpeed;
-    //time delta is in milliseconds
-    race.timeDelta=(targetTime-(TS_TO_FLOAT(race.timeComplete) + elapsedTime))*1000;
+    targetTime=race.distance / race.targetSpeed;
+    race.timeDelta=targetTime-(race.timeComplete + elapsedTime);
 
+    //This sets the color for the keypad buttons based on our speed delta.  Green if we are in-band.
+    //Blue if we are slow and red if we are fast.  Current only works on the leg speedDelta.  Will
+    //eventually make it a configuration setting to use either leg, or race.
     if((race.legData->speedDelta)<(race.legData->speedTargetBand*-1.0)) {
       stateMachine.status.flags.buttonColor=1;
     } else if ((race.legData->speedDelta)>race.legData->speedTargetBand) {
@@ -284,21 +273,11 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
       stateMachine.status.flags.buttonColor=3;
     }
 
-  if(race.legData->activePoint!=race.activeLeg->points.end()) {
-    if(race.legData->distance > (*(race.legData->activePoint))->distance) {
-      race.legData->activePoint++;
+    if(race.legData->activePoint!=race.activeLeg->points.end()) {
+      if(race.legData->distance > (*(race.legData->activePoint))->distance) {
+        race.legData->activePoint++;
+      }
     }
-  }
-
-    //I don't think we want auto-stop by default since actual distance driven will likely not match the defined
-    //race distance.  May make this a config option in the future.
-    /*
-    //If we reached the end of the leg, then stop the leg, just as if the start/stop button had been pressed.
-    if (race.legData->distanceRemaining <= 0) {
-      //Serial.println("dist remaining=0");
-      startPressInt();
-    }
-    */
   }
 }
 
@@ -314,11 +293,16 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
   gpsData.gpsTime.second = ubxDataStruct->sec;
   gpsData.gpsTime.millis = ubxDataStruct->nano / 1000000;
   gpsData.timeValid=ubxDataStruct->valid.bits.validTime;
-  //speed is reported in mm/s.  We are going to store in m/s to make things a bit more logical
-  //elsewhere.  If we aren't actively tracking a leg, then force the speed to zero.  This keeps
+  //speed is reported in mm/s.  This is the same value as us/ms that is used for internal
+  //speed representation, so we don't have to do any scaling or other conversions.
+  //If we aren't actively tracking a leg, then force the speed to zero.  This keeps
   //the speed display from bouncing around at small values due to GPS wander.
+  //We maintain a list of the last <n> speed values and calculate the avarage as the
+  //current speed.  This is a tradeoff between absolute accurracy and rapid fluctuation of
+  //displayed speed due to GPS variation.
   if (race.legData->inProgress) {
-    (*speedListInsert)=(double)ubxDataStruct->gSpeed / 1000.0;
+    //GPS reports speed in integer mm/s. We need to convert to double mm/ms  
+    (*speedListInsert)=((double)ubxDataStruct->gSpeed)/1000.0;
     speedListInsert++;
     if(speedListInsert==speedList.end()) {
       speedListInsert=speedList.begin();
@@ -326,8 +310,9 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
     for (int i=0; i<AVG_SPEED_VALUES; i++) {
       avgSpeed+=speedList[i];
     }
-    avgSpeed/=(double)AVG_SPEED_VALUES;
+    avgSpeed/=AVG_SPEED_VALUES;
     gpsData.speed = avgSpeed;
+    Serial.printf("avg speed: %f\n", gpsData.speed);
   } else {
     gpsData.speed = 0;
   }

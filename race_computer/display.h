@@ -68,8 +68,8 @@ typedef enum LEDRaceDisplayTypedef LEDRaceDisplayTypedef_t;
 
 extern std::list<displayContent_t*> displayList;
 extern uint8_t menuItem;
-extern race_t *dispRace;
-extern raceLeg_t *dispRaceLeg;
+extern raceDef_t *dispRace;
+extern raceLegDef_t *dispRaceLeg;
 extern bool raceSelectHighlight;
 extern bool raceLegSelectHighlight;
 extern void (*ledDispFunc)(void);

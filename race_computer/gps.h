@@ -23,8 +23,10 @@ struct gpsDataStruct {
   bool timeValid;
   bool fixValid;
   orcTime_t gpsTime;
+  //GPS speed in um/ms
   double speed;
-  unsigned long distance;
+  //GPS odometer distance in um.
+  double distance;
 };
 
 

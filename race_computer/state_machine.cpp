@@ -348,7 +348,7 @@ void stateMachine::run(void) {
         //only editing one, but we need to backup all three current values because we will restore
         //all three values if we escape out of the edit.  Don't want to restore the wrong contents for
         //either none edited value.
-        legAdjustDistBackup=legAdjustDistBackup;
+        legAdjustDistBackup=legAdjustDist;
         legAdjustSpeedBackup=legAdjustSpeed;
         legAdjustTimeBackup=legAdjustTime;
         legAdjustRow=0;
@@ -360,7 +360,7 @@ void stateMachine::run(void) {
         //only editing one, but we need to backup all three current values because we will restore
         //all three values if we escape out of the edit.  Don't want to restore the wrong contents for
         //either none edited value.        
-        legAdjustDistBackup=legAdjustDistBackup;
+        legAdjustDistBackup=legAdjustDist;
         legAdjustSpeedBackup=legAdjustSpeed;
         legAdjustTimeBackup=legAdjustTime;
         legAdjustRow=1;
@@ -372,7 +372,7 @@ void stateMachine::run(void) {
         //only editing one, but we need to backup all three current values because we will restore
         //all three values if we escape out of the edit.  Don't want to restore the wrong contents for
         //either none edited value.
-        legAdjustDistBackup=legAdjustDistBackup;
+        legAdjustDistBackup=legAdjustDist;
         legAdjustSpeedBackup=legAdjustSpeed;
         legAdjustTimeBackup=legAdjustTime;
         legAdjustRow=2;
@@ -381,9 +381,11 @@ void stateMachine::run(void) {
         break; 
       case stateAdjustLegSave:
         Serial.println("to: stateAdjustLegSave");
-        race.legData->driveDistance=legAdjustDist/0.000621372;
-        race.legData->adjustedTargetSpeed=legAdjustSpeed/2.23694;
-        race.legData->time=(double)legAdjustTime/1000.0;
+        //convert distance and speed from floating point miles and mph back to internal integer units.
+        //Time carries through directly as milliseconds.
+        race.legData->driveDistance=DISTANCE_MILES_TO_INTERNAL(legAdjustDist);
+        race.legData->adjustedTargetSpeed=SPEED_MPH_TO_INTERNAL(legAdjustSpeed);
+        race.legData->time=legAdjustTime;
         legAdjustMode=0;
         break;       
       case stateAdjustLegRestore:
@@ -398,13 +400,14 @@ void stateMachine::run(void) {
         break;
       case stateAdjustLegCaptureValues:
         Serial.println("to: stateAdjustLegCaptureValues");
-        //grab the leg values we can edit.  We will convert them to miles and mph here as it will make the
-        //edit routines not have to continually convert.  We will convert back when we save them.
-        //We multiply by 1000, the round to the nearest integer, then divide by 1000 to round these values
-        //to three digits after the decimal.
-        legAdjustDist=round(race.legData->driveDistance*0.000621372*1000)/1000;
-        legAdjustSpeed=round(race.legData->adjustedTargetSpeed*2.23694*1000)/1000;
-        legAdjustTime=race.legData->time*1000;
+        //grab the leg values we can edit.  
+        //time is in milliseconds and can easily be manipulated that way.
+        //We convert distance and speed to miles and mph to make the edit logic way, way
+        //easier.
+        legAdjustDist=DISTANCE_INTERNAL_TO_MILES(race.legData->driveDistance);
+        legAdjustSpeed=SPEED_INTERNAL_TO_MPH(race.legData->adjustedTargetSpeed);
+        legAdjustTime=(int32_t)round(race.legData->time);
+        Serial.printf("legAjustTime: %d, race.legData->time: %f\n", legAdjustTime,race.legData->time);
         break;
       case stateAdjustLegResetValues:
         //probably could just use stateSaveSelection as it is the same action, but if we need to do something
