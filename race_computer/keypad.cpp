@@ -200,17 +200,14 @@ void keyPressInt() {
 }
 
 void startPressInt() {
-  //Serial.println("start/stop interrupt");
   startPress=true;
-  //Serial.print("startStopState=");
-  //Serial.println(startStopState);  
   if(startStopStartsRace) {
     if(startStopState==1) {
       if(!race.legData->inProgress) {
         TMRx->CH[2].CNTR = 0;
         TMRx->CH[2].CTRL = TMR_CTRL_CM(1) | TMR_CTRL_PCS(2) | TMR_CTRL_LENGTH;
         digitalWriteFast(GPS_INT, LOW);
-        timerVal.seconds=0;
+        timerSeconds=0;
         timer_run=true;
       } else {
         TMRx->CH[2].CTRL = 0;

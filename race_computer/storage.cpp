@@ -191,24 +191,24 @@ void logRace(raceData_t *race, uint8_t type) {
   char legStr[]="leg";
   char raceStr[]="race";
   char *entryType;
-  float targetSpeed=ROUND3(race->targetSpeed*2.23694);
-  float adjustedTargetSpeed=ROUND3(race->adjustedTargetSpeed*2.23694);
-  float averageSpeed=ROUND3(race->averageSpeed*2.23694);
-  float speedDelta=ROUND3(race->speedDelta*2.23694);
-  float adjustedTargetTime=ROUND3((race->driveDistance/race->adjustedTargetSpeed));
-  float speedTargetBand=ROUND3(race->speedTargetBand*2.23694);
+  float targetSpeed=SPEED_INTERNAL_TO_MPH(race->targetSpeed);
+  float adjustedTargetSpeed=SPEED_INTERNAL_TO_MPH(race->adjustedTargetSpeed);
+  float averageSpeed=SPEED_INTERNAL_TO_MPH(race->averageSpeed);
+  float speedDelta=SPEED_INTERNAL_TO_MPH(race->speedDelta);
+  float adjustedTargetTime=TIME_INTERNAL_TO_SECONDS((race->driveDistance/race->adjustedTargetSpeed));
+  float speedTargetBand=SPEED_INTERNAL_TO_MPH(race->speedTargetBand);
 
-  float totalDistance=ROUND3(race->totalDistance*0.000621372);
-  float driveDistance=ROUND3(race->driveDistance*0.000621372);
+  float totalDistance=DISTANCE_INTERNAL_TO_MILES(race->totalDistance);
+  float driveDistance=DISTANCE_INTERNAL_TO_MILES(race->driveDistance);
 
-  float distanceComplete=ROUND3(race->distanceComplete*0.000621372);
-  float driveDistanceComplete=ROUND3(race->driveDistanceComplete*0.000621372);
+  float distanceComplete=DISTANCE_INTERNAL_TO_MILES(race->distanceComplete);
+  float driveDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->driveDistanceComplete);
   //double timeComplete;
-  float distance=ROUND3(race->distance*0.000621372);
+  float distance=DISTANCE_INTERNAL_TO_MILES(race->distance);
   //double startTime;
   //double endTime;
-  double timeDelta=(double)race->timeDelta/1000.0;
-  double time=(float (((race->endTs.seconds*1000)+race->endTs.millis) - ((race->startTs.seconds*1000)+race->startTs.millis)))/1000.0;
+  float timeDelta=TIME_INTERNAL_TO_SECONDS(race->timeDelta);
+  float time=TIME_INTERNAL_TO_SECONDS(race->endTs-race->startTs);
   File32 logFile;
   if(!sdCardPresent) {
     Serial.println("No SD card.  Unable to log race leg");
@@ -241,9 +241,9 @@ void logRace(raceData_t *race, uint8_t type) {
     entryType=raceStr;
   }
   buffer=(char *)malloc(384);
-  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0ld.%03d,%0.3f,%0ld.%03d,%0ld.%03d,%0.3f,%0.3f\n",
+  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n",
                           entryType,
-                          ROUND3(race->time),
+                          TIME_INTERNAL_TO_SECONDS(race->time),
                           targetSpeed,
                           adjustedTargetSpeed,
                           adjustedTargetTime, //adjustedTargetTime
@@ -254,13 +254,10 @@ void logRace(raceData_t *race, uint8_t type) {
                           driveDistance,
                           distanceComplete,
                           driveDistanceComplete,
-                          race->timeComplete.seconds, //timeComplete
-                          race->timeComplete.millis,
+                          TIME_INTERNAL_TO_SECONDS(race->timeComplete),
                           distance,
-                          race->startTs.seconds, //startTime
-                          race->startTs.millis,
-                          race->endTs.seconds,   //endTime
-                          race->endTs.millis,
+                          TIME_INTERNAL_TO_SECONDS(race->startTs),
+                          TIME_INTERNAL_TO_SECONDS(race->endTs),
                           timeDelta,
                           time
                         );

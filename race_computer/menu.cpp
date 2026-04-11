@@ -75,9 +75,9 @@ std::vector<menu_t*> menuStack = { &mainMenu };
 int legAdjustRow=0;
 int legAdjustColumn=0;
 int legAdjustMode=0;
-long int legAdjustTime;
-long int legAdjustTimeTmp;
-long int legAdjustTimeBackup;
+int32_t legAdjustTime;
+int32_t legAdjustTimeTmp;
+int32_t legAdjustTimeBackup;
 double legAdjustDist;
 double legAdjustDistTmp;
 double legAdjustDistBackup;
@@ -384,9 +384,9 @@ uint8_t menuAdjustLegTime(uint8_t key) {
                         }                        
                         break;         
                 }
-                //Time changed, so recalculate target speed.  Time is in thousandths of a second.
+                //Time changed, so recalculate target speed.  Time is in milliseconds.
                 //Scale time to hours to calculate miles per hour.
-                legAdjustSpeed=((double)legAdjustDist/((double)legAdjustTime/3600000.0));
+                legAdjustSpeed=legAdjustDist/(legAdjustTime*3600000.0);
             }
             ret=0;
             break;
@@ -447,9 +447,9 @@ uint8_t menuAdjustLegTime(uint8_t key) {
                         }                        
                         break;         
                 }
-                //Time changed, so recalculate target speed.  Time is in thousandths of a second.
+                //Time changed, so recalculate target speed.  Time is in milliseconds.
                 //Scale time to hours to calculate miles per hour.
-                legAdjustSpeed=((double)legAdjustDist/((double)legAdjustTime/3600000.0));
+                legAdjustSpeed=legAdjustDist/(legAdjustTime/3600000.0);
             }   
             ret=0;
             break;
@@ -526,9 +526,9 @@ uint8_t menuAdjustLegDistance(uint8_t key) {
                         }
                         break;                                            
                 }
-                //Distance changed, so recalculate target speed.  Time is in thousandths of a second.
+                //Distance changed, so recalculate target speed.  Time is in milliseconds.
                 //Scale time to hours to calculate miles per hour.
-                legAdjustSpeed=((double)legAdjustDist/((double)legAdjustTime/3600000.0));                 
+                legAdjustSpeed=legAdjustDist/(legAdjustTime/3600000.0);                 
             }
 
             ret=0;
@@ -575,9 +575,9 @@ uint8_t menuAdjustLegDistance(uint8_t key) {
                         }
                         break;          
                 }
-                //Distance changed, so recalculate target speed.  Time is in thousandths of a second.
+                //Distance changed, so recalculate target speed.  Time is in milliseconds.
                 //Scale time to hours to calculate miles per hour.
-                legAdjustSpeed=((double)legAdjustDist/((double)legAdjustTime/3600000.0));
+                legAdjustSpeed=legAdjustDist/(legAdjustTime/3600000.0);
             }   
             ret=0;
             break;
@@ -654,8 +654,8 @@ uint8_t menuAdjustLegSpeed(uint8_t key) {
                         break;                                            
                 }
                 //Speed changed, so recalculate target time.  Speed over distance will give time in hours
-                //Convert to seconds and the scale by 1000 for the fixed point representation of seconds.
-                legAdjustTime=(legAdjustDist/legAdjustSpeed)*3600*1000; 
+                //Convert to milliseconds.
+                legAdjustTime=(legAdjustDist/legAdjustSpeed)*3600000.0; 
             }
             ret=0;
             break;
@@ -702,8 +702,8 @@ uint8_t menuAdjustLegSpeed(uint8_t key) {
                         break;    
                 } 
                 //Speed changed, so recalculate target time.  Speed over distance will give time in hours
-                //Convert to seconds and the scale by 1000 for the fixed point representation of seconds.
-                legAdjustTime=(legAdjustDist/legAdjustSpeed)*3600*1000; 
+                //Convert to milliseconds.
+                legAdjustTime=(legAdjustDist/legAdjustSpeed)*3600000.0; 
             }   
             ret=0;
             break;
