@@ -18,6 +18,8 @@ enum menuAction {
   menuActionOLEDBrightness,
   menuActionFirmwareUpdate,
   menuActionScreenTimeout,
+  menuActionAutoAdjustLeg,
+  menuActionResetSettings,
   menuActionEditRaceLeg,
   menuActionSystemInfo,
   menuActionReboot,
@@ -27,6 +29,7 @@ enum menuAction {
   menuActionAdjustSave,
   menuActionAdjustReset,
   menuActionEsc,
+  menuActionUp,
   menuActionMainMenu,
 };
 
@@ -66,6 +69,7 @@ extern std::vector<menuEntry_t> mainMenuEntries;
 extern std::vector<menuEntry_t> raceMenuEntries;
 extern std::vector<menuEntry_t> configMenuEntries;
 extern std::vector<menuEntry_t> systemMenuEntries;
+extern std::vector<menuEntry_t> settinsResetMenuEntries;
 extern std::vector<menuEntry_t> dummyMenuEntries;
 
 extern menu_t mainMenu;
@@ -82,6 +86,8 @@ extern menu_t configDisplayMenu;
 extern menu_t ledBrightMenu;
 extern menu_t oledBrightMenu;
 extern menu_t screenTimeoutMenu;
+extern menu_t autoAjustLegTimeMenu;
+extern menu_t resetAllSettingsMenu;
 
 extern menu_t firmwareUpdateMenu;
 extern menu_t systemInformationMenu;
@@ -107,6 +113,7 @@ extern double legAdjustDistBackup;
 extern double legAdjustSpeed;
 extern double legAdjustSpeedTmp;
 extern double legAdjustSpeedBackup;
+extern bool autoAdjustLegTimeSave;
 
 
 uint8_t menuSetLedBrightness(uint8_t key);
@@ -115,7 +122,8 @@ uint8_t menuSetScreenTimeout(uint8_t key);
 uint8_t menuAdjustLegTime(uint8_t key);
 uint8_t menuAdjustLegDistance(uint8_t key);
 uint8_t menuAdjustLegSpeed(uint8_t key);
-
+uint8_t menuConfirmSettingsReset(uint8_t key);
 uint8_t menuSetHwVer(uint8_t key);
+uint8_t menuAutoAjustLegTime(uint8_t key);
 
 #endif

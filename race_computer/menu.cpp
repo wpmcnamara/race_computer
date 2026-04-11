@@ -24,7 +24,9 @@ std::vector<menuEntry_t> configMenuEntries={
     {"Configure Display", menuActionConfigDisplay, &configDisplayMenu},
     {"LED Brightness", menuActionLEDBrightness, &ledBrightMenu},
     {"OLED Brightness", menuActionOLEDBrightness, &oledBrightMenu},
-    {"Screen Timeout", menuActionScreenTimeout, &screenTimeoutMenu}
+    {"Screen Timeout", menuActionScreenTimeout, &screenTimeoutMenu},
+    {"Auto Adjust Leg Timing", menuActionAutoAdjustLeg, &autoAjustLegTimeMenu},
+    {"Reset All Configuration Settings", menuActionMainMenu, &resetAllSettingsMenu}
 };
 
 std::vector<menuEntry_t> systemMenuEntries={
@@ -39,6 +41,11 @@ std::vector<menuEntry_t> adjustLegMenuEntries={
     {"Adjust Target Speed", menuActionAdjustSpeed,&adjustSpeedMenu},
     {"Save Adjustments", menuActionAdjustSave, nullptr},
     {"Reset All Adjustments", menuActionAdjustReset, nullptr},
+};
+
+std::vector<menuEntry_t> settingsResetMenuEntries={
+    {"No", menuActionUp, nullptr},
+    {"Yes", menuActionResetSettings, nullptr}
 };
 
 std::vector<menuEntry_t> dummyMenuEntries;
@@ -57,6 +64,8 @@ menu_t configDisplayMenu("Config Display", dummyMenuEntries, 0);
 menu_t ledBrightMenu("LED Brightness", dummyMenuEntries, 0);
 menu_t oledBrightMenu("OLED Brightness", dummyMenuEntries, 0);
 menu_t screenTimeoutMenu("Screen Timeout", dummyMenuEntries, 0);
+menu_t autoAjustLegTimeMenu("Leg Timing Adjust", dummyMenuEntries, 0);
+menu_t resetAllSettingsMenu("Reset All Settings", settingsResetMenuEntries, 2);
 
 
 menu_t firmwareUpdateMenu("Firmware Update", dummyMenuEntries, 0);
@@ -84,7 +93,7 @@ double legAdjustDistBackup;
 double legAdjustSpeed;
 double legAdjustSpeedTmp;
 double legAdjustSpeedBackup;
-
+bool autoAdjustLegTimeSave;
 
 menu::menu(std::string menuTitle, std::vector<menuEntry_t> menuEntries, uint8_t displayLines) {
     title=menuTitle;
@@ -747,3 +756,25 @@ uint8_t menuSetHwVer(uint8_t key) {
     return 0;
 }
 
+uint8_t menuAutoAjustLegTime(uint8_t key) {
+    switch (key) {
+        case KEYPAD_KEY_START_STOP:
+            return 0;
+            break;
+        case KEYPAD_KEY_ENTER:
+            return 1;
+            break;
+        case KEYPAD_KEY_DOWN:
+            autoAdjustLegTime=!autoAdjustLegTime;
+            break;
+        case KEYPAD_KEY_UP:
+            autoAdjustLegTime=!autoAdjustLegTime;
+            break;
+        case KEYPAD_KEY_ESC:
+            autoAdjustLegTime=autoAdjustLegTimeSave;
+            return 2;
+        default:
+            break;
+    }
+    return 0;
+}

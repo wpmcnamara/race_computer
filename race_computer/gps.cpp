@@ -259,7 +259,7 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     race.speedDelta = race.averageSpeed - race.adjustedTargetSpeed;
     //redo the same time delta calculations as above, only for the entire race distance instead of 
     //just the current leg.
-    targetTime=race.distance / race.targetSpeed;
+    targetTime=race.distance / race.activeLeg->raceSpeed;
     race.timeDelta=targetTime-(race.timeComplete + elapsedTime);
 
     //This sets the color for the keypad buttons based on our speed delta.  Green if we are in-band.

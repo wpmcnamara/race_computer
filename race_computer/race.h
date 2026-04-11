@@ -28,6 +28,8 @@ void loadRacePoints(raceLegDef_t *raceLeg);
 void clearRacePoints(raceLegDef_t *raceLeg);
 void loadDefaultRaces(void);
 
+extern bool autoAdjustLegTime;
+
 extern event_t *delayedStartEvent;
 
 
@@ -164,7 +166,7 @@ class raceData {
     //completed legs.  Needed to calculate the whole race average speed. For a leg this will be
     //the same as leg time.
     double timeComplete;
-    //unit: mm  distance traveled for the race/leg.  For a race, this will be the smm of driveDistanceComplete
+    //unit: mm  distance traveled for the race/leg.  For a race, this will be the sum of driveDistanceComplete
     //and the distance traveled in the current leg.
     double distance;
     //unit: mm  distance remaining in the current race/leg.  This is based on driveDistance to provide
