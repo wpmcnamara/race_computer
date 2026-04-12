@@ -31,6 +31,7 @@ enum menuAction {
   menuActionEsc,
   menuActionUp,
   menuActionMainMenu,
+  menuActionSpeedBandSource
 };
 
 typedef enum menuAction menuAction_t;
@@ -88,6 +89,7 @@ extern menu_t oledBrightMenu;
 extern menu_t screenTimeoutMenu;
 extern menu_t autoAjustLegTimeMenu;
 extern menu_t resetAllSettingsMenu;
+extern menu_t speedBandSourceMenu;
 
 extern menu_t firmwareUpdateMenu;
 extern menu_t systemInformationMenu;
@@ -114,6 +116,7 @@ extern double legAdjustSpeed;
 extern double legAdjustSpeedTmp;
 extern double legAdjustSpeedBackup;
 extern bool autoAdjustLegTimeSave;
+extern int speedBandSourceSave;
 
 
 uint8_t menuSetLedBrightness(uint8_t key);
@@ -125,5 +128,6 @@ uint8_t menuAdjustLegSpeed(uint8_t key);
 uint8_t menuConfirmSettingsReset(uint8_t key);
 uint8_t menuSetHwVer(uint8_t key);
 uint8_t menuAutoAjustLegTime(uint8_t key);
+uint8_t menuSpeedBandSource(uint8_t key);
 
 #endif

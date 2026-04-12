@@ -228,6 +228,7 @@ void gpsUpdate(void) {
 void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   double targetTime;
   double elapsedTime;
+  double speedDelta;
   //GPS reports distance in meters.  We convert to millimeters for internal use.
   gpsData.distance = (double)ubxDataStruct->distance*1000.0L;
   //Since we have an updated distamce, if we have a race in progress, then we should update
@@ -265,12 +266,22 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     //This sets the color for the keypad buttons based on our speed delta.  Green if we are in-band.
     //Blue if we are slow and red if we are fast.  Current only works on the leg speedDelta.  Will
     //eventually make it a configuration setting to use either leg, or race.
-    if((race.legData->speedDelta)<(race.legData->speedTargetBand*-1.0)) {
-      stateMachine.status.flags.buttonColor=1;
-    } else if ((race.legData->speedDelta)>race.legData->speedTargetBand) {
-      stateMachine.status.flags.buttonColor=2;
+    if(speedBandSource==1) {
+      speedDelta=race.legData->speedDelta;
     } else {
-      stateMachine.status.flags.buttonColor=3;
+      speedDelta=race.speedDelta;
+    }
+    
+    if(speedBandSource!=0) {
+      if(speedDelta<(race.legData->speedTargetBand*-1.0)) {
+        stateMachine.status.flags.buttonColor=1;
+      } else if (speedDelta>race.legData->speedTargetBand) {
+        stateMachine.status.flags.buttonColor=2;
+      } else {
+        stateMachine.status.flags.buttonColor=3;
+      }
+    } else {
+      stateMachine.status.flags.buttonColor=0;
     }
 
     if(race.legData->activePoint!=race.activeLeg->points.end()) {

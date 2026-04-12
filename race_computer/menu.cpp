@@ -26,6 +26,7 @@ std::vector<menuEntry_t> configMenuEntries={
     {"OLED Brightness", menuActionOLEDBrightness, &oledBrightMenu},
     {"Screen Timeout", menuActionScreenTimeout, &screenTimeoutMenu},
     {"Auto Adjust Leg Timing", menuActionAutoAdjustLeg, &autoAjustLegTimeMenu},
+    {"Speed Band Compare Source", menuActionSpeedBandSource, &speedBandSourceMenu},
     {"Reset All Configuration Settings", menuActionMainMenu, &resetAllSettingsMenu}
 };
 
@@ -65,6 +66,7 @@ menu_t ledBrightMenu("LED Brightness", dummyMenuEntries, 0);
 menu_t oledBrightMenu("OLED Brightness", dummyMenuEntries, 0);
 menu_t screenTimeoutMenu("Screen Timeout", dummyMenuEntries, 0);
 menu_t autoAjustLegTimeMenu("Leg Timing Adjust", dummyMenuEntries, 0);
+menu_t speedBandSourceMenu("Speed Band Source", dummyMenuEntries, 0);
 menu_t resetAllSettingsMenu("Reset All Settings", settingsResetMenuEntries, 2);
 
 
@@ -94,6 +96,7 @@ double legAdjustSpeed;
 double legAdjustSpeedTmp;
 double legAdjustSpeedBackup;
 bool autoAdjustLegTimeSave;
+int speedBandSourceSave;
 
 menu::menu(std::string menuTitle, std::vector<menuEntry_t> menuEntries, uint8_t displayLines) {
     title=menuTitle;
@@ -777,4 +780,31 @@ uint8_t menuAutoAjustLegTime(uint8_t key) {
             break;
     }
     return 0;
+}
+
+uint8_t menuSpeedBandSource(uint8_t key) {
+    switch (key) {
+        case KEYPAD_KEY_START_STOP:
+            return 0;
+            break;
+        case KEYPAD_KEY_ENTER:
+            return 1;
+            break;
+        case KEYPAD_KEY_DOWN:
+            if(speedBandSource<2) {
+                speedBandSource++;
+            }
+            break;
+        case KEYPAD_KEY_UP:
+            if(speedBandSource>0) {
+                speedBandSource--;
+            }
+            break;
+        case KEYPAD_KEY_ESC:
+            speedBandSource=speedBandSourceSave;
+            return 2;
+        default:
+            break;
+    }
+    return 0;   
 }

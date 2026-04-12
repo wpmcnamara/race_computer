@@ -1,6 +1,7 @@
 #include "storage.h"
 #include "display.h"
 #include <ArduinoJson.h>
+#include "keypad.h"
 //setup global objects on the board.
 // set up variables using the SD utility library functions:
 SdFat32 sdCard;
@@ -93,6 +94,7 @@ void saveSettings(void) {
   oledDisp[3]=OLEDDisplayActive[3];
   doc["ledDisp"]=LEDDisplayActive;
   doc["adjustLegTime"]=autoAdjustLegTime;
+  doc["speedBandSource"]=speedBandSource;
   doSPILock();
   if(sdCard.exists("orrc/system/settings.yml")) {
     Serial.println("clearing saved settings");
@@ -187,6 +189,10 @@ void loadSettings(void) {
     autoAdjustLegTime=doc["adjustLegTime"].as<bool>();
     Serial.printf("Auto Adjust Leg Time=%d\n", autoAdjustLegTime);
   }
+  if(!doc["speedBandSource"].isNull()) {  
+    speedBandSource=doc["speedBandSource"].as<bool>();
+    Serial.printf("Speed Band Comparison Source=%d\n", speedBandSource);
+  }  
 
 };
 
@@ -197,9 +203,10 @@ void logRace(raceData_t *race, uint8_t type) {
   char legStr[]="leg";
   char raceStr[]="race";
   char *entryType;
-  double targetTime=race->totalDistance/race->targetSpeed;
+  float targetTime=TIME_INTERNAL_TO_SECONDS(race->targetTime);
+  float targetTimeComplete=TIME_INTERNAL_TO_SECONDS(race->targetTimeComplete);
   float targetSpeed=SPEED_INTERNAL_TO_MPH(race->targetSpeed);
-  float adjustedTargetSpeed1=SPEED_INTERNAL_TO_MPH(race->driveDistance/targetTime);
+  float adjustedTargetSpeed1=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->targetTime);
   float adjustedTargetSpeed2=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->time);
   float averageSpeed=SPEED_INTERNAL_TO_MPH(race->averageSpeed);
   float speedDelta=SPEED_INTERNAL_TO_MPH(race->speedDelta);
@@ -212,10 +219,8 @@ void logRace(raceData_t *race, uint8_t type) {
   float distanceComplete=DISTANCE_INTERNAL_TO_MILES(race->distanceComplete);
   float driveDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->driveDistanceComplete);
   float actualDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->actualDistanceComplete);
-  //double timeComplete;
   float distance=DISTANCE_INTERNAL_TO_MILES(race->distance);
-  //double startTime;
-  //double endTime;
+
   float timeDelta=TIME_INTERNAL_TO_SECONDS(race->timeDelta);
   float time=TIME_INTERNAL_TO_SECONDS(race->endTs-race->startTs);
   File32 logFile;
@@ -242,7 +247,7 @@ void logRace(raceData_t *race, uint8_t type) {
     return;
   }
   if(writeHeader) {
-    logFile.write("type,targetTime,targetSpeed,targetDistance,adjustedTargetSpeed1,adjustedTargetSpeed2,adjustedTargetTime,averageSpeed,speedDelta,speedTargetBand,distance,driveDistance,distanceComplete,driveDistanceComplete,actualDistanceComplete,timeComplete,startTime,endTime,timeDelta,time\n");
+    logFile.write("type,targetTime,targetSpeed,targetDistance,adjustedTargetSpeed1,adjustedTargetSpeed2,adjustedTargetTime,averageSpeed,speedDelta,speedTargetBand,distance,driveDistance,distanceComplete,driveDistanceComplete,actualDistanceComplete,timeComplete,targetTimeComplete,startTime,endTime,timeDelta,time\n");
   }
   if(type==0) {
     entryType=legStr;
@@ -250,9 +255,9 @@ void logRace(raceData_t *race, uint8_t type) {
     entryType=raceStr;
   }
   buffer=(char *)malloc(384);
-  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n",
+  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n",
                           entryType,
-                          TIME_INTERNAL_TO_SECONDS(targetTime),
+                          targetTime,
                           targetSpeed,
                           totalDistance,
                           adjustedTargetSpeed1,
@@ -267,6 +272,7 @@ void logRace(raceData_t *race, uint8_t type) {
                           driveDistanceComplete,
                           actualDistanceComplete,
                           TIME_INTERNAL_TO_SECONDS(race->timeComplete),
+                          targetTimeComplete,
                           TIME_INTERNAL_TO_SECONDS(race->startTs),
                           TIME_INTERNAL_TO_SECONDS(race->endTs),
                           timeDelta,

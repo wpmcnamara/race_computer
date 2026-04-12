@@ -256,6 +256,7 @@ void setRace(raceDef_t *selectedRace) {
   race.speedDelta=0;
   race.timeDelta=0;  
   race.timeComplete=0;
+  race.targetTimeComplete=0;
   race.startTs=0;
   race.endTs=0;
 
@@ -269,16 +270,16 @@ void setLeg(raceLegDef_t *selectedRaceLeg) {
   race.legData->driveDistance=race.activeLeg->driveDistance;
   race.legData->distanceRemaining=race.legData->driveDistance;
   race.legData->startMark=race.activeLeg->mark;
+  race.legData->targetTime=race.legData->totalDistance/race.legData->targetSpeed;
+  race.legData->time=race.legData->targetTime;
   if(autoAdjustLegTime) {
   //let calculate the actual target speed we need, in order to hit the race target.
   //this will be different if the drive distance is not the same as the race distance.  
   //If drive distance is shorter, then it will be slower.  Faster if longer.  The 
   //contant is the time.  We need to cover the drive distance in the time specified by
   //the leg distance.
-    race.legData->time=(race.legData->totalDistance/race.legData->targetSpeed)-race.timeDelta;
-  } else {
-    race.legData->time=(race.legData->totalDistance/race.legData->targetSpeed);
-  }
+    race.legData->time-=race.timeDelta;
+  } 
   //now figure the adjusted targer based on how long the leg should take, and the 
   //actual distance we will drive.
   race.legData->adjustedTargetSpeed=race.legData->driveDistance/race.legData->time;
@@ -294,6 +295,7 @@ void prepRace(void) {
   race.legData->speedDelta=0;
   race.legData->timeDelta=0;
   race.legData->timeComplete=0;
+  race.legData->targetTimeComplete=0;
   race.legData->activeRace=NULL;
   race.legData->activeLeg=NULL;
   race.legData->inProgress=false;
@@ -373,12 +375,12 @@ void clearRacePoints(raceLegDef_t *raceLeg) {
 
 
 void updateRace(void) {
-  double raceTargetTime=0;
   race.activeLeg->complete=true;
   race.legData->distanceComplete=race.legData->totalDistance;
   race.legData->driveDistanceComplete=race.legData->driveDistance;
   race.legData->actualDistanceComplete=race.legData->distance;
   race.legData->timeComplete=race.legData->endTs-race.legData->startTs;
+  race.legData->targetTimeComplete=race.legData->targetTime;
   race.legData->timeDelta=race.legData->timeComplete-race.legData->time;
   race.legData->speedDelta=race.legData->averageSpeed-race.legData->adjustedTargetSpeed;
 
@@ -389,8 +391,8 @@ void updateRace(void) {
   race.distance = race.distanceComplete;
   race.distanceRemaining = race.totalDistance - race.distance;  
   race.timeComplete+=race.legData->timeComplete;
-  raceTargetTime=race.distanceComplete/race.activeLeg->raceSpeed;
-  race.timeDelta=race.timeComplete-raceTargetTime;
+  race.targetTimeComplete+=race.legData->targetTime;
+  race.timeDelta=race.timeComplete-race.targetTimeComplete;
 }
 
 void raceCheckPoint(void) {

@@ -149,11 +149,11 @@ class raceData {
     //definition when the leg is entered.
     double totalDistance;
     //unit: mm  Total drive distance of the course.  For a race, this will be computed as the
-    //smm of all leg drive distances.  For a leg, this will be the actual distance to drive 
+    //sum of all leg drive distances.  For a leg, this will be the actual distance to drive 
     //for the leg.  It will be used to calculate the actual target speed and time deltas, in 
     //combination with the totalDistance value.
     double driveDistance;
-    //unit: mm  For the active race, this is the smm of the distance of completed legs
+    //unit: mm  For the active race, this is the sum of the distance of completed legs
     //For a leg, this will be the leg distance.
     //Needed to calculate the whole race average speed.
     double distanceComplete;
@@ -165,10 +165,17 @@ class raceData {
     //we use the actual distance driven, rather than the defined distance for more accurate 
     //timing.  Defined drive distance is a forward looking guess.  This is historical reality.
     double actualDistanceComplete;
-    //unit: ms  For the active race, this is the smm of the times for all
+    //unit: ms  For the active race, this is the sum of the times for all
     //completed legs.  Needed to calculate the whole race average speed. For a leg this will be
     //the same as leg time.
     double timeComplete;
+    //unit: mm  For an active race this is the sum of the target time for all completed legs.  This will be the
+    //desired target time at the end of each leg and can be used to calculate how far off the pace we are.  For
+    //a leg, it will be the original leg target time before any time adjustments.
+    double targetTimeComplete;
+    //unit: mm  For race our leg, this the base target time, calculated from published distance and speed.  This
+    //will not be adjusted during a race.
+    double targetTime;
     //unit: mm  distance traveled for the race/leg.  For a race, this will be the sum of actualDistanceComplete
     //and the distance traveled in the current leg.
     double distance;
