@@ -73,11 +73,20 @@ const char *OLEDDisplayDescr[OLEDDispFuncMaxValue]={
   "Leg - Turns",
   "GPS Info"
 };
-const char *LEDDisplayDescr[5]={
+const char *LEDDisplayDescr[LEDDispFuncMaxValue]={
   "Leg - Time",
-  "Race - Time",
   "Leg - Speed Delta",
+  "Leg - Average Speed",
+  "Leg - Distance Remaining",
+  "Leg - Time Delta",
+  "Leg - Distance Traveled",
+  "GPS Speed",
+  "Race - Time",
   "Race - Speed Delta",
+  "Race - Average Speed",
+  "Race - Distance Remaining",
+  "Race - Distance Traveled",
+  "Race - Time Delta",
   "Dashes"
 };
 
@@ -96,11 +105,21 @@ void (*OLEDDisplayFuncs[OLEDDispFuncMaxValue])(U8G2_SSD1322_NHD_256X64_F_4W_HW_S
   displayPoint,
   displayGPSInfo
 };
-void (*LEDDisplayFuncs[5])(void)= {
+
+void (*LEDDisplayFuncs[LEDDispFuncMaxValue])(void)= {
   ledDispLegTime,
-  ledDispRaceTime,
   ledDispLegDeltaSpeed,
+  ledDispLegAverageSpeed,
+  ledDispLegDistanceRemain,
+  ledDispLegDeltaTime,
+  ledDispLegDistance,
+  ledDispGpsSpeed,
+  ledDispRaceTime,
   ledDispRaceDeltaSpeed,
+  ledDispRaceAverageSpeed,
+  ledDispRaceDistanceRemain,
+  ledDispRaceDistance,
+  ledDispRaceDeltaTime,
   ledDispDashes  
 };
 
@@ -1307,6 +1326,69 @@ void ledDispLegDeltaSpeed(void) {
 void ledDispRaceDeltaSpeed(void) {
   ledDisp.RefreshMe();
   sprintf(buffer, "%9.3f", SPEED_INTERNAL_TO_MPH(race.speedDelta));
+  ledDisp.Set_Position(0);
+  ledDisp.ShowMe(buffer); 
+}
+
+void ledDispGpsSpeed(void) {
+  ledDisp.RefreshMe();
+  sprintf(buffer, "%9.3f", SPEED_INTERNAL_TO_MPH(gpsData.speed));
+  ledDisp.Set_Position(0);
+  ledDisp.ShowMe(buffer); 
+}
+
+void ledDispLegAverageSpeed(void) {
+  ledDisp.RefreshMe();
+  sprintf(buffer, "%9.3f", SPEED_INTERNAL_TO_MPH(race.legData->averageSpeed));
+  ledDisp.Set_Position(0);
+  ledDisp.ShowMe(buffer); 
+}
+
+void ledDispLegDistanceRemain(void) {
+  ledDisp.RefreshMe();
+  sprintf(buffer, "%9.3f", DISTANCE_INTERNAL_TO_MILES(race.legData->distanceRemaining));
+  ledDisp.Set_Position(0);
+  ledDisp.ShowMe(buffer); 
+}
+
+void ledDispLegDeltaTime(void) {
+  ledDisp.RefreshMe();
+  sprintf(buffer, "%9.3f", TIME_INTERNAL_TO_SECONDS(race.legData->timeDelta));
+  ledDisp.Set_Position(0);
+  ledDisp.ShowMe(buffer); 
+}
+
+void ledDispLegDistance(void) {
+  ledDisp.RefreshMe();
+  sprintf(buffer, "%9.3f", DISTANCE_INTERNAL_TO_MILES(race.legData->distance));
+  ledDisp.Set_Position(0);
+  ledDisp.ShowMe(buffer); 
+}
+
+void ledDispRaceAverageSpeed(void) {
+  ledDisp.RefreshMe();
+  sprintf(buffer, "%9.3f", SPEED_INTERNAL_TO_MPH(race.averageSpeed));
+  ledDisp.Set_Position(0);
+  ledDisp.ShowMe(buffer); 
+}
+
+void ledDispRaceDistanceRemain(void) {
+  ledDisp.RefreshMe();
+  sprintf(buffer, "%9.3f", DISTANCE_INTERNAL_TO_MILES(race.distanceRemaining));
+  ledDisp.Set_Position(0);
+  ledDisp.ShowMe(buffer); 
+}
+
+void ledDispRaceDistance(void) {
+  ledDisp.RefreshMe();
+  sprintf(buffer, "%9.3f", DISTANCE_INTERNAL_TO_MILES(race.distance));
+  ledDisp.Set_Position(0);
+  ledDisp.ShowMe(buffer); 
+}
+
+void ledDispRaceDeltaTime(void) {
+  ledDisp.RefreshMe();
+  sprintf(buffer, "%9.3f", TIME_INTERNAL_TO_SECONDS(race.timeDelta));
   ledDisp.Set_Position(0);
   ledDisp.ShowMe(buffer); 
 }
