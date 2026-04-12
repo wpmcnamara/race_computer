@@ -423,10 +423,15 @@ void raceCheckPoint(void) {
   doc["legId"]=race.activeLeg->id;
   doc["legInProgress"]=race.activeLeg->inProgress;
   doc["legComplete"]=race.activeLeg->complete;
+  doc["distance"]=race.distance;
+  doc["distanceRemaining"]=race.distanceRemaining;
   doc["distanceComplete"]=race.distanceComplete;
   doc["actualDistanceComplete"]=race.actualDistanceComplete;
   doc["driveDistanceComplete"]=race.driveDistanceComplete;
-  doc["timeSec"]=race.timeComplete;
+  doc["timeComplete"]=race.timeComplete;
+  doc["targetTimeComplete"]=race.targetTimeComplete;
+  doc["timeDelta"]=race.timeDelta;
+
   checkPoint=sdCard.open("orrc/system/race_checkpoint.yml", FILE_WRITE);
   if(!checkPoint) {
     Serial.println("Checkpoint open failed");
@@ -508,14 +513,22 @@ void loadRaceCheckPoint(void) {
     return;
   }
   Serial.println("Setting race checkpoint");
+  //Initialize the race represented in the checkpoint.
   setRace((*raceIt));
-  setLeg((*raceLegIt));
+  //Now restart all the in progress values for the race.  This is effectively all race
+  //values updated in updateRace().  We need to do this before we initialize the active
+  //leg as it's initialization may depend on some of the restored race values.
   race.activeRace->inProgress=doc["raceInProgress"].as<bool>();
   race.inProgress=race.activeRace->inProgress;
+  race.distance=doc["distance"].as<double>();
+  race.distanceRemaining=doc["distanceRemaining"].as<double>();
   race.distanceComplete=doc["distanceComplete"].as<double>();
   race.driveDistanceComplete=doc["driveDistanceComplete"].as<double>();
   race.actualDistanceComplete=doc["actualDistanceComplete"].as<double>();
-  race.timeComplete=doc["timeSec"].as<double>();
+  race.timeComplete=doc["timeComplete"].as<double>();
+  race.targetTimeComplete=doc["targetTimeComplete"].as<double>();
+  race.timeDelta=doc["timeDelta"].as<double>();
+  setLeg((*raceLegIt));
   selectedRace=raceIt;
   selectedRaceLeg=raceLegIt;
 }
