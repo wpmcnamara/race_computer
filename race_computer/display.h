@@ -55,9 +55,18 @@ typedef enum OLEDRaceDisplayTypedef OLEDRraceDisplayTypedef_t;
 
 enum LEDRaceDisplayTypedef {
   LegTime=0,
-  RaceTime,
   LegDeltaSpeed,
+  LegAverageSpeed,
+  LegDistanceRemain,
+  LegDeltaTime,    
+  LegDistance,  
+  GpsSpeed,
+  RaceTime,
   RaceDeltaSpeed,
+  RaceAverageSpeed,
+  RaceDistanceRemain,
+  RaceDistance,
+  RaceDeltaTime,
   Dashes,
   LEDDispFuncMaxValue,
   LEDDispFuncMinValue=LegTime
@@ -80,7 +89,7 @@ extern bool displaySelectLineMode;
 extern int LEDDisplayActive;
 extern int LEDDisplaySelect;
 extern const char *OLEDDisplayDescr[OLEDDispFuncMaxValue];
-extern const char *LEDDisplayDescr[5];
+extern const char *LEDDisplayDescr[LEDDispFuncMaxValue];
 extern uint8_t ledBrightness;
 extern uint8_t oledBrightness;
 extern uint8_t ledBrightnessTmp;
@@ -93,7 +102,7 @@ extern bool displayTimeOutEnable;
 
 
 extern void (*OLEDDisplayFuncs[OLEDDispFuncMaxValue])(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
-extern void (*LEDDisplayFuncs[5])(void);
+extern void (*LEDDisplayFuncs[LEDDispFuncMaxValue])(void);
 
 class displayContent {
   public:
@@ -158,13 +167,28 @@ void displaySetSpeedBandSource(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dis
 
 
 void ledDispLegTime(void);
-void ledDispRaceTime(void);
 void ledDispLegDeltaSpeed(void);
+void ledDispLegAverageSpeed(void);
+void ledDispLegDistanceRemain(void);
+void ledDispLegDeltaTime(void);
+void ledDispLegDistance(void);
+void ledDispGpsSpeed(void);
+
+void ledDispRaceTime(void);
 void ledDispRaceDeltaSpeed(void);
+void ledDispRaceTime(void);
+void ledDispRaceDeltaSpeed(void);
+void ledDispRaceAverageSpeed(void);
+void ledDispRaceDistanceRemain(void);
+void ledDispRaceDistance(void);
+void ledDispRaceDeltaTime(void);
+
+
 void ledDispDashes(void);
 void ledDispEights(void);
 void ledDispBlank(void);
 void ledDispStartCountdown(void);
+
 
 void displayError(const char *err);
 

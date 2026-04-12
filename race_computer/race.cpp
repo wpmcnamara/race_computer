@@ -229,7 +229,7 @@ void setRace(raceDef_t *selectedRace) {
   race.targetSpeed=selectedRace->speed;
   race.speedTargetBand=selectedRace->speedRange;
   race.totalDistance=selectedRace->distance;
-  //race.distanceRemaining=race.totalDistance;
+  race.targetTime=race.totalDistance/race.targetSpeed;
   race.startMark=selectedRace->mark;
 
   //Figure out how long the entire race will take, in seconds;
