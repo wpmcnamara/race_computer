@@ -157,16 +157,19 @@ class raceData {
     //For a leg, this will be the leg distance.
     //Needed to calculate the whole race average speed.
     double distanceComplete;
-    //unit: mm  For the active race, this is the smm of the disance driven for completed legs based 
-    //on the distance driven for each leg.  For a leg, this will be the actual driven distance.
+    //unit: mm  For the active race, this is the sum of the drive distance for completed legs.
+    //For a leg, this will be the defined drive distance one once the leg is complete.
+    double driveDistanceComplete;
+    //unit: mm  For the active race, this is the sum of the disance driven for completed legs based 
+    //on the actual distance driven for each leg.  For a leg, this will be the actual driven distance.
     //we use the actual distance driven, rather than the defined distance for more accurate 
     //timing.  Defined drive distance is a forward looking guess.  This is historical reality.
-    double driveDistanceComplete;
+    double actualDistanceComplete;
     //unit: ms  For the active race, this is the smm of the times for all
     //completed legs.  Needed to calculate the whole race average speed. For a leg this will be
     //the same as leg time.
     double timeComplete;
-    //unit: mm  distance traveled for the race/leg.  For a race, this will be the sum of driveDistanceComplete
+    //unit: mm  distance traveled for the race/leg.  For a race, this will be the sum of actualDistanceComplete
     //and the distance traveled in the current leg.
     double distance;
     //unit: mm  distance remaining in the current race/leg.  This is based on driveDistance to provide

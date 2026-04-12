@@ -180,11 +180,8 @@ void loadRaces() {
       }
       raceLegFile->distance=DISTANCE_MILES_TO_INTERNAL(jsonLeg["distance"].as<float>());
       Serial.printf("   leg distance: %0.3fmi, %0.3fmm\n", jsonLeg["distance"].as<float>(), raceLegFile->distance);      
-      cumulativeRaceDistance+=raceLegFile->distance;
       raceLegFile->targetTime=raceLegFile->distance/raceLegFile->speed;
       cumulativeRaceTime+=raceLegFile->targetTime;
-      raceLegFile->raceSpeed=cumulativeRaceDistance/cumulativeRaceTime;
-      Serial.printf("   leg race average speed: %0.3fmph, %03fmm/ms\n",SPEED_INTERNAL_TO_MPH(raceLegFile->raceSpeed), raceLegFile->raceSpeed);
 
       if(jsonLeg["driveDistance"].isNull()) {
         raceLegFile->driveDistance=raceLegFile->distance;
@@ -193,6 +190,11 @@ void loadRaces() {
         raceLegFile->driveDistance=DISTANCE_MILES_TO_INTERNAL(jsonLeg["driveDistance"].as<float>());
         Serial.printf("   drive distance: %0.3fmi, %0.3fmm\n", jsonLeg["driveDistance"].as<float>(), raceLegFile->driveDistance);
       }
+    
+      cumulativeRaceDistance+=raceLegFile->driveDistance;
+      raceLegFile->raceSpeed=cumulativeRaceDistance/cumulativeRaceTime;      
+      Serial.printf("   leg race average speed: %0.3fmph, %03fmm/ms\n",SPEED_INTERNAL_TO_MPH(raceLegFile->raceSpeed), raceLegFile->raceSpeed);      
+
       if(jsonLeg["tmark"].isNull()) {
         raceLegFile->mark=raceFile->mark;
         Serial.printf("   leg mark(from race): %0.3fms\n", raceLegFile->mark);
@@ -247,6 +249,7 @@ void setRace(raceDef_t *selectedRace) {
   race.averageSpeed=0;
   race.distanceComplete=0;
   race.driveDistanceComplete=0;
+  race.actualDistanceComplete=0;
   race.distance=0;
   race.distanceOffset=0;
   race.averageSpeed=0;
@@ -285,6 +288,7 @@ void prepRace(void) {
   race.legData->distance=0;
   race.legData->distanceComplete=0;
   race.legData->driveDistanceComplete=0;
+  race.legData->actualDistanceComplete=0;
   race.legData->distanceOffset=0;
   race.legData->averageSpeed=0;
   race.legData->speedDelta=0;
@@ -372,14 +376,16 @@ void updateRace(void) {
   double raceTargetTime=0;
   race.activeLeg->complete=true;
   race.legData->distanceComplete=race.legData->totalDistance;
-  race.legData->driveDistanceComplete=race.legData->distance;
+  race.legData->driveDistanceComplete=race.legData->driveDistance;
+  race.legData->actualDistanceComplete=race.legData->distance;
   race.legData->timeComplete=race.legData->endTs-race.legData->startTs;
   race.legData->timeDelta=race.legData->timeComplete-race.legData->time;
   race.legData->speedDelta=race.legData->averageSpeed-race.legData->adjustedTargetSpeed;
 
 
-  race.driveDistanceComplete+=race.legData->distance;
+  race.driveDistanceComplete+=race.legData->driveDistance;
   race.distanceComplete+=race.legData->totalDistance;
+  race.actualDistanceComplete+=race.legData->distance;
   race.distance = race.distanceComplete;
   race.distanceRemaining = race.totalDistance - race.distance;  
   race.timeComplete+=race.legData->timeComplete;
@@ -416,6 +422,7 @@ void raceCheckPoint(void) {
   doc["legInProgress"]=race.activeLeg->inProgress;
   doc["legComplete"]=race.activeLeg->complete;
   doc["distanceComplete"]=race.distanceComplete;
+  doc["actualDistanceComplete"]=race.actualDistanceComplete;
   doc["driveDistanceComplete"]=race.driveDistanceComplete;
   doc["timeSec"]=race.timeComplete;
   checkPoint=sdCard.open("orrc/system/race_checkpoint.yml", FILE_WRITE);
@@ -505,6 +512,7 @@ void loadRaceCheckPoint(void) {
   race.inProgress=race.activeRace->inProgress;
   race.distanceComplete=doc["distanceComplete"].as<double>();
   race.driveDistanceComplete=doc["driveDistanceComplete"].as<double>();
+  race.actualDistanceComplete=doc["actualDistanceComplete"].as<double>();
   race.timeComplete=doc["timeSec"].as<double>();
   selectedRace=raceIt;
   selectedRaceLeg=raceLegIt;

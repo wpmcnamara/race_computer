@@ -253,10 +253,10 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     //we use the drive values here as it wouldn't make sense to use published values for 
     //the race distance when the leg distance is actual distance driven.  Race values, using
     //published distance are only valid at the end of a leg.
-    race.distance = race.driveDistanceComplete + race.legData->distance;
+    race.distance = race.actualDistanceComplete + race.legData->distance;
     race.distanceRemaining = race.driveDistance - race.distance;
     race.averageSpeed = race.distance / (race.timeComplete + elapsedTime);
-    race.speedDelta = race.averageSpeed - race.adjustedTargetSpeed;
+    race.speedDelta = race.averageSpeed - race.activeLeg->raceSpeed;
     //redo the same time delta calculations as above, only for the entire race distance instead of 
     //just the current leg.
     targetTime=race.distance / race.activeLeg->raceSpeed;
