@@ -21,7 +21,7 @@
 #define IMR_INDEX   5
 #define ISR_INDEX   6
 
-#define VERSION_STRING "FW Version: 0.9.3"
+#define VERSION_STRING "FW Version: 0.9.4"
 
 inline void disableInterrupt(uint8_t pin) {
 	if (pin >= CORE_NUM_DIGITAL) return;

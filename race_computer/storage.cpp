@@ -211,6 +211,7 @@ void logRace(raceData_t *race, uint8_t type) {
 
   float distanceComplete=DISTANCE_INTERNAL_TO_MILES(race->distanceComplete);
   float driveDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->driveDistanceComplete);
+  float actualDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->actualDistanceComplete);
   //double timeComplete;
   float distance=DISTANCE_INTERNAL_TO_MILES(race->distance);
   //double startTime;
@@ -241,7 +242,7 @@ void logRace(raceData_t *race, uint8_t type) {
     return;
   }
   if(writeHeader) {
-    logFile.write("type,targetTime,targetSpeed,targetDistance,adjustedTargetSpeed1,adjustedTargetSpeed2,adjustedTargetTime,averageSpeed,speedDelta,speedTargetBand,distance,driveDistance,distanceComplete,driveDistanceComplete,timeComplete,startTime,endTime,timeDelta,time\n");
+    logFile.write("type,targetTime,targetSpeed,targetDistance,adjustedTargetSpeed1,adjustedTargetSpeed2,adjustedTargetTime,averageSpeed,speedDelta,speedTargetBand,distance,driveDistance,distanceComplete,driveDistanceComplete,actualDistanceComplete,timeComplete,startTime,endTime,timeDelta,time\n");
   }
   if(type==0) {
     entryType=legStr;
@@ -249,7 +250,7 @@ void logRace(raceData_t *race, uint8_t type) {
     entryType=raceStr;
   }
   buffer=(char *)malloc(384);
-  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n",
+  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n",
                           entryType,
                           TIME_INTERNAL_TO_SECONDS(targetTime),
                           targetSpeed,
@@ -264,6 +265,7 @@ void logRace(raceData_t *race, uint8_t type) {
                           driveDistance,
                           distanceComplete,
                           driveDistanceComplete,
+                          actualDistanceComplete,
                           TIME_INTERNAL_TO_SECONDS(race->timeComplete),
                           TIME_INTERNAL_TO_SECONDS(race->startTs),
                           TIME_INTERNAL_TO_SECONDS(race->endTs),
