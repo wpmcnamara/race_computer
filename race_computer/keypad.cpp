@@ -34,6 +34,7 @@ bool startStopState=true;
 bool lastStartStopState=true;
 bool keysLocked=false;
 bool startStopStartsRace=false;
+int speedBandSource;
 uint32_t buttonColors[4]={0,0,0,0};
 std::list<uint8_t> keyPresses;
 //event_t breathEvent(startStopBreath, eventRepeat, false, false, 0, 1);
@@ -144,6 +145,7 @@ bool startStopIsBlinking(void) {
 }
 
 void keypadSetup(void) {
+  speedBandSource=1;
   pinMode(KEYPAD_START, INPUT_PULLUP);
   pinMode(KEYPAD_INT, INPUT_PULLUP);
   Serial.println("NeoKey start");

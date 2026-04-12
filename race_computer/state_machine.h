@@ -43,6 +43,7 @@ enum stateMachineStatesEnum {
   stateSetHwVer,
   stateResetAllSettings,
   stateReboot,
+  stateSpeedBandSource,
   stateUnknown
 };
 

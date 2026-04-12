@@ -29,7 +29,6 @@ struct gpsDataStruct {
   double distance;
 };
 
-
 void gpsSetup(void);
 void TIMTM2dataCallback(UBX_TIM_TM2_data_t *);
 void gpsUpdate(void);

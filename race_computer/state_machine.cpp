@@ -137,7 +137,10 @@ void stateMachine::run(void) {
         break; 
       case stateResetAllSettings:
         Serial.print("from: resetAllSettings");
-        break;                 
+        break;             
+      case stateSpeedBandSource:
+        Serial.print("from: stateSpeedBandSource");
+        break;             
       case stateUnknown:
         Serial.print("from: stateUnknown");
         break; 
@@ -455,6 +458,14 @@ void stateMachine::run(void) {
         Serial.println("  to: stateReboot");
         doReboot();
         break;
+      case stateSpeedBandSource:
+        Serial.println("  to: stateSpeedBandSource");
+        speedBandSourceSave=speedBandSource;
+        displayList.erase(displayList.begin(), displayList.end());
+        ledDispFunc=ledDispDashes;
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
+        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetSpeedBandSource));            
       case stateUnknown:
         Serial.println("  to: stateUnknown");
         break;
@@ -582,6 +593,8 @@ void stateMachine::run(void) {
     case stateResetAllSettings:
         state=stateReboot;
         break;
+    case stateSpeedBandSource:
+        break;
     case stateUnknown:
       break;
   }
@@ -700,6 +713,9 @@ void stateMachine::run(void) {
           break;
         case menuActionUp:
           menuStack.pop_back();
+          break;
+        case menuActionSpeedBandSource:
+          state=stateSpeedBandSource;
           break;
         default:
           break;
@@ -1006,6 +1022,21 @@ void stateMachine::run(void) {
       break;
     case stateUnknown:
       break;
+    case stateSpeedBandSource:
+      menuAction=menuSpeedBandSource(keys);
+      switch(menuAction) {
+        case 0:
+          break;
+        case 1:
+          state=stateSaveSettings;
+          break;
+        case 2:
+          state=stateMainMenu;
+          break;
+        default:
+          break;
+      }      
+      break; 
   }
 
   //Handle the button lighting based on the current state of the system.

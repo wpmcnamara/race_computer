@@ -7,6 +7,7 @@
 #include "race.h"
 #include "menu.h"
 #include "bsp.h"
+#include "keypad.h"
 
 //8 digit LED display
 CK_MAX ledDisp(LED_DISP_LOAD);
@@ -1394,10 +1395,56 @@ void displaySetLegTimeAdjust(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispP
   }
   display.setDrawColor(1);
   if(autoAdjustLegTimeSave) {
-    display.drawDisc(x-10,46,3,U8G2_DRAW_ALL);
+    display.drawDisc(x-10,48,3,U8G2_DRAW_ALL);
   } else {
-    display.drawDisc(x-10,34,3,U8G2_DRAW_ALL);
+    display.drawDisc(x-10,36,3,U8G2_DRAW_ALL);
   }  
 
 }
   
+void displaySetSpeedBandSource(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  int x;
+  int w;
+  display.setFont(u8g2_font_spleen6x12_mf);
+  sprintf(buffer, "Speed Band Comparison Source");
+  x=128-(display.getStrWidth(buffer)/2);
+  display.drawStr(x,15,buffer);
+  sprintf(buffer, "Disabled");
+  w=display.getStrWidth(buffer);
+  x=128-(w/2);
+  display.drawStr(x, 35, buffer);
+  display.drawStr(x, 47, "Leg");
+  display.drawStr(x, 59, "Race");
+
+
+  display.setDrawColor(2);  
+  switch(speedBandSource) {
+    case 0:
+      display.drawBox(x-1,26,w+1,10); 
+      break;
+    case 1:
+      display.drawBox(x-1,38,w+1,10); 
+      break;
+    case 2:
+      display.drawBox(x-1,50,w+1,10); 
+      break;
+    default:
+      break;
+  }
+
+  display.setDrawColor(1);
+
+  switch(speedBandSourceSave) {
+    case 0:
+      display.drawDisc(x-10,31,3,U8G2_DRAW_ALL);
+      break;
+    case 1:
+      display.drawDisc(x-10,43,3,U8G2_DRAW_ALL);
+      break;
+    case 2:
+      display.drawDisc(x-10,55,3,U8G2_DRAW_ALL);
+      break;
+    default:
+      break;
+  }
+}

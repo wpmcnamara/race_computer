@@ -28,6 +28,7 @@ extern volatile bool startDebounce;
 extern int debounceCount;
 extern bool keysLocked;
 extern bool startStopStartsRace;
+extern int speedBandSource;
 
 void keyPressInt(void);
 void keypadSetup(void);
