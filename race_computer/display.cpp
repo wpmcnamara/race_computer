@@ -901,7 +901,8 @@ void displayLegSummaryAdjusted(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dis
   int y;
   int x;
   char sign;
-  int32_t targetTime=(int32_t)round(race.legData->targetTime);
+  //We use actual leg time rather than targetTime to account for any time delta corrections applied.
+  int32_t targetTime=(int32_t)round(race.legData->time);
   int32_t legTime=(int32_t)round(race.legData->timeComplete);
   double adjustedAverageSpeed=race.legData->totalDistance/race.legData->timeComplete;
   int32_t adjustedTimeDelta=legTime-targetTime;
