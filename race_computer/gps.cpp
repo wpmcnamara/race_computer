@@ -169,7 +169,7 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
   double ts;
   unsigned int startDelay;
   unsigned int mark;
-  ts= (ubxDataStruct->wnF * 604800) + ubxDataStruct->towMsF;
+  ts= (ubxDataStruct->wnF * 604800000) + ubxDataStruct->towMsF;
   if (ubxDataStruct->flags.bits.newFallingEdge) {
     if (!race.legData->inProgress) {
       keysLocked=true;

@@ -901,9 +901,9 @@ void displayLegSummaryAdjusted(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dis
   int y;
   int x;
   char sign;
-  int32_t targetTime=(int32_t)round(race.legData->time);
+  int32_t targetTime=(int32_t)round(race.legData->targetTime);
   int32_t legTime=(int32_t)round(race.legData->timeComplete);
-  double adjustedAverageSpeed=race.legData->totalDistance/legTime;
+  double adjustedAverageSpeed=race.legData->totalDistance/race.legData->timeComplete;
   int32_t adjustedTimeDelta=legTime-targetTime;
   display.setFont(u8g2_font_spleen8x16_mf);	
 
@@ -969,7 +969,7 @@ void displayLegSummaryAdjusted(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dis
   display.drawLine(x+1,y-1,x+9,y-1);
   display.setFont(u8g2_font_spleen8x16_mf);	
 
-  sprintf(buffer, "%+8.3f",SPEED_INTERNAL_TO_MPH(adjustedAverageSpeed-race.legData->adjustedTargetSpeed));
+  sprintf(buffer, "%+8.3f",SPEED_INTERNAL_TO_MPH(adjustedAverageSpeed-race.legData->targetSpeed));
   display.drawStr(x+31,y, buffer);
   display.setFont(u8g2_font_spleen6x12_mf);	
   display.drawStr(x+97,y,"mph");	
@@ -1049,8 +1049,7 @@ void displayRaceSummary1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t
 }
 
 void displayRaceSummary2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  double raceTime=race.timeComplete;
-  double averageSpeed=race.distanceComplete/raceTime;
+  double averageSpeed=race.distanceComplete/race.timeComplete;
   display.setFont(u8g2_font_spleen12x24_mf);
   sprintf(buffer, "Dist: %8.3f", DISTANCE_INTERNAL_TO_MILES(race.distanceComplete));
   display.drawStr(0,20,buffer);
