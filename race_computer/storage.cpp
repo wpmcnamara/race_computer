@@ -223,6 +223,7 @@ void logRace(raceData_t *race, uint8_t type) {
 
   float timeDelta=TIME_INTERNAL_TO_SECONDS(race->timeDelta);
   float time=TIME_INTERNAL_TO_SECONDS(race->endTs-race->startTs);
+
   File32 logFile;
   if(!sdCardPresent) {
     Serial.println("No SD card.  Unable to log race leg");

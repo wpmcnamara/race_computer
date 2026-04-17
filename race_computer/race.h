@@ -185,9 +185,9 @@ class raceData {
     //unit: mm  zero for a race.  For a leg, this will be the value of the GPS odometer at the start
     //of the leg.
     double distanceOffset;
-    //unit: us  start GPS timestamps for the leg.  Not used in the race context
+    //unit: ms  start GPS timestamps for the leg.  Not used in the race context
     double startTs;
-    //unit: us  end GPS timestamp for the leg.  Not used in the race context
+    //unit: ms  end GPS timestamp for the leg.  Not used in the race context
     double endTs;
     //unit: ms  Holds the modulus value for the start time.  If set, will delay start of race time after 
     //button press until the next startMark second mark.  Allows precise alignment of race timing.

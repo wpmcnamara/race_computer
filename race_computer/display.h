@@ -40,12 +40,16 @@ enum OLEDRaceDisplayTypedef {
   LegDistRemainLarge,
   LegDeltaTimeLarge,
   LegDeltaSpeedLarge,
+  LegStats1,
+  LegStats2,  
+  TurnPoints,
   RaceAvgSpeedLarge,
   RaceDistanceLarge,
   RaceDistRemainLarge,
   RaceDeltaTimeLarge,
   RaceDeltaSpeedLarge,
-  TurnPoints,
+  RaceStats1,
+  RaceStats2,
   GPSInfo,
   OLEDDispFuncMaxValue,
   OLEDDispFuncMinValue=GPSSpeedLarge
@@ -141,6 +145,11 @@ void displayRaceDistanceLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, disp
 void displayRaceDistRemainLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayRaceDeltaTimeLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayRaceDeltaSpeedLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+
+void displayLegStats1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY); 
+void displayLegStats2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY); 
+void displayRaceStats1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY); 
+void displayRaceStats2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 
 void displayGPSInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayRaceInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);

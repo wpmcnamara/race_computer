@@ -167,8 +167,8 @@ void gpsSetup(void) {
 
 void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
   double ts;
-  unsigned int startDelay;
-  unsigned int mark;
+  double startDelay;
+  double mark;
   ts= (ubxDataStruct->wnF * 604800000) + ubxDataStruct->towMsF;
   if (ubxDataStruct->flags.bits.newFallingEdge) {
     if (!race.legData->inProgress) {
@@ -246,7 +246,7 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     race.legData->speedDelta = race.legData->averageSpeed - race.legData->adjustedTargetSpeed;    
     //Calculate how long it should have taken for us to travel the distance we have, at the target speed 
     //for the race.
-    targetTime=race.legData->distance / race.legData->adjustedTargetSpeed;
+    targetTime=race.legData->distance / race.activeLeg->raceSpeed;
     //Our time delta is the difference between how long it should have taken and how long it did take.
     //Delta will be negative if we are faster, positive if we are slower.
     race.legData->timeDelta=targetTime-elapsedTime;
@@ -257,10 +257,10 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     race.distance = race.actualDistanceComplete + race.legData->distance;
     race.distanceRemaining = race.driveDistance - race.distance;
     race.averageSpeed = race.distance / (race.timeComplete + elapsedTime);
-    race.speedDelta = race.averageSpeed - race.activeLeg->raceSpeed;
+    race.speedDelta = race.averageSpeed - race.targetSpeed;
     //redo the same time delta calculations as above, only for the entire race distance instead of 
     //just the current leg.
-    targetTime=race.distance / race.activeLeg->raceSpeed;
+    targetTime=(race.driveDistanceComplete+race.legData->distance) / race.activeLeg->raceSpeed;
     race.timeDelta=targetTime-(race.timeComplete + elapsedTime);
 
     //This sets the color for the keypad buttons based on our speed delta.  Green if we are in-band.
