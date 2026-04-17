@@ -283,6 +283,13 @@ void setLeg(raceLegDef_t *selectedRaceLeg) {
   //now figure the adjusted targer based on how long the leg should take, and the 
   //actual distance we will drive.
   race.legData->adjustedTargetSpeed=race.legData->driveDistance/race.legData->time;
+  //For each leg, we adjust the race targets to the correct values for the end of the leg.
+  race.targetSpeed=race.legData->activeLeg->raceSpeed;
+  race.targetTime=(race.distanceComplete+race.legData->totalDistance)/race.targetSpeed;  
+  race.driveDistance=race.driveDistanceComplete+race.legData->driveDistance;
+  race.adjustedTargetSpeed=race.driveDistance/race.time;
+
+
 }
 
 void prepRace(void) {
@@ -386,9 +393,9 @@ void updateRace(void) {
 
 
   race.driveDistanceComplete+=race.legData->driveDistance;
-  race.distanceComplete+=race.legData->totalDistance;
+  race.distanceComplete+=race.legData->driveDistance;
   race.actualDistanceComplete+=race.legData->distance;
-  race.distance = race.distanceComplete;
+  race.distance = race.actualDistanceComplete;
   race.distanceRemaining = race.totalDistance - race.distance;  
   race.timeComplete+=race.legData->timeComplete;
   race.targetTimeComplete+=race.legData->targetTime;

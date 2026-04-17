@@ -65,12 +65,16 @@ const char *OLEDDisplayDescr[OLEDDispFuncMaxValue]={
   "Leg - Distance Remaining",
   "Leg - Time Delta",
   "Leg - Speed Delta",
+  "Leg - Stats 1",
+  "Leg - Stats 2",
+  "Leg - Turns",  
   "Race - Average Speed",
   "Race - Distance Traveled",
   "Race - Distance Remaining",
   "Race - Time Delta",
   "Race - Speed Delta",  
-  "Leg - Turns",
+  "Race -- Stats 1",
+  "Race -- Stats 2",
   "GPS Info"
 };
 const char *LEDDisplayDescr[LEDDispFuncMaxValue]={
@@ -97,12 +101,16 @@ void (*OLEDDisplayFuncs[OLEDDispFuncMaxValue])(U8G2_SSD1322_NHD_256X64_F_4W_HW_S
   displayLegDistRemainLarge,
   displayLegDeltaTimeLarge,
   displayLegDeltaSpeedLarge,
+  displayLegStats1,
+  displayLegStats2,
+  displayPoint,  
   displayRaceAvgSpeedLarge,
   displayRaceDistanceLarge,
   displayRaceDistRemainLarge,
   displayRaceDeltaTimeLarge,
   displayRaceDeltaSpeedLarge,  
-  displayPoint,
+  displayRaceStats1,
+  displayRaceStats2,
   displayGPSInfo
 };
 
@@ -666,6 +674,128 @@ void displayLegAvgSpeedSmall(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispP
   display.drawStr(x+36,y,buffer);	
   display.setFont(u8g2_font_spleen6x12_mf);	
   display.drawStr(x+100,y,"mph");	
+}
+
+void displayLegStats1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  display.setFont(u8g2_font_spleen6x12_mf);
+  sprintf(buffer, "aT:%4.03f tT:%4.03f dT:%4.03f", 
+    TIME_INTERNAL_TO_SECONDS(race.legData->timeComplete),
+    TIME_INTERNAL_TO_SECONDS(race.legData->time),
+    TIME_INTERNAL_TO_SECONDS(race.legData->timeDelta));
+  display.drawStr(1,11,buffer);  
+  sprintf(buffer, "aS:%3.03f tS:%3.03f dS:%3.03f",
+    SPEED_INTERNAL_TO_MPH(race.legData->averageSpeed),
+    SPEED_INTERNAL_TO_MPH(race.legData->adjustedTargetSpeed),
+    SPEED_INTERNAL_TO_MPH(race.legData->speedDelta)
+  );
+  display.drawStr(1,24,buffer); 
+  sprintf(buffer, "aD:%3.03f dD:%3.03f rD:%3.03f",
+    DISTANCE_INTERNAL_TO_MILES(race.legData->distance),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->driveDistance),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->distanceRemaining)
+  );
+  display.drawStr(1,37,buffer); 
+  sprintf(buffer, "pT:%4.03f tT:%4.03f aT:%3.03f",
+    TIME_INTERNAL_TO_SECONDS(race.legData->targetTime),
+    TIME_INTERNAL_TO_SECONDS(race.legData->time),
+    TIME_INTERNAL_TO_SECONDS(race.legData->targetTime-race.legData->time)
+  );
+  display.drawStr(1,50,buffer);
+  sprintf(buffer, "pS:%3.03f tS:%3.03f aS:%3.03f",
+    SPEED_INTERNAL_TO_MPH(race.legData->targetSpeed),
+    SPEED_INTERNAL_TO_MPH(race.legData->driveDistance/race.legData->targetTime),
+    SPEED_INTERNAL_TO_MPH(race.legData->adjustedTargetSpeed)
+  );
+  display.drawStr(1,63,buffer);
+}
+
+void displayLegStats2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  display.setFont(u8g2_font_spleen6x12_mf);
+  sprintf(buffer, "tD:%4.03f dD:%4.03f cD:%4.03f", 
+    DISTANCE_INTERNAL_TO_MILES(race.legData->totalDistance),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->driveDistance),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->distanceComplete));
+  display.drawStr(1,11,buffer);  
+  sprintf(buffer, "cdD:%3.03f acD:%3.03f dR:%3.03f",
+    DISTANCE_INTERNAL_TO_MILES(race.legData->driveDistanceComplete),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->actualDistanceComplete),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->distanceRemaining)
+  );
+  display.drawStr(1,24,buffer); 
+  /*
+  sprintf(buffer, "aD:%3.03f dD:%3.03f rD:%3.03f",
+    DISTANCE_INTERNAL_TO_MILES(race.legData->distance),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->driveDistance),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->distanceRemaining)
+  );
+  display.drawStr(1,37,buffer); 
+  sprintf(buffer, "pT:%4.03f tT:%4.03f aT:%3.03f",
+    TIME_INTERNAL_TO_SECONDS(race.legData->targetTime),
+    TIME_INTERNAL_TO_SECONDS(race.legData->time),
+    TIME_INTERNAL_TO_SECONDS(race.legData->targetTime-race.legData->time)
+  );
+  display.drawStr(1,50,buffer);
+  sprintf(buffer, "pS:%3.03f tS:%3.03f aS:%3.03f",
+    SPEED_INTERNAL_TO_MPH(race.legData->targetSpeed),
+    SPEED_INTERNAL_TO_MPH(race.legData->driveDistance/race.legData->targetTime),
+    SPEED_INTERNAL_TO_MPH(race.legData->adjustedTargetSpeed)
+  );
+  */
+}
+
+void displayRaceStats1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  display.setFont(u8g2_font_spleen6x12_mf);
+  sprintf(buffer, "aT:%4.03f tT:%4.03f dT:%4.03f", 
+    TIME_INTERNAL_TO_SECONDS(race.timeComplete),
+    TIME_INTERNAL_TO_SECONDS(race.time),
+    TIME_INTERNAL_TO_SECONDS(race.timeDelta));
+  display.drawStr(1,11,buffer);  
+  sprintf(buffer, "aS:%3.03f tS:%3.03f dS:%3.03f",
+    SPEED_INTERNAL_TO_MPH(race.averageSpeed),
+    SPEED_INTERNAL_TO_MPH(race.activeLeg->raceSpeed),
+    SPEED_INTERNAL_TO_MPH(race.speedDelta)
+  );
+  display.drawStr(1,24,buffer); 
+  sprintf(buffer, "aD:%3.03f dD:%3.03f rD:%3.03f",
+    DISTANCE_INTERNAL_TO_MILES(race.distance),
+    DISTANCE_INTERNAL_TO_MILES(race.driveDistance),
+    DISTANCE_INTERNAL_TO_MILES(race.distanceRemaining)
+  );
+  display.drawStr(1,37,buffer); 
+  sprintf(buffer, "pT:%4.03f tT:%4.03f aT:%3.03f",
+    TIME_INTERNAL_TO_SECONDS(race.targetTime),
+    TIME_INTERNAL_TO_SECONDS(race.time),
+    TIME_INTERNAL_TO_SECONDS(race.targetTime-race.time)
+  );
+  display.drawStr(1,50,buffer);
+  sprintf(buffer, "pS:%3.03f tS:%3.03f aS:%3.03f",
+    SPEED_INTERNAL_TO_MPH(race.targetSpeed),
+    SPEED_INTERNAL_TO_MPH(race.driveDistance/race.targetTime),
+    SPEED_INTERNAL_TO_MPH(race.adjustedTargetSpeed)
+  );
+  display.drawStr(1,63,buffer);
+}
+
+void displayRaceStats2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  double targetTime=(race.distanceComplete+race.legData->totalDistance) / race.activeLeg->raceSpeed;
+  display.setFont(u8g2_font_spleen6x12_mf);
+  sprintf(buffer, "tD:%4.03f dD:%4.03f cD:%4.03f", 
+    DISTANCE_INTERNAL_TO_MILES(race.legData->totalDistance),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->driveDistance),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->distanceComplete));
+  display.drawStr(1,11,buffer);  
+  sprintf(buffer, "cdD:%3.03f acD:%3.03f dR:%3.03f",
+    DISTANCE_INTERNAL_TO_MILES(race.legData->driveDistanceComplete),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->actualDistanceComplete),
+    DISTANCE_INTERNAL_TO_MILES(race.legData->distanceRemaining)
+  );
+  display.drawStr(1,24,buffer); 
+  sprintf(buffer, "tT:%4.03f cT:%4.03f dT:%3.03f",
+    TIME_INTERNAL_TO_SECONDS(targetTime),
+    TIME_INTERNAL_TO_SECONDS(race.timeComplete + race.legData->timeComplete),
+    TIME_INTERNAL_TO_SECONDS(race.timeDelta)
+  );
+  display.drawStr(1,50,buffer);  
 }
 
 
