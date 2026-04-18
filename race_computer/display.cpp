@@ -473,7 +473,6 @@ void displayGpsSpeedLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_
   display.setFont(u8g2_font_spleen8x16_mf);	
   display.drawStr(0,41,"speed");	
   display.setFont(u8g2_font_logisoso50_tn);
-  Serial.printf("avg speed: %f\n", ROUND3(gpsDataPtr->speed));
   sprintf(buffer, "%7.3f", SPEED_INTERNAL_TO_MPH(gpsDataPtr->speed));
   display.drawStr(42,61,buffer);	
   display.setFont(u8g2_font_spleen12x24_mf);	
@@ -916,10 +915,10 @@ void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t po
 void displayLegSummaryActual(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   int y;
   int x;
-  char sign;
+  char sign=' ';
   int32_t targetTime=round(race.legData->time);
   int32_t legTime=round(race.legData->timeComplete);
-  int32_t timeDelta=round(race.legData->timeDelta);
+  float timeDelta=TIME_INTERNAL_TO_SECONDS(race.legData->timeDelta);
   display.setFont(u8g2_font_spleen8x16_mf);	
   display.drawStr(32,12,"Leg Actual: ");
   sprintf(buffer, "%02ld:%02ld:%0ld.%03ld", 
@@ -952,14 +951,14 @@ void displayLegSummaryActual(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispP
   display.drawLine(x,y,x+10,y);
   display.drawLine(x+1,y-1,x+9,y-1);
   display.setFont(u8g2_font_spleen8x16_mf);	
-  if(timeDelta==0) {
-    sign=' ';
-  } else if (timeDelta<0) {
+if (timeDelta<0) {
     sign='-';
   } else if (timeDelta>0) {
     sign='+';
+  } else {
+    sign=' ';
   }
-  sprintf(buffer, "%c%3ld.%03ld", sign, abs(timeDelta/1000), abs(timeDelta%1000));
+  sprintf(buffer, "%c%3.03f", sign, timeDelta);
   display.drawStr(x+31,y, buffer);
   display.setFont(u8g2_font_spleen6x12_mf);	
   display.drawStr(x+97,y,"sec");	

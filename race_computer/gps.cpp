@@ -233,8 +233,10 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   gpsData.distance = (double)ubxDataStruct->distance*1000.0L;
   //Since we have an updated distamce, if we have a race in progress, then we should update
   //the average race stats since everything is based on time and distance travelled.
-  //distance is in meters.  Time is in seconds.
-  if (race.legData->inProgress) {
+  //distance is in meters.  Time is in seconds.  We only update things when the race timer is running.  This 
+  //keeps us from adding the the distance if there is a delay between hitting the start/stop button and recieving
+  //the time mark from the GPS.
+  if (race.legData->inProgress && timer_run) {
     elapsedTime = getTimeStamp() - race.legData->timerOffset;
     race.legData->timeComplete=elapsedTime;
     race.legData->distance = gpsData.distance - race.legData->distanceOffset;
@@ -311,7 +313,11 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
   //We maintain a list of the last <n> speed values and calculate the avarage as the
   //current speed.  This is a tradeoff between absolute accurracy and rapid fluctuation of
   //displayed speed due to GPS variation.
-  if (race.legData->inProgress) {
+
+  //We only update things when the race timer is running.  This 
+  //keeps us from adding the the distance if there is a delay between hitting the start/stop button and recieving
+  //the time mark from the GPS.
+  if (race.legData->inProgress && timer_run) {
     //GPS reports speed in integer mm/s. We need to convert to double mm/ms  
     (*speedListInsert)=((double)ubxDataStruct->gSpeed)/1000.0;
     speedListInsert++;
@@ -323,7 +329,6 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
     }
     avgSpeed/=AVG_SPEED_VALUES;
     gpsData.speed = avgSpeed;
-    Serial.printf("avg speed: %f\n", gpsData.speed);
   } else {
     gpsData.speed = 0;
   }
