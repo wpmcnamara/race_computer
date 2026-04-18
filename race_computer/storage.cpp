@@ -203,12 +203,13 @@ void logRace(raceData_t *race, uint8_t type) {
   char legStr[]="leg";
   char raceStr[]="race";
   char *entryType;
-  float targetTime=TIME_INTERNAL_TO_SECONDS(race->targetTime);
-  float targetTimeComplete=TIME_INTERNAL_TO_SECONDS(race->targetTimeComplete);
-  float targetSpeed=SPEED_INTERNAL_TO_MPH(race->targetSpeed);
-  float adjustedTargetSpeed1=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->targetTime);
-  float adjustedTargetSpeed2=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->time);
-  float averageSpeed=SPEED_INTERNAL_TO_MPH(race->averageSpeed);
+  float targetTime;
+  float targetTimeComplete;
+  float targetSpeed;
+  /*
+  //float adjustedTargetSpeed1=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->targetTime);
+  //float adjustedTargetSpeed2=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->time);
+  float averageSpeed;
   float adjustedAverageSpeed=SPEED_INTERNAL_TO_MPH(race->distanceComplete/race->timeComplete);
   float speedDelta=SPEED_INTERNAL_TO_MPH(race->speedDelta);
   float adjustedSpeedDelta=SPEED_INTERNAL_TO_MPH(adjustedAverageSpeed-targetSpeed);
@@ -225,6 +226,7 @@ void logRace(raceData_t *race, uint8_t type) {
 
   float timeDelta=TIME_INTERNAL_TO_SECONDS(race->timeDelta);
   float time=TIME_INTERNAL_TO_SECONDS(race->endTs-race->startTs);
+  */
 
   File32 logFile;
   if(!sdCardPresent) {
@@ -252,11 +254,42 @@ void logRace(raceData_t *race, uint8_t type) {
   if(writeHeader) {
     logFile.write("type,targetTime,targetSpeed,targetDistance,adjustedTargetSpeed1,adjustedTargetSpeed2,adjustedTargetTime,averageSpeed,adjustedAverageSpeed,speedDelta,adjustedSpeedDelta,speedTargetBand,distance,driveDistance,distanceComplete,driveDistanceComplete,actualDistanceComplete,timeComplete,targetTimeComplete,startTime,endTime,timeDelta,time\n");
   }
+  /*
   if(type==0) {
     entryType=legStr;
+    float targetTime=TIME_INTERNAL_TO_SECONDS(race->activeRace->targetTime);
+  float targetTimeComplete=TIME_INTERNAL_TO_SECONDS(race->targetTimeComplete);
+  float targetSpeed=SPEED_INTERNAL_TO_MPH(race->activeRace->speed);
+  float adjustedTargetSpeed1=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->targetTime);
+  float adjustedTargetSpeed2=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->time);
+  float averageSpeed=SPEED_INTERNAL_TO_MPH(race->averageSpeed);
+  float adjustedAverageSpeed=SPEED_INTERNAL_TO_MPH(race->distanceComplete/race->timeComplete);
+  float speedDelta=SPEED_INTERNAL_TO_MPH(race->speedDelta);
+  float adjustedSpeedDelta=SPEED_INTERNAL_TO_MPH(adjustedAverageSpeed-targetSpeed);
+  float adjustedTargetTime=TIME_INTERNAL_TO_SECONDS(race->time);
+  float speedTargetBand=SPEED_INTERNAL_TO_MPH(race->speedTargetBand);
+
+  float totalDistance=DISTANCE_INTERNAL_TO_MILES(race->totalDistance);
+  float driveDistance=DISTANCE_INTERNAL_TO_MILES(race->driveDistance);
+
+  float distanceComplete=DISTANCE_INTERNAL_TO_MILES(race->distanceComplete);
+  float driveDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->driveDistanceComplete);
+  float actualDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->actualDistanceComplete);
+  float distance=DISTANCE_INTERNAL_TO_MILES(race->distance);
+
+  float timeDelta=TIME_INTERNAL_TO_SECONDS(race->timeDelta);
+  float time=TIME_INTERNAL_TO_SECONDS(race->endTs-race->startTs);
+
+  
+  
+  
   } else {
     entryType=raceStr;
   }
+
+
+
+
   buffer=(char *)malloc(384);
   snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n",
                           entryType,
@@ -284,6 +317,7 @@ void logRace(raceData_t *race, uint8_t type) {
                           time
                         );
   logFile.write(buffer, strlen(buffer));
+  */
   logFile.sync();
   logFile.close();
 

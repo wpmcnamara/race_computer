@@ -27,6 +27,7 @@ void loadRaceCheckPoint(void);
 void loadRacePoints(raceLegDef_t *raceLeg);
 void clearRacePoints(raceLegDef_t *raceLeg);
 void loadDefaultRaces(void);
+void computeRace(raceDef_t *raceDefinition);
 
 extern bool autoAdjustLegTime;
 
@@ -77,9 +78,20 @@ class raceLegDef {
   public:
     //unit: mm/ms  target speed for this leg, based on published leg speed.
     double speed;
+    //unit: mm/ms  target speed, scaled for driving distance of the leg.  The will be the actual speed goal when
+    //driving the leg.
+    double driveSpeed;
     //unit: mm/ms  target race average speed at the end of the leg.  Calculated from all preceding legs.  Allows us to
     //properly calculate race time deltas during a race where leg target speeds vary.
-    double raceSpeed;
+    double raceLegEndAvgSpeed;
+    //unit: mm/ms  target race average speed, adjusted to driving distance at the end of the current leg;
+    double raceLegEndDriveAvgSpeed;
+    //unit: mm  running total of published target distance for the race at the end of the current leg.
+    double raceLegEndTargetDistance;
+    //unit: mm  running total of the driving distance for the race at the end of the current leg.
+    double raceLegEndDriveDistance;
+    //unit ms  running total for the on pace target race time at the end of the current leg.
+    double raceLegEndTargetTime;
     //unit: mm/ms  How close to target is considered to be "on target".  
     double speedRange;
     //unit: mm  published leg distance
@@ -106,11 +118,18 @@ class raceDef {
     String descr;
     //unit: mm/ms  Race target speed
     double speed;
+    //unit: mm/ms  target speed, scaled for driving distance of the race.  The will be the actual speed goal when
+    //driving the race.
+    double driveSpeed;    
     //unit: mm/ms  How close to target is considered to be "on target". Applies to all legs unless
     //overidden in a leg definition 
     double speedRange;
     //unit: mm  Total race distance
     double distance;
+    //unit : mm Total driving distance of the race
+    double driveDistance;
+    //unit: ms  target completion time for the entire race
+    double  targetTime;
     bool inProgress;
     //unit: ms  timing mark for GPS synchronized start.  Applys to all legs unless overidden
     //in a leg definition
@@ -123,71 +142,68 @@ class raceDef {
 
 class raceData {
   public:
-    //unit: ms  time to complete the race/leg.  Currently calculated from distance and
-    //speed.  Not loaded from definition files.
-    double time;
-    //unit: mm/ms  target speed for the current race or leg.  
-    //Value is loaded from the race definition when the race is selected. For race
-    //legs it is loaded when the leg is entered.
-    double targetSpeed;
-    //unit: mm/ms  Actual target speed for the current race or leg. 
-    //Value is calculated from target time and driving distance.  This is the actual target
-    //speed to hit when driving a leg.
-    double adjustedTargetSpeed;
-    //unit: mm/ms  running average speed for the leg/race.  This is actively updated from GPS
+    //unit: ms  time to complete the current leg.  We initally load this from the leg definition, but we can't
+    //just use the leg definition directly because we might adjust the leg time to correct for the overall
+    //race time delta at the beginning of the leg.
+    double legTargetTime;
+    
+    //unit: mm/ms  Actual target speed for the current leg. Value is calculated from adjusted leg target time 
+    //and driving distance.  This is the actual target speed to hit when driving a leg.
+    double legAdjustedTargetSpeed;
+    //unit: mm/ms  running average speed for the leg .  This is actively updated from GPS
     //data during the race
-    double averageSpeed;
+    double legAverageSpeed;
+    //unit: mm/ms  running average speed for the race.  This is actively updated from GPS
+    //data during the race    
+    double raceAverageSpeed;
     //unit: mm/ms  difference between target and average.  We calculate once and store, when 
     //averageSpeed is updated, rather than calculating each time it is used elsewhere.
-    double speedDelta;
-    //unit: mm/ms  Defines the range, +/-, around the targetSpeed that is considered 
-    //within the target speed range.  Used to control the LED color feedback during a
-    //race 
-    double speedTargetBand;
-    //unit: mm  Total distance of the race/leg.  For a race, value is loaded from the
-    //race definition when the race is selected.  For legs, it is loaded from the leg
-    //definition when the leg is entered.
-    double totalDistance;
-    //unit: mm  Total drive distance of the course.  For a race, this will be computed as the
-    //sum of all leg drive distances.  For a leg, this will be the actual distance to drive 
-    //for the leg.  It will be used to calculate the actual target speed and time deltas, in 
-    //combination with the totalDistance value.
-    double driveDistance;
-    //unit: mm  For the active race, this is the sum of the distance of completed legs
-    //For a leg, this will be the leg distance.
-    //Needed to calculate the whole race average speed.
-    double distanceComplete;
-    //unit: mm  For the active race, this is the sum of the drive distance for completed legs.
-    //For a leg, this will be the defined drive distance one once the leg is complete.
-    double driveDistanceComplete;
-    //unit: mm  For the active race, this is the sum of the disance driven for completed legs based 
-    //on the actual distance driven for each leg.  For a leg, this will be the actual driven distance.
-    //we use the actual distance driven, rather than the defined distance for more accurate 
-    //timing.  Defined drive distance is a forward looking guess.  This is historical reality.
-    double actualDistanceComplete;
-    //unit: ms  For the active race, this is the sum of the times for all
-    //completed legs.  Needed to calculate the whole race average speed. For a leg this will be
-    //the same as leg time.
-    double timeComplete;
+    double legSpeedDelta;
+    //unit: mm/ms  difference between target and average.  We calculate once and store, when 
+    //averageSpeed is updated, rather than calculating each time it is used elsewhere.
+    double raceSpeedDelta;    
+    //unit: mm/ms  difference between target for the end of the leg and the current average.  
+    //We calculate once and store, when     //averageSpeed is updated, rather than calculating 
+    //each time it is used elsewhere.
+    double raceLegEndSpeedDelta;
+    //unit: mm  For the active race, this is the sum of the distance of completed legs.  Only updated at the
+    //end of leg. eeded to calculate the whole race average speed.
+    double raceDistanceComplete;    
+    //unit: mm  this is the sum of the drive distance for completed legs. 
+    double raceDriveDistanceComplete;
+    //unit: mm  this is the sum of the disance driven for completed legs based 
+    //on the actual distance driven for each leg.  Defined drive distance is a forward looking guess.  
+    //This is historical reality.
+    double raceActualDistanceComplete;
+    //unit: ms  For the active race, this is the sum of the times for all completed legs.  Needed to calculate 
+    //the whole race average speed. Only updated at the end of a leg.
+    double raceTimeComplete;
     //unit: mm  For an active race this is the sum of the target time for all completed legs.  This will be the
-    //desired target time at the end of each leg and can be used to calculate how far off the pace we are.  For
-    //a leg, it will be the original leg target time before any time adjustments.
-    double targetTimeComplete;
-    //unit: mm  For race our leg, this the base target time, calculated from published distance and speed.  This
-    //will not be adjusted during a race.
-    double targetTime;
-    //unit: mm  distance traveled for the race/leg.  For a race, this will be the sum of actualDistanceComplete
-    //and the distance traveled in the current leg.
-    double distance;
-    //unit: mm  distance remaining in the current race/leg.  This is based on driveDistance to provide
+    //desired target time at the end of each leg and can be used to calculate how far off the pace we are.  This
+    //is only adjusted at the end of a leg.
+    double raceTargetTimeComplete;
+    //unit: mm  distance traveled for the leg.  This is updated from the GPS odometer
+    double legDistanceComplete;
+    //unit: ms  running time for the current leg.  This will be updated from the internal timer each time we update
+    //the GPS odometer.  At the end of the leg, it will be adjusted from the start and end GPS timestamps.
+    double legTime;
+    //unit: ms  running time for the race.  This will be updated from the internal timer each time we update
+    //the GPS odometer.  At the end of the leg, it will be adjusted from the start and end GPS timestamps.
+    double raceTime;  
+    //unit: mm  distance remaining in the current race.  This is based on total drive distance to provide
     //accurate distance to the finish line.
-    double distanceRemaining;
-    //unit: mm  zero for a race.  For a leg, this will be the value of the GPS odometer at the start
-    //of the leg.
+    double raceDistanceRemaining;
+    //unit: mm  Distance remaining in cumulative race distance to the end of the current leg.  This is based on 
+    //total drive distance to provide accurate distance to the finish line.
+    double raceLegEndDistanceRemaining;    
+    //unit: mm  distance remaining in the current leg.  This is based on driveDistance to provide
+    //accurate distance to the finish line.
+    double legDistanceRemaining;    
+    //unit: mm  This will be the value of the GPS odometer at the start of the leg.
     double distanceOffset;
-    //unit: ms  start GPS timestamps for the leg.  Not used in the race context
+    //unit: ms  start GPS timestamps for the leg.  
     double startTs;
-    //unit: ms  end GPS timestamp for the leg.  Not used in the race context
+    //unit: ms  end GPS timestamp for the leg. 
     double endTs;
     //unit: ms  Holds the modulus value for the start time.  If set, will delay start of race time after 
     //button press until the next startMark second mark.  Allows precise alignment of race timing.
@@ -197,16 +213,18 @@ class raceData {
     //unit: ms  When we have a delayed start, there will be an offset between the internal timer and the 
     //start of timing that we need to account for.
     double timerOffset;
+    //unit: ms  difference between end of leg target time and current time, based on distance traveled.  
+    //Like speedDelta we calculate when GPS data changes and save, rather than calculating every time it is 
+    //used.  
+    double raceTimeDelta;
     //unit: ms  difference between target time and current time, based on distance traveled.  Like speedDelta
     //we calculate when GPS data changes and save, rather than calculating every time it is 
     //used.  
-    double timeDelta;
+    double legTimeDelta;    
     //signify the race/leg is being actively timed.
-    bool inProgress;
-    //For a race, this points to the raceData structure for the current leg.  For a leg, this
-    //is NULL
-    raceData_t *legData;
-    //race definition loaded from storage
+    bool legInProgress;
+    bool raceInProgress;
+     //race definition loaded from storage
     raceDef_t *activeRace;
     //active leg within the race definition;
     raceLegDef_t *activeLeg;
