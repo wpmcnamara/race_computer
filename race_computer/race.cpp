@@ -191,7 +191,7 @@ void loadRaces() {
         Serial.printf("   drive distance: %0.3fmi, %0.3fmm\n", jsonLeg["driveDistance"].as<float>(), raceLegFile->driveDistance);
       }
     
-      cumulativeRaceDistance+=raceLegFile->driveDistance;
+      cumulativeRaceDistance+=raceLegFile->distance;
       raceLegFile->raceSpeed=cumulativeRaceDistance/cumulativeRaceTime;      
       Serial.printf("   leg race average speed: %0.3fmph, %03fmm/ms\n",SPEED_INTERNAL_TO_MPH(raceLegFile->raceSpeed), raceLegFile->raceSpeed);      
 
@@ -283,12 +283,12 @@ void setLeg(raceLegDef_t *selectedRaceLeg) {
   //now figure the adjusted targer based on how long the leg should take, and the 
   //actual distance we will drive.
   race.legData->adjustedTargetSpeed=race.legData->driveDistance/race.legData->time;
+
   //For each leg, we adjust the race targets to the correct values for the end of the leg.
-  race.targetSpeed=race.legData->activeLeg->raceSpeed;
+  race.targetSpeed=race.activeLeg->raceSpeed;
   race.targetTime=(race.distanceComplete+race.legData->totalDistance)/race.targetSpeed;  
   race.driveDistance=race.driveDistanceComplete+race.legData->driveDistance;
   race.adjustedTargetSpeed=race.driveDistance/race.time;
-
 
 }
 
@@ -380,24 +380,30 @@ void clearRacePoints(raceLegDef_t *raceLeg) {
   race.legData->activePoint=raceLeg->points.end();
 }
 
-
+//We stopped accumulating distance when the start/stop button was pressed.  We don't get the final
+//time for the race until the time mark comes in, meaning the average speed may be wrong by just a
+//bit.  We need to do a final set of calculates to update all the running values that depend on time.
+//Beyond that, we update final values based on the end of leg data.
 void updateRace(void) {
   race.activeLeg->complete=true;
+  race.legData->timeComplete=race.legData->endTs-race.legData->startTs;
+  race.legData->averageSpeed = race.legData->distance / race.legData->timeComplete;
+  race.legData->speedDelta = race.legData->averageSpeed - race.legData->adjustedTargetSpeed;
   race.legData->distanceComplete=race.legData->totalDistance;
   race.legData->driveDistanceComplete=race.legData->driveDistance;
   race.legData->actualDistanceComplete=race.legData->distance;
-  race.legData->timeComplete=race.legData->endTs-race.legData->startTs;
+  
   race.legData->targetTimeComplete=race.legData->targetTime;
   race.legData->timeDelta=race.legData->timeComplete-race.legData->time;
   race.legData->speedDelta=race.legData->averageSpeed-race.legData->adjustedTargetSpeed;
 
-
+  race.timeComplete+=race.legData->timeComplete;
+  race.distance = race.actualDistanceComplete; 
+  race.averageSpeed=race.actualDistanceComplete/race.timeComplete;
   race.driveDistanceComplete+=race.legData->driveDistance;
   race.distanceComplete+=race.legData->driveDistance;
   race.actualDistanceComplete+=race.legData->distance;
-  race.distance = race.actualDistanceComplete;
   race.distanceRemaining = race.totalDistance - race.distance;  
-  race.timeComplete+=race.legData->timeComplete;
   race.targetTimeComplete+=race.legData->targetTime;
   race.timeDelta=race.timeComplete-race.targetTimeComplete;
 }

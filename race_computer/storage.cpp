@@ -209,7 +209,9 @@ void logRace(raceData_t *race, uint8_t type) {
   float adjustedTargetSpeed1=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->targetTime);
   float adjustedTargetSpeed2=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->time);
   float averageSpeed=SPEED_INTERNAL_TO_MPH(race->averageSpeed);
+  float adjustedAverageSpeed=SPEED_INTERNAL_TO_MPH(race->distanceComplete/race->timeComplete);
   float speedDelta=SPEED_INTERNAL_TO_MPH(race->speedDelta);
+  float adjustedSpeedDelta=SPEED_INTERNAL_TO_MPH(adjustedAverageSpeed-targetSpeed);
   float adjustedTargetTime=TIME_INTERNAL_TO_SECONDS(race->time);
   float speedTargetBand=SPEED_INTERNAL_TO_MPH(race->speedTargetBand);
 
@@ -248,7 +250,7 @@ void logRace(raceData_t *race, uint8_t type) {
     return;
   }
   if(writeHeader) {
-    logFile.write("type,targetTime,targetSpeed,targetDistance,adjustedTargetSpeed1,adjustedTargetSpeed2,adjustedTargetTime,averageSpeed,speedDelta,speedTargetBand,distance,driveDistance,distanceComplete,driveDistanceComplete,actualDistanceComplete,timeComplete,targetTimeComplete,startTime,endTime,timeDelta,time\n");
+    logFile.write("type,targetTime,targetSpeed,targetDistance,adjustedTargetSpeed1,adjustedTargetSpeed2,adjustedTargetTime,averageSpeed,adjustedAverageSpeed,speedDelta,adjustedSpeedDelta,speedTargetBand,distance,driveDistance,distanceComplete,driveDistanceComplete,actualDistanceComplete,timeComplete,targetTimeComplete,startTime,endTime,timeDelta,time\n");
   }
   if(type==0) {
     entryType=legStr;
@@ -256,7 +258,7 @@ void logRace(raceData_t *race, uint8_t type) {
     entryType=raceStr;
   }
   buffer=(char *)malloc(384);
-  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n",
+  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n",
                           entryType,
                           targetTime,
                           targetSpeed,
@@ -265,7 +267,9 @@ void logRace(raceData_t *race, uint8_t type) {
                           adjustedTargetSpeed2,
                           adjustedTargetTime,
                           averageSpeed,
+                          adjustedAverageSpeed,
                           speedDelta,
+                          adjustedSpeedDelta,
                           speedTargetBand,
                           distance,
                           driveDistance,
