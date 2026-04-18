@@ -205,7 +205,7 @@ void startPressInt() {
   startPress=true;
   if(startStopStartsRace) {
     if(startStopState==1) {
-      if(!race.legData->inProgress) {
+      if(!race.legInProgress) {
         TMRx->CH[2].CNTR = 0;
         TMRx->CH[2].CTRL = TMR_CTRL_CM(1) | TMR_CTRL_PCS(2) | TMR_CTRL_LENGTH;
         digitalWriteFast(GPS_INT, LOW);

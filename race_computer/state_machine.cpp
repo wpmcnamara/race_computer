@@ -201,7 +201,7 @@ void stateMachine::run(void) {
         startStopStartsRace=false;
         updateRace();
         raceCheckPoint();
-        logRace(race.legData, 0);
+        logRace(&race, 0);
         logRace(&race, 1);
         clearRacePoints(race.activeLeg);
         ledDispFunc=ledDispDashes;
@@ -213,7 +213,7 @@ void stateMachine::run(void) {
         break;
       case stateRaceComplete:
         Serial.println("  to: stateRaceComplete");   
-        race.inProgress=false;
+        race.raceInProgress=false;
         if(race.activeRace!=NULL ) {
           race.activeRace->inProgress=false;
         }
@@ -404,9 +404,11 @@ void stateMachine::run(void) {
         Serial.println("to: stateAdjustLegSave");
         //convert distance and speed from floating point miles and mph back to internal integer units.
         //Time carries through directly as milliseconds.
-        race.legData->driveDistance=DISTANCE_MILES_TO_INTERNAL(legAdjustDist);
-        race.legData->adjustedTargetSpeed=SPEED_MPH_TO_INTERNAL(legAdjustSpeed);
-        race.legData->time=legAdjustTime;
+        race.activeLeg->driveDistance=DISTANCE_MILES_TO_INTERNAL(legAdjustDist);
+        race.legAdjustedTargetSpeed=SPEED_MPH_TO_INTERNAL(legAdjustSpeed);
+        //Since we change the parameters of a leg, we need to recalculate the whole race parameters.
+        computeRace(race.activeRace);
+        race.legTargetTime=legAdjustTime;
         legAdjustMode=0;
         break;       
       case stateAdjustLegRestore:
@@ -425,10 +427,9 @@ void stateMachine::run(void) {
         //time is in milliseconds and can easily be manipulated that way.
         //We convert distance and speed to miles and mph to make the edit logic way, way
         //easier.
-        legAdjustDist=DISTANCE_INTERNAL_TO_MILES(race.legData->driveDistance);
-        legAdjustSpeed=SPEED_INTERNAL_TO_MPH(race.legData->adjustedTargetSpeed);
-        legAdjustTime=(int32_t)round(race.legData->time);
-        Serial.printf("legAjustTime: %d, race.legData->time: %f\n", legAdjustTime,race.legData->time);
+        legAdjustDist=DISTANCE_INTERNAL_TO_MILES(race.activeLeg->driveDistance);
+        legAdjustSpeed=SPEED_INTERNAL_TO_MPH(race.legAdjustedTargetSpeed);
+        legAdjustTime=(int32_t)round(race.legTargetTime);
         break;
       case stateAdjustLegResetValues:
         //probably could just use stateSaveSelection as it is the same action, but if we need to do something
@@ -628,7 +629,7 @@ void stateMachine::run(void) {
           }
           break;
         case menuActionSelectRace:
-          if(!race.inProgress) {
+          if(!race.raceInProgress) {
             state=stateSelectRace;
           } else {
             //we can't prevent entering the menu, but we don't want to go in there since there isn't a race 
@@ -638,7 +639,7 @@ void stateMachine::run(void) {
           }
           break;
         case menuActionSelectLeg:
-          if(race.activeRace!=NULL && !race.inProgress) {
+          if(race.activeRace!=NULL && !race.raceInProgress) {
             state=stateSelectRaceLeg;
           } else {
             //we can't prevent entering the menu, but we don't want to go in there since there isn't a race 
@@ -1133,7 +1134,7 @@ void stateMachine::run(void) {
     }
   }
 
-  if(status.flags.buttonColor != lastStatus.flags.buttonColor && race.legData->inProgress) {
+  if(status.flags.buttonColor != lastStatus.flags.buttonColor && race.legInProgress) {
     //Serial.printf("set all buttons: %d\n",status.flags.buttonColor);
     switch(status.flags.buttonColor) {
       case 0:

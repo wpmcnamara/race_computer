@@ -171,23 +171,23 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
   double mark;
   ts= (ubxDataStruct->wnF * 604800000) + ubxDataStruct->towMsF;
   if (ubxDataStruct->flags.bits.newFallingEdge) {
-    if (!race.legData->inProgress) {
+    if (!race.legInProgress) {
       keysLocked=true;
       //save the start time stamp.  We may adjust this later if we are delaying start to
       //align with a timing mark.
-      race.legData->startTs=ts;
+      race.startTs=ts;
       //check to see if we are aligning the start to a timing mark.
       //if not then we just start the race timing on button push.  If we
       //are aligning timing the we have to check the various scenarios to
       //figure out how long to wait before beginning timing.
-      if (race.legData->startMark == 0) {
-        race.legData->timerOffset = 0;
+      if (race.startMark == 0) {
+        race.timerOffset = 0;
         raceLegStart();
       } else {
-        mark = fmod(ts,race.legData->startMark);
+        mark = fmod(ts,race.startMark);
         //calculate the delay before next starting mark, in milliseconds.  This will be invalid if the button
         //was pushed exactly on the current starting mark, but that will be handled in a special case.
-        startDelay = race.legData->startMark - mark;
+        startDelay = race.startMark - mark;
         //calculate the possible timing delay based on whether the button push was
         //exactly on the second or not.
         if (mark == 0) {
@@ -197,10 +197,10 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
         } else {
           //delay the start of timing until the next timing mark.  Adjust the start timestamp
           //to align with that mark;
-          race.legData->startTs += startDelay;
-          race.legData->delayedStart = true;
+          race.startTs += startDelay;
+          race.delayedStart = true;
           stateMachine.status.flags.delayedStart=true;
-          race.legData->timerOffset = startDelay;
+          race.timerOffset = startDelay;
           //delay routine seems to run about 1.3 to 1.4x slow due to things being done in it.  We scale the
           //start delay appropriately, to get it close to correct.  Actual timing will be correct, we just
           //want the display to look right-ish
@@ -210,7 +210,7 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
       }
     } else {
       raceLegStop();
-      race.legData->endTs=ts;
+      race.endTs=ts;
       keysLocked=false;
     }
   }
@@ -229,6 +229,7 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   double targetTime;
   double elapsedTime;
   double speedDelta;
+  double raceDistance;
   //GPS reports distance in meters.  We convert to millimeters for internal use.
   gpsData.distance = (double)ubxDataStruct->distance*1000.0L;
   //Since we have an updated distamce, if we have a race in progress, then we should update
@@ -236,48 +237,52 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   //distance is in meters.  Time is in seconds.  We only update things when the race timer is running.  This 
   //keeps us from adding the the distance if there is a delay between hitting the start/stop button and recieving
   //the time mark from the GPS.
-  if (race.legData->inProgress && timer_run) {
-    elapsedTime = getTimeStamp() - race.legData->timerOffset;
-    race.legData->timeComplete=elapsedTime;
-    race.legData->distance = gpsData.distance - race.legData->distanceOffset;
-    race.legData->distanceRemaining = race.legData->driveDistance - race.legData->distance;
-    race.legData->averageSpeed = race.legData->distance / elapsedTime;
+  if (race.legInProgress && timer_run) {
+    elapsedTime = getTimeStamp() - race.timerOffset;
+    race.legTime=elapsedTime;
+    race.raceTime=race.raceTimeComplete+elapsedTime;
+    race.legDistanceComplete = gpsData.distance - race.distanceOffset;
+    race.legDistanceRemaining = race.activeLeg->driveDistance - race.legDistanceComplete;
+    race.legAverageSpeed = race.legDistanceComplete / elapsedTime;
     //we use the adjustedTargetSpeed here as there isn't a good way to scale things from drive distance
     //to leg distance.  We could technically do it, but the scaling factor is tiny (0.1% as an example)
     //and ensuring no loss of precision isn't worth the hassle.
-    race.legData->speedDelta = race.legData->averageSpeed - race.legData->adjustedTargetSpeed;    
-    //Calculate how long it should have taken for us to travel the distance we have, at the target speed 
-    //for the race.
-    targetTime=race.legData->distance / race.activeLeg->raceSpeed;
+    race.legSpeedDelta = race.legAverageSpeed - race.legAdjustedTargetSpeed;    
+    //Calculate how long it should have taken for us to travel the distance we have, at the actual driving 
+    //target speed for the leg.
+    targetTime=race.legDistanceComplete / race.legAdjustedTargetSpeed;
     //Our time delta is the difference between how long it should have taken and how long it did take.
     //Delta will be negative if we are faster, positive if we are slower.
-    race.legData->timeDelta=targetTime-elapsedTime;
+    race.legTimeDelta=targetTime-elapsedTime;
 
     //we use the drive values here as it wouldn't make sense to use published values for 
     //the race distance when the leg distance is actual distance driven.  Race values, using
     //published distance are only valid at the end of a leg.
-    race.distance = race.actualDistanceComplete + race.legData->distance;
-    race.distanceRemaining = race.driveDistance - race.distance;
-    race.averageSpeed = race.distance / (race.timeComplete + elapsedTime);
-    race.speedDelta = race.averageSpeed - race.targetSpeed;
+    race.raceActualDistanceComplete = race.raceActualDistanceComplete + race.legDistanceComplete;
+    raceDistance=race.raceDriveDistanceComplete + race.legDistanceComplete;
+    race.raceDistanceRemaining = race.activeRace->driveDistance - raceDistance;
+    race.raceLegEndDistanceRemaining = race.activeLeg->raceLegEndDriveDistance - raceDistance;
+    race.raceAverageSpeed = raceDistance / race.raceTimeComplete;
+    race.raceSpeedDelta = race.raceAverageSpeed - race.activeLeg->raceLegEndDriveAvgSpeed;
     //redo the same time delta calculations as above, only for the entire race distance instead of 
     //just the current leg.
-    targetTime=(race.driveDistanceComplete+race.legData->distance) / race.activeLeg->raceSpeed;
-    race.timeDelta=targetTime-(race.timeComplete + elapsedTime);
+
+    targetTime=raceDistance / race.activeLeg->raceLegEndDriveAvgSpeed;
+    race.raceTimeDelta=targetTime-race.raceTime;
 
     //This sets the color for the keypad buttons based on our speed delta.  Green if we are in-band.
     //Blue if we are slow and red if we are fast.  Current only works on the leg speedDelta.  Will
     //eventually make it a configuration setting to use either leg, or race.
     if(speedBandSource==1) {
-      speedDelta=race.legData->speedDelta;
+      speedDelta=race.legSpeedDelta;
     } else {
-      speedDelta=race.speedDelta;
+      speedDelta=race.raceSpeedDelta;
     }
     
     if(speedBandSource!=0) {
-      if(speedDelta<(race.legData->speedTargetBand*-1.0)) {
+      if(speedDelta<(race.activeLeg->speedRange*-1.0)) {
         stateMachine.status.flags.buttonColor=1;
-      } else if (speedDelta>race.legData->speedTargetBand) {
+      } else if (speedDelta>race.activeLeg->speedRange) {
         stateMachine.status.flags.buttonColor=2;
       } else {
         stateMachine.status.flags.buttonColor=3;
@@ -286,9 +291,9 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
       stateMachine.status.flags.buttonColor=0;
     }
 
-    if(race.legData->activePoint!=race.activeLeg->points.end()) {
-      if(race.legData->distance > (*(race.legData->activePoint))->distance) {
-        race.legData->activePoint++;
+    if(race.activePoint!=race.activeLeg->points.end()) {
+      if(race.legDistanceComplete > (*(race.activePoint))->distance) {
+        race.activePoint++;
       }
     }
   }
@@ -317,7 +322,7 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
   //We only update things when the race timer is running.  This 
   //keeps us from adding the the distance if there is a delay between hitting the start/stop button and recieving
   //the time mark from the GPS.
-  if (race.legData->inProgress && timer_run) {
+  if (race.legInProgress && timer_run) {
     //GPS reports speed in integer mm/s. We need to convert to double mm/ms  
     (*speedListInsert)=((double)ubxDataStruct->gSpeed)/1000.0;
     speedListInsert++;
