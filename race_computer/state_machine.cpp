@@ -1080,7 +1080,7 @@ void stateMachine::run(void) {
   }
 
   if(status.flags.startStopState!=lastStatus.flags.startStopState) {
-    Serial.printf("flags.startStopState=%d last flags.startStopState=%d\n", status.flags.startStopState, lastStatus.flags.startStopState);
+    //Serial.printf("flags.startStopState=%d last flags.startStopState=%d\n", status.flags.startStopState, lastStatus.flags.startStopState);
     switch(lastStatus.flags.startStopState) {
       case stateBlink:
         startStopStopBlink();
@@ -1093,19 +1093,19 @@ void stateMachine::run(void) {
     }
     switch(status.flags.startStopState) {
       case stateBlink:
-        Serial.println("start blink");
+        //Serial.println("start blink");
         startStopStartBlink();
         break;
       case stateBreath:
-        Serial.println("start breath");
+        //Serial.println("start breath");
         startStopStartBreath();
         break;
       case stateOn:
-        Serial.println("start on");
+        //Serial.println("start on");
         startStopOn(startStopColor);
         break;
       case stateOff:
-        Serial.println("start off");
+        //Serial.println("start off");
         if(status.flags.legActive) {
           status.flags.startStopState=stateOn;
           startStopColor=COLOR_GREEN;
@@ -1134,7 +1134,7 @@ void stateMachine::run(void) {
   }
 
   if(status.flags.buttonColor != lastStatus.flags.buttonColor && race.legData->inProgress) {
-    Serial.printf("set all buttons: %d\n",status.flags.buttonColor);
+    //Serial.printf("set all buttons: %d\n",status.flags.buttonColor);
     switch(status.flags.buttonColor) {
       case 0:
         setAllButtonColor(COLOR_BLACK);

@@ -262,6 +262,7 @@ void readKeypad(void) {
       buttons=0;
     }
   } 
+  /*
   if(startPress) {
     //Serial.println("startPress");
     startPress=false;
@@ -277,6 +278,23 @@ void readKeypad(void) {
       }
     }
   }
+  */
+  if(startPress) {
+    //Serial.println("startPress");
+    startPress=false;
+    startStopState=0;
+    buttons|=KEYPAD_KEY_START_STOP;
+    stateMachine.startStopColor=COLOR_WHITE;
+    stateMachine.status.flags.startStopState=stateOn;
+  } else {
+    startStopState=digitalReadFast(KEYPAD_START);    
+    if(startStopState==0 ) {
+      stateMachine.startStopColor=COLOR_WHITE;
+      stateMachine.status.flags.startStopState=stateOn;
+    } else {
+      stateMachine.status.flags.startStopState=stateOff; 
+    }    
+  }
   if(buttons) {
     //Serial.printf("buttons: %d\n", buttons);
     keyPresses.push_back(buttons);
@@ -285,12 +303,13 @@ void readKeypad(void) {
 
 void keyDebounce(void) {
   digitalWriteFast(GPS_INT, HIGH);
-  lastStartStopState=startStopState;
+  //lastStartStopState=startStopState;
   startStopState=digitalReadFast(KEYPAD_START);
   //because we are in the debounce routine, startStopState is 0, coming into 
   //this routine, so the only transition we could get would be to 1, which would
   //represent the button being released
-  if(lastStartStopState!=startStopState) {
+  //if(lastStartStopState!=startStopState) {
+  if(startStopState==1) {
     stateMachine.status.flags.startStopState=stateOff; 
   }      
   enableInterrupt(KEYPAD_START);
