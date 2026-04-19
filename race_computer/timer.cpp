@@ -84,12 +84,12 @@ double getTimeStamp(void) {
   //disabled interrupts just before the rollover happened, but our seconds count will be correct.
   __disable_irq();
   milliCapture=TMRx->CH[2].CNTR;
-  timerCtrl=TMRx->CH[2].SCTRL; 
+  timerCtrl=TMRx->CH[2].CSCTRL; 
   secondCapture=timerSeconds;
   __enable_irq();
   //We rolled over just before disabling interrupts but got interrupts disabled before the interrupt handler
   //could execute so we need add a second to account for the rollover.
-  if((timerCtrl & TMR_SCTRL_TCF) && (milliCapture==0)) {
+  if((timerCtrl & TMR_CSCTRL_TCF1)) {
     secondCapture++;
   }
   timeStamp=(secondCapture*1000)+milliCapture;
