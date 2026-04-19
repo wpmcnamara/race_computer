@@ -146,7 +146,6 @@ class raceData {
     //just use the leg definition directly because we might adjust the leg time to correct for the overall
     //race time delta at the beginning of the leg.
     double legTargetTime;
-    
     //unit: mm/ms  Actual target speed for the current leg. Value is calculated from adjusted leg target time 
     //and driving distance.  This is the actual target speed to hit when driving a leg.
     double legAdjustedTargetSpeed;
@@ -166,9 +165,12 @@ class raceData {
     //We calculate once and store, when     //averageSpeed is updated, rather than calculating 
     //each time it is used elsewhere.
     double raceLegEndSpeedDelta;
+    //unit: mm  For the active race, this is the sum of the distance of completed legs pluss the distance completed
+    //in the current leg. 
+    double raceDistanceComplete;
     //unit: mm  For the active race, this is the sum of the distance of completed legs.  Only updated at the
     //end of leg. eeded to calculate the whole race average speed.
-    double raceDistanceComplete;    
+    double raceTargetDistanceComplete;    
     //unit: mm  this is the sum of the drive distance for completed legs. 
     double raceDriveDistanceComplete;
     //unit: mm  this is the sum of the disance driven for completed legs based 

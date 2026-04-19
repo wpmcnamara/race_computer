@@ -735,10 +735,10 @@ void displayRaceStats1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t p
     SPEED_INTERNAL_TO_MPH(race.raceSpeedDelta)
   );
   display.drawStr(1,24,buffer); 
-  sprintf(buffer, "acD:%3.03f dD:%3.03f rD:%3.03f",
-    DISTANCE_INTERNAL_TO_MILES(race.raceActualDistanceComplete),
+  sprintf(buffer, "rcD:%3.03f ledD:%3.03f lerD:%3.03f",
+    DISTANCE_INTERNAL_TO_MILES(race.raceDistanceComplete),
     DISTANCE_INTERNAL_TO_MILES(race.activeLeg->raceLegEndDriveDistance),
-    DISTANCE_INTERNAL_TO_MILES(race.raceDistanceRemaining)
+    DISTANCE_INTERNAL_TO_MILES(race.raceLegEndDistanceRemaining)
   );
   display.drawStr(1,37,buffer); 
   sprintf(buffer, "pT:%4.03f ctT:%4.03f rdT:%3.03f",
@@ -756,10 +756,10 @@ void displayRaceStats1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t p
 
 void displayRaceStats2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   display.setFont(u8g2_font_spleen6x12_mf);
-  sprintf(buffer, "tD:%4.03f dD:%4.03f cD:%4.03f", 
+  sprintf(buffer, "tD:%4.03f dD:%4.03f tcD:%4.03f", 
     DISTANCE_INTERNAL_TO_MILES(race.activeRace->distance),
     DISTANCE_INTERNAL_TO_MILES(race.activeRace->driveDistance),
-    DISTANCE_INTERNAL_TO_MILES(race.raceDistanceComplete)
+    DISTANCE_INTERNAL_TO_MILES(race.raceTargetDistanceComplete)
   );
   display.drawStr(1,11,buffer);  
   sprintf(buffer, "cdD:%3.03f acD:%3.03f dR:%3.03f",
@@ -936,7 +936,7 @@ if (timeDelta<0) {
   } else {
     sign=' ';
   }
-  sprintf(buffer, "%c%3.03f", sign, timeDelta);
+  sprintf(buffer, "%c%3.03f", sign, abs(timeDelta));
   display.drawStr(x+31,y, buffer);
   display.setFont(u8g2_font_spleen6x12_mf);	
   display.drawStr(x+97,y,"sec");	
@@ -1158,7 +1158,7 @@ void displayRaceSummary1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t
 void displayRaceSummary2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   double averageSpeed=race.raceAverageSpeed;
   display.setFont(u8g2_font_spleen12x24_mf);
-  sprintf(buffer, "Dist: %8.3f", DISTANCE_INTERNAL_TO_MILES(race.raceDistanceComplete));
+  sprintf(buffer, "Dist: %8.3f", DISTANCE_INTERNAL_TO_MILES(race.raceTargetDistanceComplete));
   display.drawStr(0,20,buffer);
   sprintf(buffer, "  \xd8S: %8.3f", SPEED_INTERNAL_TO_MPH(averageSpeed));
   display.drawStr(0,40,buffer);
