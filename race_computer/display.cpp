@@ -148,6 +148,7 @@ void displayContent::display(void) {
 }
 
 void displaySetup(void) {
+  int x;
   displayTimeout=30;
   dispRace=NULL;
   dispRaceLeg=NULL;
@@ -211,8 +212,12 @@ void displaySetup(void) {
   oledDisp3.sendBuffer();
   oledDisp4.clearBuffer();
   oledDisp4.setFont(u8g2_font_spleen12x24_mf);
-  oledDisp4.drawStr(20,20,"\xA9 Patrick McNamara");	
-  oledDisp4.drawStr(38,52,VERSION_STRING);	
+  sprintf(buffer, "\xA9 Patrick McNamara");
+  x=128-(oledDisp4.getStrWidth(buffer)/2);
+  oledDisp4.drawStr(x,20,buffer);	
+  sprintf(buffer, "%s", VERSION_STRING);
+  x=128-(oledDisp4.getStrWidth(buffer)/2);
+  oledDisp4.drawStr(x,52,buffer);	
   oledDisp4.sendBuffer();
   delay(5000);
   oledDisp1.clearBuffer();
@@ -732,7 +737,7 @@ void displayRaceStats1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t p
   sprintf(buffer, "tdS:%3.03f aS:%3.03f dS:%3.03f",
     SPEED_INTERNAL_TO_MPH(race.activeLeg->raceLegEndDriveAvgSpeed),
     SPEED_INTERNAL_TO_MPH(race.raceAverageSpeed),
-    SPEED_INTERNAL_TO_MPH(race.raceSpeedDelta)
+    SPEED_INTERNAL_TO_MPH(race.raceLegEndSpeedDelta)
   );
   display.drawStr(1,24,buffer); 
   sprintf(buffer, "rcD:%3.03f ledD:%3.03f lerD:%3.03f",
@@ -1312,7 +1317,7 @@ void displaySetDisplayTimeout(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, disp
   return;
 }
 
-void displayAdjustLeg(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+void displayAdjustLeg1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   int x;
   int y;
 
@@ -1339,13 +1344,46 @@ void displayAdjustLeg(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t po
   } else {
     x=(legAdjustColumn*-12)+119;
   }
-  if(legAdjustMode) {
-    if(legAdjustMode==2) {
-      display.setDrawColor(2);
-      display.drawBox(x, y, 14, 20);
-      display.setDrawColor(1);
-    } else {
-      display.drawFrame(x, y, 14, 20);
+  if(legAdjustRow<3) {
+    if(legAdjustMode) {
+      if(legAdjustMode==2) {
+        display.setDrawColor(2);
+        display.drawBox(x, y, 14, 20);
+        display.setDrawColor(1);
+      } else {
+        display.drawFrame(x, y, 14, 20);
+      }
+    }
+  }
+}
+
+void displayAdjustLeg2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  int x;
+  int y;
+
+  //The distance and speed values used by the adjustment menus are already in floating point mph and miles/
+  //No need to convert here.
+  //Seconds are still in milliseconds.
+  display.setFont(u8g2_font_spleen12x24_mf);
+  sprintf(buffer, " Mark:  %02ld", legAdjustMark);
+  display.drawStr(0,20,buffer);
+  display.setFont(u8g2_font_spleen8x16_mf);
+  display.drawStr(121,20,"sec");
+  y=((legAdjustRow-3)*20)+2;
+  if(legAdjustRow==0) {
+    x=(legAdjustColumn*-12)+191;
+  } else {
+    x=(legAdjustColumn*-12)+119;
+  }
+  if(legAdjustRow>2) {
+    if(legAdjustMode) {
+      if(legAdjustMode==2) {
+        display.setDrawColor(2);
+        display.drawBox(x, y, 14, 20);
+        display.setDrawColor(1);
+      } else {
+        display.drawFrame(x, y, 14, 20);
+      }
     }
   }
 }
@@ -1432,7 +1470,7 @@ void ledDispLegDeltaSpeed(void) {
 
 void ledDispRaceDeltaSpeed(void) {
   ledDisp.RefreshMe();
-  sprintf(buffer, "%9.3f", SPEED_INTERNAL_TO_MPH(race.raceSpeedDelta));
+  sprintf(buffer, "%9.3f", SPEED_INTERNAL_TO_MPH(race.raceLegEndSpeedDelta));
   ledDisp.Set_Position(0);
   ledDisp.ShowMe(buffer); 
 }

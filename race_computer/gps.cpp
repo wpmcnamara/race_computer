@@ -261,7 +261,8 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     race.raceDistanceRemaining = race.activeRace->driveDistance - race.raceDistanceComplete;
     race.raceLegEndDistanceRemaining = race.activeLeg->raceLegEndDriveDistance - race.raceDistanceComplete;
     race.raceAverageSpeed = race.raceDistanceComplete / (race.raceTimeComplete+elapsedTime);
-    race.raceSpeedDelta = race.raceAverageSpeed - race.activeLeg->raceLegEndDriveAvgSpeed;
+    race.raceSpeedDelta = race.raceAverageSpeed - race.activeRace->driveSpeed;
+    race.raceLegEndSpeedDelta = race.raceAverageSpeed - race.activeLeg->raceLegEndDriveAvgSpeed;    
     //redo the same time delta calculations as above, only for the entire race distance instead of 
     //just the current leg.
 
@@ -274,7 +275,7 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     if(speedBandSource==1) {
       speedDelta=race.legSpeedDelta;
     } else {
-      speedDelta=race.raceSpeedDelta;
+      speedDelta=race.raceLegEndSpeedDelta;
     }
     
     if(speedBandSource!=0) {

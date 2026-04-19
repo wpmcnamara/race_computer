@@ -26,6 +26,7 @@ enum menuAction {
   menuActionAdjustTime,
   menuActionAdjustDistance,
   menuActionAdjustSpeed,
+  menuActionAdjustMark,
   menuActionAdjustSave,
   menuActionAdjustReset,
   menuActionEsc,
@@ -98,6 +99,7 @@ extern menu_t rebootMenu;
 extern menu_t adjustTimeMenu;
 extern menu_t adjustDistanceMenu;
 extern menu_t adjustSpeedMenu;
+extern menu_t adjustMarkMenu;
 extern menu_t adjustSaveMenu;
 
 
@@ -115,6 +117,9 @@ extern double legAdjustDistBackup;
 extern double legAdjustSpeed;
 extern double legAdjustSpeedTmp;
 extern double legAdjustSpeedBackup;
+extern int32_t legAdjustMark;
+extern int32_t legAdjustMarkTmp;
+extern int32_t legAdjustMarkBackup;
 extern bool autoAdjustLegTimeSave;
 extern int speedBandSourceSave;
 
@@ -125,6 +130,7 @@ uint8_t menuSetScreenTimeout(uint8_t key);
 uint8_t menuAdjustLegTime(uint8_t key);
 uint8_t menuAdjustLegDistance(uint8_t key);
 uint8_t menuAdjustLegSpeed(uint8_t key);
+uint8_t menuAdjustLegMark(uint8_t key);
 uint8_t menuConfirmSettingsReset(uint8_t key);
 uint8_t menuSetHwVer(uint8_t key);
 uint8_t menuAutoAjustLegTime(uint8_t key);

@@ -114,6 +114,9 @@ void stateMachine::run(void) {
       case stateAdjustLegSpeed:
         Serial.print("from: stateAdjustLegSpeed");
         break; 
+      case stateAdjustLegMark:
+        Serial.print("from: stateAdjustLegMark");
+        break;         
       case stateAdjustLegSave:
         Serial.print("from: stateAdjustLegSave");
         break;       
@@ -362,7 +365,8 @@ void stateMachine::run(void) {
         ledDispFunc=ledDispDashes;
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayAdjustLeg));     
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayAdjustLeg1));     
+        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayAdjustLeg2));   
         break; 
       case stateAdjustLegTime:
         Serial.println("to: stateAdjustLegTime");
@@ -372,6 +376,7 @@ void stateMachine::run(void) {
         legAdjustDistBackup=legAdjustDist;
         legAdjustSpeedBackup=legAdjustSpeed;
         legAdjustTimeBackup=legAdjustTime;
+        legAdjustMarkBackup=legAdjustMark;
         legAdjustRow=0;
         legAdjustColumn=-1;
         legAdjustMode=1;
@@ -384,6 +389,7 @@ void stateMachine::run(void) {
         legAdjustDistBackup=legAdjustDist;
         legAdjustSpeedBackup=legAdjustSpeed;
         legAdjustTimeBackup=legAdjustTime;
+        legAdjustMarkBackup=legAdjustMark;
         legAdjustRow=1;
         legAdjustColumn=-1;
         legAdjustMode=1;
@@ -396,16 +402,31 @@ void stateMachine::run(void) {
         legAdjustDistBackup=legAdjustDist;
         legAdjustSpeedBackup=legAdjustSpeed;
         legAdjustTimeBackup=legAdjustTime;
+        legAdjustMarkBackup=legAdjustMark;
         legAdjustRow=2;
         legAdjustColumn=-1;
         legAdjustMode=1;
         break; 
+      case stateAdjustLegMark:
+        Serial.println("to: stateAdjustLegMark");
+        //only editing one, but we need to backup all three current values because we will restore
+        //all three values if we escape out of the edit.  Don't want to restore the wrong contents for
+        //either none edited value.
+        legAdjustDistBackup=legAdjustDist;
+        legAdjustSpeedBackup=legAdjustSpeed;
+        legAdjustTimeBackup=legAdjustTime;
+        legAdjustMarkBackup=legAdjustMark;
+        legAdjustRow=3;
+        legAdjustColumn=1;
+        legAdjustMode=1;
+        break;         
       case stateAdjustLegSave:
         Serial.println("to: stateAdjustLegSave");
         //convert distance and speed from floating point miles and mph back to internal integer units.
         //Time carries through directly as milliseconds.
         race.activeLeg->driveDistance=DISTANCE_MILES_TO_INTERNAL(legAdjustDist);
         race.legAdjustedTargetSpeed=SPEED_MPH_TO_INTERNAL(legAdjustSpeed);
+        race.startMark=TIME_SECONDS_TO_INTERNAL((double)legAdjustMark);
         //Since we change the parameters of a leg, we need to recalculate the whole race parameters.
         computeRace(race.activeRace);
         race.legTargetTime=legAdjustTime;
@@ -419,6 +440,7 @@ void stateMachine::run(void) {
         legAdjustDist=legAdjustDistBackup;
         legAdjustSpeed=legAdjustSpeedBackup;
         legAdjustTime=legAdjustTimeBackup;  
+        legAdjustMark=legAdjustMarkBackup;
         legAdjustMode=0;         
         break;
       case stateAdjustLegCaptureValues:
@@ -430,6 +452,7 @@ void stateMachine::run(void) {
         legAdjustDist=DISTANCE_INTERNAL_TO_MILES(race.activeLeg->driveDistance);
         legAdjustSpeed=SPEED_INTERNAL_TO_MPH(race.legAdjustedTargetSpeed);
         legAdjustTime=(int32_t)round(race.legTargetTime);
+        legAdjustMark=(int32_t)TIME_INTERNAL_TO_SECONDS(race.startMark);
         break;
       case stateAdjustLegResetValues:
         //probably could just use stateSaveSelection as it is the same action, but if we need to do something
@@ -573,6 +596,8 @@ void stateMachine::run(void) {
       break; 
     case stateAdjustLegSpeed:
       break; 
+    case stateAdjustLegMark:
+      break;
     case stateAdjustLegSave:
       state=stateMainMenu;
       break;       
@@ -670,7 +695,14 @@ void stateMachine::run(void) {
           state=stateSetLegTimeAdjust;
           break;
         case menuActionAdjustLeg:
-          state=stateAdjustLegCaptureValues;
+          if(race.activeRace!=NULL) {
+            state=stateAdjustLegCaptureValues;
+          } else {
+            //we can't prevent entering the menu, but we don't want to go in there since there isn't a race 
+            //selected, so we force a return back up one level of the menu stack.  It will appear as though
+            //nothing happened when we selected the menu.
+            menuStack.pop_back();            
+          }
           break;
         case menuActionSystemInfo:
           state=stateShowSystemInfo;
@@ -688,8 +720,11 @@ void stateMachine::run(void) {
           state=stateAdjustLegDistance;
           break;
         case menuActionAdjustSpeed:
-          state=stateAdjustLegSpeed;
+          state=stateAdjustLegSpeed;          
           break;
+        case menuActionAdjustMark:
+          state=stateAdjustLegMark;
+          break;          
         case menuActionAdjustSave:
           //We are currently in the leg adjustment menu and "Save" was selected.  We need to exit
           //this menu to signify that settings were saved.  We simulate an ESC being pressed and
@@ -1000,6 +1035,21 @@ void stateMachine::run(void) {
           break;
       }      
       break; 
+    case stateAdjustLegMark:
+      menuAction=menuAdjustLegMark(keys);
+      switch(menuAction) {
+        case 0:
+          break;
+        case 1:
+          state=stateEditRaceLeg;
+          break;
+        case 2:
+          state=stateEditRaceLeg;
+          break;
+        default:
+          break;
+      }      
+      break;       
     case stateAdjustLegSave:
       break;       
     case stateAdjustLegRestore:
