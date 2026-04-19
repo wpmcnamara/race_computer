@@ -40,6 +40,7 @@ std::vector<menuEntry_t> adjustLegMenuEntries={
     {"Adjust Time", menuActionAdjustTime,&adjustTimeMenu},
     {"Adjust Distance", menuActionAdjustDistance,&adjustDistanceMenu},
     {"Adjust Target Speed", menuActionAdjustSpeed,&adjustSpeedMenu},
+    {"Adjust Starting Mark", menuActionAdjustMark, &adjustMarkMenu},
     {"Save Adjustments", menuActionAdjustSave, nullptr},
     {"Reset All Adjustments", menuActionAdjustReset, nullptr},
 };
@@ -77,6 +78,7 @@ menu_t rebootMenu("Reboot", dummyMenuEntries, 0);
 menu_t adjustTimeMenu("Adjust Leg Time", dummyMenuEntries, 0);
 menu_t adjustDistanceMenu("Adjust Leg Distance", dummyMenuEntries, 0);
 menu_t adjustSpeedMenu("Adjust Leg Speed", dummyMenuEntries, 0);
+menu_t adjustMarkMenu("Adjust Start Mark", dummyMenuEntries, 0);
 menu_t adjustSaveMenu("Save Adjustments", dummyMenuEntries, 0);
 
 
@@ -95,6 +97,9 @@ double legAdjustDistBackup;
 double legAdjustSpeed;
 double legAdjustSpeedTmp;
 double legAdjustSpeedBackup;
+int32_t legAdjustMark;
+int32_t legAdjustMarkTmp;
+int32_t legAdjustMarkBackup;
 bool autoAdjustLegTimeSave;
 int speedBandSourceSave;
 
@@ -724,6 +729,77 @@ uint8_t menuAdjustLegSpeed(uint8_t key) {
                 legAdjustMode=1;
                 legAdjustSpeed=legAdjustSpeedTmp;
                 legAdjustTime=legAdjustTimeTmp;
+                ret=0;
+            } else {
+                ret=2;
+            }
+        default:
+            break;
+    }
+    return ret;
+}
+
+uint8_t menuAdjustLegMark(uint8_t key) {
+    int ret=0;
+    switch (key) {
+        case KEYPAD_KEY_START_STOP:
+            ret=0;
+            break;
+        case KEYPAD_KEY_ENTER:
+            if(legAdjustMode==1) {
+                legAdjustMode=2;
+                legAdjustMarkTmp=legAdjustMark;
+            } else {
+                legAdjustMode=1;
+            }
+            ret=0;
+            break;
+        case KEYPAD_KEY_DOWN:
+            if(legAdjustMode==1) {
+                if(legAdjustColumn>1) {
+                    legAdjustColumn--;
+                }   
+            } else {
+                switch(legAdjustColumn) {
+                    case 1:
+                        if(legAdjustMark>1) {
+                            legAdjustMark-=1;
+                        }
+                        break;
+                    case 2:
+                        if(legAdjustMark>=10) {
+                            legAdjustMark-=10;
+                        }
+                        break;                        
+                }
+            }
+            ret=0;
+            break;
+        case KEYPAD_KEY_UP:
+            if(legAdjustMode==1) {
+                if(legAdjustColumn<2) {
+                    legAdjustColumn++;
+                }   
+            } else {
+                switch(legAdjustColumn) {
+                    case 1:
+                        if(legAdjustMark<59) {
+                            legAdjustMark+=1;
+                        }
+                        break;
+                    case 2:
+                        if(legAdjustMark<49) {
+                            legAdjustMark+=10;
+                        }
+                        break;                        
+                }
+            }   
+            ret=0;
+            break;
+        case KEYPAD_KEY_ESC:
+            if(legAdjustMode==2) {
+                legAdjustMode=1;
+                legAdjustMark=legAdjustMarkTmp;
                 ret=0;
             } else {
                 ret=2;

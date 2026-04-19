@@ -35,6 +35,7 @@ enum stateMachineStatesEnum {
   stateAdjustLegTime,
   stateAdjustLegDistance,
   stateAdjustLegSpeed,
+  stateAdjustLegMark,
   stateAdjustLegSave,
   stateAdjustLegRestore,
   stateAdjustLegCaptureValues,
