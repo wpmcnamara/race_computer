@@ -257,9 +257,9 @@ void logRace(raceData_t *race, uint8_t type) {
     return;
   }
   if(writeHeader) {
-    logFile.write("type,description,targetTime,targetSpeed,targetDistance,driveSpeed,adjustedDriveSpeed,EOL targetTime,EOL,targetSpeed,EOL targetDistance,\
-      EOL driveDistance,EOL driveAvgSpeed,targetDistance,driveDistance,actualDistancceCompelte,distanceComplete,distanceRemaining,EOL distanceRemainging,\
-      targetTimeComplete,timeComplete,time,averageSpeed,adjustedAverageSpeed,timeDelta,startTS,endTS\n");
+    logFile.write("type,description,targetTime,targetSpeed,targetDistance,driveDistance,driveSpeed,adjustedTargetTime,adjustedDriveSpeed,EOL targetTime,EOL targetSpeed,EOL targetDistance,\
+      EOL driveDistance,EOL driveAvgSpeed,targetDistanceComplete,driveDistanceComplete,actualDistancceComplete,distanceComplete,distanceRemaining,EOL distanceRemainging,\
+      targetTimeComplete,timeComplete,time,averageSpeed,adjustedAverageSpeed,speedDelta,timeDelta,startTS,endTS\n");
   }
   
   if(type==0) {

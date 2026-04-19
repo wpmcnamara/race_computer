@@ -1526,7 +1526,7 @@ void ledDispStartCountdown(void) {
   ledDisp.RefreshMe();
   sprintf(buffer, "%9.2f", TIME_INTERNAL_TO_SECONDS(ts));
   ledDisp.Set_Position(0);
-  ledDisp.ShowMe(buffer);     
+  ledDisp.ShowMe(buffer);
 }
 
 void displayError(const char *err) {
