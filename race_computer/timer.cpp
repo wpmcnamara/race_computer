@@ -40,14 +40,16 @@ void intervalTimerDelCallback(event_t *eventPtr) {
 //ppsInterrupt is driven from the GPS frequency output and internal counter compare 
 //The GPS frequency output drives counter and a roll over interrupt is generated once per second
 void ppsInterrupt() {
-  //we just update the seconds count here, as atomically as possible. We'll pull in the millisecond count,
-  //and extend to 64 bits when something reads the timer.
+  //we don't want any other interrupts firing while we are dealing with the timer update.
+  __disable_irq();
+  //we just update the seconds count here, as atomically as possible. 
   timerSeconds++;
-  //Once we have updated the seconds count, we can clear the timer overflow flag to signal that the 
+  // we can clear the timer overflow flag to signal that the 
   //timer overflow is represented in the seconds count.  This also prevents the interrupt handler from 
   //immediately getting called again.
   TMRx->CH[2].SCTRL  &= ~(TMR_SCTRL_TCF);  // clear
   TMRx->CH[2].CSCTRL &= ~(TMR_CSCTRL_TCF1);
+  __enable_irq();
 }
 
 void timerSetup(void) {

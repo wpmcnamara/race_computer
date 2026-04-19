@@ -229,7 +229,6 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   double targetTime;
   double elapsedTime;
   double speedDelta;
-  double raceDistance;
   //GPS reports distance in meters.  We convert to millimeters for internal use.
   gpsData.distance = (double)ubxDataStruct->distance*1000.0L;
   //Since we have an updated distamce, if we have a race in progress, then we should update
@@ -258,16 +257,15 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     //we use the drive values here as it wouldn't make sense to use published values for 
     //the race distance when the leg distance is actual distance driven.  Race values, using
     //published distance are only valid at the end of a leg.
-    race.raceActualDistanceComplete = race.raceActualDistanceComplete + race.legDistanceComplete;
-    raceDistance=race.raceDriveDistanceComplete + race.legDistanceComplete;
-    race.raceDistanceRemaining = race.activeRace->driveDistance - raceDistance;
-    race.raceLegEndDistanceRemaining = race.activeLeg->raceLegEndDriveDistance - raceDistance;
-    race.raceAverageSpeed = raceDistance / race.raceTimeComplete;
+    race.raceDistanceComplete=race.raceDriveDistanceComplete + race.legDistanceComplete;
+    race.raceDistanceRemaining = race.activeRace->driveDistance - race.raceDistanceComplete;
+    race.raceLegEndDistanceRemaining = race.activeLeg->raceLegEndDriveDistance - race.raceDistanceComplete;
+    race.raceAverageSpeed = race.raceDistanceComplete / (race.raceTimeComplete+elapsedTime);
     race.raceSpeedDelta = race.raceAverageSpeed - race.activeLeg->raceLegEndDriveAvgSpeed;
     //redo the same time delta calculations as above, only for the entire race distance instead of 
     //just the current leg.
 
-    targetTime=raceDistance / race.activeLeg->raceLegEndDriveAvgSpeed;
+    targetTime=race.raceDistanceComplete / race.activeLeg->raceLegEndDriveAvgSpeed;
     race.raceTimeDelta=targetTime-race.raceTime;
 
     //This sets the color for the keypad buttons based on our speed delta.  Green if we are in-band.

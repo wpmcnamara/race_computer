@@ -202,31 +202,36 @@ void logRace(raceData_t *race, uint8_t type) {
   char * buffer;
   char legStr[]="leg";
   char raceStr[]="race";
+  const char *descr=nullptr;
   char *entryType;
-  float targetTime;
-  float targetTimeComplete;
-  float targetSpeed;
-  /*
-  //float adjustedTargetSpeed1=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->targetTime);
-  //float adjustedTargetSpeed2=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->time);
+  float targetTime=0;
+  float targetSpeed=0;
+  float targetDistance=0;
+  float driveDistance=0;
+  float driveSpeed=0;
+  float adjustedTargetTime=0;
+  float adjustedDriveSpeed=0;
+  float eolTargetTime=0;
+  float eolTargetSpeed=0;
+  float eolTargetDistance=0;
+  float eolDriveDistance=0;
+  float eolDriveAvgSpeed=0;
+  float targetDistanceComplete=0;
+  float driveDistanceComplete=0;
+  float actualDistanceComplete=0;
+  float distanceComplete=0;
+  float distanceRemaining=0;
+  float eolDistanceRemaining=0;
+  float targetTimeComplete=0;
+  float timeComplete=0;
+  float time=0;
   float averageSpeed;
-  float adjustedAverageSpeed=SPEED_INTERNAL_TO_MPH(race->distanceComplete/race->timeComplete);
-  float speedDelta=SPEED_INTERNAL_TO_MPH(race->speedDelta);
-  float adjustedSpeedDelta=SPEED_INTERNAL_TO_MPH(adjustedAverageSpeed-targetSpeed);
-  float adjustedTargetTime=TIME_INTERNAL_TO_SECONDS(race->time);
-  float speedTargetBand=SPEED_INTERNAL_TO_MPH(race->speedTargetBand);
-
-  float totalDistance=DISTANCE_INTERNAL_TO_MILES(race->totalDistance);
-  float driveDistance=DISTANCE_INTERNAL_TO_MILES(race->driveDistance);
-
-  float distanceComplete=DISTANCE_INTERNAL_TO_MILES(race->distanceComplete);
-  float driveDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->driveDistanceComplete);
-  float actualDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->actualDistanceComplete);
-  float distance=DISTANCE_INTERNAL_TO_MILES(race->distance);
-
-  float timeDelta=TIME_INTERNAL_TO_SECONDS(race->timeDelta);
-  float time=TIME_INTERNAL_TO_SECONDS(race->endTs-race->startTs);
-  */
+  float adjustedAverageSpeed;
+  float speedDelta;
+  float eolSpeedDelta;
+  float timeDelta;
+  float startTs;
+  float endTs;
 
   File32 logFile;
   if(!sdCardPresent) {
@@ -252,72 +257,108 @@ void logRace(raceData_t *race, uint8_t type) {
     return;
   }
   if(writeHeader) {
-    logFile.write("type,targetTime,targetSpeed,targetDistance,adjustedTargetSpeed1,adjustedTargetSpeed2,adjustedTargetTime,averageSpeed,adjustedAverageSpeed,speedDelta,adjustedSpeedDelta,speedTargetBand,distance,driveDistance,distanceComplete,driveDistanceComplete,actualDistanceComplete,timeComplete,targetTimeComplete,startTime,endTime,timeDelta,time\n");
+    logFile.write("type,description,targetTime,targetSpeed,targetDistance,driveSpeed,adjustedDriveSpeed,EOL targetTime,EOL,targetSpeed,EOL targetDistance,\
+      EOL driveDistance,EOL driveAvgSpeed,targetDistance,driveDistance,actualDistancceCompelte,distanceComplete,distanceRemaining,EOL distanceRemainging,\
+      targetTimeComplete,timeComplete,time,averageSpeed,adjustedAverageSpeed,timeDelta,startTS,endTS\n");
   }
-  /*
+  
   if(type==0) {
     entryType=legStr;
-    float targetTime=TIME_INTERNAL_TO_SECONDS(race->activeRace->targetTime);
-  float targetTimeComplete=TIME_INTERNAL_TO_SECONDS(race->targetTimeComplete);
-  float targetSpeed=SPEED_INTERNAL_TO_MPH(race->activeRace->speed);
-  float adjustedTargetSpeed1=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->targetTime);
-  float adjustedTargetSpeed2=SPEED_INTERNAL_TO_MPH(race->driveDistance/race->time);
-  float averageSpeed=SPEED_INTERNAL_TO_MPH(race->averageSpeed);
-  float adjustedAverageSpeed=SPEED_INTERNAL_TO_MPH(race->distanceComplete/race->timeComplete);
-  float speedDelta=SPEED_INTERNAL_TO_MPH(race->speedDelta);
-  float adjustedSpeedDelta=SPEED_INTERNAL_TO_MPH(adjustedAverageSpeed-targetSpeed);
-  float adjustedTargetTime=TIME_INTERNAL_TO_SECONDS(race->time);
-  float speedTargetBand=SPEED_INTERNAL_TO_MPH(race->speedTargetBand);
-
-  float totalDistance=DISTANCE_INTERNAL_TO_MILES(race->totalDistance);
-  float driveDistance=DISTANCE_INTERNAL_TO_MILES(race->driveDistance);
-
-  float distanceComplete=DISTANCE_INTERNAL_TO_MILES(race->distanceComplete);
-  float driveDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->driveDistanceComplete);
-  float actualDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->actualDistanceComplete);
-  float distance=DISTANCE_INTERNAL_TO_MILES(race->distance);
-
-  float timeDelta=TIME_INTERNAL_TO_SECONDS(race->timeDelta);
-  float time=TIME_INTERNAL_TO_SECONDS(race->endTs-race->startTs);
-
-  
-  
-  
+    descr=race->activeLeg->descr.c_str();
+    targetTime=TIME_INTERNAL_TO_SECONDS(race->activeLeg->targetTime);
+    targetSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->speed);
+    targetDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->distance);
+    driveDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->driveDistance);
+    driveSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->driveSpeed);
+    adjustedTargetTime=TIME_INTERNAL_TO_SECONDS(race->legTargetTime);
+    adjustedDriveSpeed=SPEED_INTERNAL_TO_MPH(race->legAdjustedTargetSpeed);
+    eolTargetTime=targetTime;
+    eolTargetSpeed=targetSpeed;
+    eolTargetDistance=targetDistance;
+    eolDriveDistance=driveDistance;
+    eolDriveAvgSpeed=driveSpeed;
+    targetDistanceComplete=targetDistance;
+    driveDistanceComplete=driveDistance;
+    actualDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->legDistanceComplete);
+    distanceComplete=actualDistanceComplete;
+    distanceRemaining=DISTANCE_INTERNAL_TO_MILES(race->legDistanceRemaining);
+    eolDistanceRemaining=distanceRemaining;
+    time=TIME_INTERNAL_TO_SECONDS(race->legTime);
+    targetTimeComplete=TIME_INTERNAL_TO_SECONDS(race->activeLeg->targetTime);
+    timeComplete=TIME_INTERNAL_TO_SECONDS(race->legTargetTime);
+    averageSpeed=SPEED_INTERNAL_TO_MPH(race->legAverageSpeed);
+    adjustedAverageSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->distance/race->legTime);
+    speedDelta=SPEED_INTERNAL_TO_MPH(race->legSpeedDelta);
+    eolSpeedDelta=speedDelta;
+    timeDelta=TIME_INTERNAL_TO_SECONDS(race->legTimeDelta);
+    startTs=TIME_INTERNAL_TO_SECONDS(race->startTs);
+    endTs=TIME_INTERNAL_TO_SECONDS(race->endTs);
   } else {
     entryType=raceStr;
+    descr=race->activeRace->descr.c_str();
+    targetTime=TIME_INTERNAL_TO_SECONDS(race->activeRace->targetTime);
+    targetSpeed=SPEED_INTERNAL_TO_MPH(race->activeRace->speed);
+    targetDistance=DISTANCE_INTERNAL_TO_MILES(race->activeRace->distance);
+    driveDistance=DISTANCE_INTERNAL_TO_MILES(race->activeRace->driveDistance);
+    driveSpeed=SPEED_INTERNAL_TO_MPH(race->activeRace->driveSpeed);
+    adjustedTargetTime=targetTime;
+    adjustedDriveSpeed=driveSpeed;
+    eolTargetTime=TIME_INTERNAL_TO_SECONDS(race->activeLeg->raceLegEndTargetTime);
+    eolTargetSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->raceLegEndAvgSpeed);
+    eolTargetDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->raceLegEndTargetDistance);
+    eolDriveDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->raceLegEndDriveDistance);
+    eolDriveAvgSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->raceLegEndDriveAvgSpeed);
+    targetDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->raceTargetDistanceComplete);
+    driveDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->raceDriveDistanceComplete);
+    actualDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->raceActualDistanceComplete);
+    distanceComplete=DISTANCE_INTERNAL_TO_MILES(race->raceDistanceComplete);
+    distanceRemaining=DISTANCE_INTERNAL_TO_MILES(race->raceDistanceRemaining);
+    eolDistanceRemaining=DISTANCE_INTERNAL_TO_MILES(race->raceLegEndDistanceRemaining);
+    time=TIME_INTERNAL_TO_SECONDS(race->raceTime);
+    targetTimeComplete=TIME_INTERNAL_TO_SECONDS(race->raceTargetTimeComplete);
+    timeComplete=TIME_INTERNAL_TO_SECONDS(race->raceTimeComplete);
+    averageSpeed=SPEED_INTERNAL_TO_MPH(race->raceAverageSpeed);
+    adjustedAverageSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->raceLegEndTargetDistance/race->raceTime);
+    speedDelta=SPEED_INTERNAL_TO_MPH(race->raceSpeedDelta);
+    eolSpeedDelta=SPEED_INTERNAL_TO_MPH(race->raceLegEndSpeedDelta);
+    timeDelta=TIME_INTERNAL_TO_SECONDS(race->raceTimeDelta);
+    startTs=0;
+    endTs=0;
   }
-
-
-
-
   buffer=(char *)malloc(384);
-  snprintf(buffer, 384, "%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n",
-                          entryType,
-                          targetTime,
-                          targetSpeed,
-                          totalDistance,
-                          adjustedTargetSpeed1,
-                          adjustedTargetSpeed2,
-                          adjustedTargetTime,
-                          averageSpeed,
-                          adjustedAverageSpeed,
-                          speedDelta,
-                          adjustedSpeedDelta,
-                          speedTargetBand,
-                          distance,
-                          driveDistance,
-                          distanceComplete,
-                          driveDistanceComplete,
-                          actualDistanceComplete,
-                          TIME_INTERNAL_TO_SECONDS(race->timeComplete),
-                          targetTimeComplete,
-                          TIME_INTERNAL_TO_SECONDS(race->startTs),
-                          TIME_INTERNAL_TO_SECONDS(race->endTs),
-                          timeDelta,
-                          time
-                        );
+  snprintf(buffer, 384, "%s,%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+    entryType,
+    descr,
+    targetTime,
+    targetSpeed,
+    targetDistance,
+    driveDistance,
+    driveSpeed,
+    adjustedTargetTime,
+    adjustedDriveSpeed,
+    eolTargetTime,
+    eolTargetSpeed,
+    eolTargetDistance,
+    eolDriveDistance,
+    eolDriveAvgSpeed,
+    targetDistanceComplete,
+    driveDistanceComplete,
+    actualDistanceComplete,
+    distanceComplete,
+    distanceRemaining,
+    eolDistanceRemaining,
+    targetTimeComplete,
+    timeComplete,
+    time,
+    averageSpeed,
+    adjustedAverageSpeed,
+    speedDelta,
+    eolSpeedDelta,
+    timeDelta,
+    startTs,
+    endTs
+  );
   logFile.write(buffer, strlen(buffer));
-  */
   logFile.sync();
   logFile.close();
 
