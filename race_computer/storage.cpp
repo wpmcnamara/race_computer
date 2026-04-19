@@ -259,7 +259,7 @@ void logRace(raceData_t *race, uint8_t type) {
   if(writeHeader) {
     logFile.write("type,description,targetTime,targetSpeed,targetDistance,driveDistance,driveSpeed,adjustedTargetTime,adjustedDriveSpeed,EOL targetTime,EOL targetSpeed,EOL targetDistance,\
       EOL driveDistance,EOL driveAvgSpeed,targetDistanceComplete,driveDistanceComplete,actualDistancceComplete,distanceComplete,distanceRemaining,EOL distanceRemainging,\
-      targetTimeComplete,timeComplete,time,averageSpeed,adjustedAverageSpeed,speedDelta,EOL speedDeltatimeDelta,startTS,endTS\n");
+      targetTimeComplete,timeComplete,time,averageSpeed,adjustedAverageSpeed,speedDelta,EOL speedDelta,timeDelta,startTS,endTS\n");
   }
   
   if(type==0) {
@@ -326,7 +326,7 @@ void logRace(raceData_t *race, uint8_t type) {
     endTs=0;
   }
   buffer=(char *)malloc(384);
-  snprintf(buffer, 384, "%s,%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+  snprintf(buffer, 384, "%s,%s,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f\n",
     entryType,
     descr,
     targetTime,
