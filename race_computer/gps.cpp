@@ -252,7 +252,7 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     targetTime=race.legDistanceComplete / race.legAdjustedTargetSpeed;
     //Our time delta is the difference between how long it should have taken and how long it did take.
     //Delta will be negative if we are faster, positive if we are slower.
-    race.legTimeDelta=targetTime-elapsedTime;
+    race.legTimeDelta=elapsedTime-targetTime;
 
     //we use the drive values here as it wouldn't make sense to use published values for 
     //the race distance when the leg distance is actual distance driven.  Race values, using
@@ -267,7 +267,7 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     //just the current leg.
 
     targetTime=race.raceDistanceComplete / race.activeLeg->raceLegEndDriveAvgSpeed;
-    race.raceTimeDelta=targetTime-race.raceTime;
+    race.raceTimeDelta=race.raceTime-targetTime;
 
     //This sets the color for the keypad buttons based on our speed delta.  Green if we are in-band.
     //Blue if we are slow and red if we are fast.  Current only works on the leg speedDelta.  Will

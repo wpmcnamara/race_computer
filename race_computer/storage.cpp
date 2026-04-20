@@ -285,7 +285,7 @@ void logRace(raceData_t *race, uint8_t type) {
     eolDistanceRemaining=distanceRemaining;
     time=TIME_INTERNAL_TO_SECONDS(race->legTime);
     targetTimeComplete=TIME_INTERNAL_TO_SECONDS(race->activeLeg->targetTime);
-    timeComplete=TIME_INTERNAL_TO_SECONDS(race->legTargetTime);
+    timeComplete=time;
     averageSpeed=SPEED_INTERNAL_TO_MPH(race->legAverageSpeed);
     adjustedAverageSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->distance/race->legTime);
     speedDelta=SPEED_INTERNAL_TO_MPH(race->legSpeedDelta);
