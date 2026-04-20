@@ -1,0 +1,30 @@
+---
+descr: "Test and debugging drive #2"
+speed: 0
+speedRange: 0.5
+distance: 6.35
+tmark: 15
+legs:
+- id: 1
+  descr: Home to Teel
+  speed: 21.0
+  distance: 0.5
+  driveDistance: 0.56
+- id: 2
+  descr: Teel to Main
+  speed: 36.4
+  distance: 2.5
+  driveDistance: 2.54
+  tmark: 0
+- id: 3
+  descr: Main to High Shoals
+  speed: 42.3
+  distance: 2.75
+  driveDistance: 2.73
+  tmark: 0
+- id: 4
+  descr: High Shoals to Home
+  speed: 25.0
+  distance: 0.6
+  driveDistance: 0.55
+  tmark: 0
