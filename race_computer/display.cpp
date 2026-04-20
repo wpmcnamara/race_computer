@@ -65,16 +65,16 @@ const char *OLEDDisplayDescr[OLEDDispFuncMaxValue]={
   "Leg - Distance Remaining",
   "Leg - Time Delta",
   "Leg - Speed Delta",
-  "Leg - Stats 1",
-  "Leg - Stats 2",
+//  "Leg - Stats 1",
+//  "Leg - Stats 2",
   "Leg - Turns",  
   "Race - Average Speed",
   "Race - Distance Traveled",
   "Race - Distance Remaining",
   "Race - Time Delta",
   "Race - Speed Delta",  
-  "Race -- Stats 1",
-  "Race -- Stats 2",
+//  "Race -- Stats 1",
+//  "Race -- Stats 2",
   "GPS Info"
 };
 const char *LEDDisplayDescr[LEDDispFuncMaxValue]={
@@ -101,16 +101,16 @@ void (*OLEDDisplayFuncs[OLEDDispFuncMaxValue])(U8G2_SSD1322_NHD_256X64_F_4W_HW_S
   displayLegDistRemainLarge,
   displayLegDeltaTimeLarge,
   displayLegDeltaSpeedLarge,
-  displayLegStats1,
-  displayLegStats2,
+//  displayLegStats1,
+//  displayLegStats2,
   displayPoint,  
   displayRaceAvgSpeedLarge,
   displayRaceDistanceLarge,
   displayRaceDistRemainLarge,
   displayRaceDeltaTimeLarge,
   displayRaceDeltaSpeedLarge,  
-  displayRaceStats1,
-  displayRaceStats2,
+//  displayRaceStats1,
+//  displayRaceStats2,
   displayGPSInfo
 };
 

@@ -392,9 +392,10 @@ void updateRace(void) {
   race.legTime=race.endTs-race.startTs;
   race.legAverageSpeed = race.legDistanceComplete / race.legTime;
   race.legSpeedDelta = race.legAverageSpeed - race.legAdjustedTargetSpeed;
-  race.legTimeDelta=race.legTargetTime-race.legTime;
+  race.legTimeDelta=race.legTime-race.legTargetTime;
 
   race.raceTimeComplete+=race.legTime;
+  race.raceTime=race.raceTimeComplete;
   race.raceTargetTimeComplete+=race.activeLeg->targetTime;
   race.raceTimeDelta=race.raceTimeComplete-race.raceTargetTimeComplete;
 
@@ -403,7 +404,9 @@ void updateRace(void) {
   race.raceTargetDistanceComplete+=race.activeLeg->distance;
   race.raceDistanceRemaining=race.activeRace->driveDistance-race.raceDriveDistanceComplete;
 
-  race.raceAverageSpeed=race.raceTargetDistanceComplete/race.raceTimeComplete;
+  race.raceAverageSpeed=race.raceDistanceComplete/race.raceTimeComplete;
+  race.raceSpeedDelta = race.raceAverageSpeed - race.activeRace->driveSpeed;
+  race.raceLegEndSpeedDelta = race.raceAverageSpeed - race.activeLeg->raceLegEndDriveAvgSpeed;      
   
 }
 
