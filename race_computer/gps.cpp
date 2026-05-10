@@ -169,7 +169,7 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
   double ts;
   double startDelay;
   double mark;
-  ts= (ubxDataStruct->wnF * 604800000) + ubxDataStruct->towMsF;
+  ts= (ubxDataStruct->wnF * 604800000.0) + ubxDataStruct->towMsF;
   if (ubxDataStruct->flags.bits.newFallingEdge) {
     if (!race.legInProgress) {
       keysLocked=true;
@@ -209,9 +209,9 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
         }
       }
     } else {
-      raceLegStop();
       race.endTs=ts;
       keysLocked=false;
+      raceLegStop();
     }
   }
 }
