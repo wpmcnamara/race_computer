@@ -1161,7 +1161,7 @@ void displayRaceSummary1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t
 }
 
 void displayRaceSummary2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
-  double averageSpeed=race.raceAverageSpeed;
+  double averageSpeed=race.activeLeg->raceLegEndTargetDistance/race.raceTime;
   display.setFont(u8g2_font_spleen12x24_mf);
   sprintf(buffer, "Dist: %8.3f", DISTANCE_INTERNAL_TO_MILES(race.raceTargetDistanceComplete));
   display.drawStr(0,20,buffer);
