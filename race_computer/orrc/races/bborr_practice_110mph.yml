@@ -8,9 +8,11 @@ legs:
   descr: BBORR Practice Westbound Leg
   speed: 110
   distance: 8
-  points: bbor_practice/westbound_leg.csv
+  driveDistance: 7.926
+  points: bborr_practice/westbound_leg.csv
 - id: 2
   descr: BBORR Practice Eastbound Leg
   speed: 110
   distance: 7.9
+  driveDistance: 7.858
   points: bborr_practice/eastbound_leg.csv
