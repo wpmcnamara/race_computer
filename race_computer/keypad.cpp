@@ -204,7 +204,6 @@ void keyPressInt() {
 void startPressInt() {
   startPress=true;
   if(startStopStartsRace) {
-    if(startStopState==1) {
       if(!race.legInProgress) {
         TMRx->CH[2].CNTR = 0;
         TMRx->CH[2].CTRL = TMR_CTRL_CM(1) | TMR_CTRL_PCS(2) | TMR_CTRL_LENGTH;
@@ -216,7 +215,6 @@ void startPressInt() {
         digitalWriteFast(GPS_INT, LOW);
         timer_run=false;
       }
-    }
   }
   disableInterrupt(KEYPAD_START);
   keyDebounceEvent->active=true;
@@ -225,7 +223,6 @@ void startPressInt() {
 void readKeypad(void) {
   uint8_t buttons=0;
   if(keyPress) {
-    //Serial.println("keypress");
     keyPress=false;
     buttons = keypad.read();
     if(!keysLocked) {
@@ -262,25 +259,7 @@ void readKeypad(void) {
       buttons=0;
     }
   } 
-  /*
   if(startPress) {
-    //Serial.println("startPress");
-    startPress=false;
-    lastStartStopState=startStopState;
-    startStopState=digitalReadFast(KEYPAD_START);
-    if(lastStartStopState!=startStopState) {
-      if(startStopState==0 ) {
-          buttons|=KEYPAD_KEY_START_STOP;
-          stateMachine.startStopColor=COLOR_WHITE;
-          stateMachine.status.flags.startStopState=stateOn;
-      } else {
-        stateMachine.status.flags.startStopState=stateOff; 
-      }
-    }
-  }
-  */
-  if(startPress) {
-    //Serial.println("startPress");
     startPress=false;
     startStopState=0;
     buttons|=KEYPAD_KEY_START_STOP;
@@ -303,15 +282,13 @@ void readKeypad(void) {
 
 void keyDebounce(void) {
   digitalWriteFast(GPS_INT, HIGH);
-  //lastStartStopState=startStopState;
-  startStopState=digitalReadFast(KEYPAD_START);
+  //startStopState=digitalReadFast(KEYPAD_START);
   //because we are in the debounce routine, startStopState is 0, coming into 
   //this routine, so the only transition we could get would be to 1, which would
   //represent the button being released
-  //if(lastStartStopState!=startStopState) {
-  if(startStopState==1) {
-    stateMachine.status.flags.startStopState=stateOff; 
-  }      
+  //if(startStopState==1) {
+  //  stateMachine.status.flags.startStopState=stateOff; 
+  //}      
   enableInterrupt(KEYPAD_START);
 }
 
