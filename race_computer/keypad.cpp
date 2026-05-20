@@ -30,7 +30,7 @@ int startStopBlinkColor=0x00FF00;
 bool startStopBlinkState=false;
 bool startStopBlinkActive=false;
 uint8_t buttonState=0;
-voltatile bool startStopState=true;
+volatile bool startStopState=true;
 bool lastStartStopState=true;
 bool keysLocked=false;
 bool startStopStartsRace=false;
@@ -41,7 +41,7 @@ std::list<uint8_t> keyPresses;
 event_t *breathEvent;
 event_t *keypadBreathEvent;
 event_t *blinkEvent;
-event_t *startStopOffEvent;
+//event_t *startStopOffEvent;
 event_t *keyDebounceEvent;
 //event_t startStopOffEvent(startStopOff , eventSingle, false, false, 0, 10);
 Adafruit_NeoPixel startStop = Adafruit_NeoPixel(1, KEYPAD_LED, NEO_GRB + NEO_KHZ800);
@@ -193,7 +193,7 @@ void keypadSetup(void) {
   breathEvent=new event_t(startStopBreath, eventRepeat, false, false, 0, 1, &Serial, "breathEvent");
   keypadBreathEvent=new event_t(keypadBreath, eventRepeat, false, false, 0, 1, &Serial, "keypadBreathEvent");
   blinkEvent=new event_t(startStopFastBlink, eventRepeat, false, false, 0, 20, &Serial, "blinkEvent");
-  startStopOffEvent=new event_t(startStopOff , eventSingle, false, false, 0, 10, &Serial, "startStopOffEvent");
+  //startStopOffEvent=new event_t(startStopOff , eventSingle, false, false, 0, 10, &Serial, "startStopOffEvent");
   keyDebounceEvent=new event_t(keyDebounce, eventSingle, false, false, 0, 15, &Serial, "keyDebounceEvent");
 }
 
@@ -260,36 +260,31 @@ void readKeypad(void) {
     }
   } 
   if(startPress) {
+    stateMachine.status.flags.startPress=1;
     startPress=false;
     startStopState=0;
     buttons|=KEYPAD_KEY_START_STOP;
-    stateMachine.startStopColor=COLOR_WHITE;
-    stateMachine.status.flags.startStopState=stateOn;
+    //stateMachine.startStopColor=COLOR_WHITE;
+    //stateMachine.status.flags.startStopState=stateOn;
   } else {
     startStopState=digitalReadFast(KEYPAD_START);    
     if(startStopState==0 ) {
-      stateMachine.startStopColor=COLOR_WHITE;
-      stateMachine.status.flags.startStopState=stateOn;
+      //stateMachine.startStopColor=COLOR_WHITE;
+      //stateMachine.status.flags.startStopState=stateOn;
     } else {
-      stateMachine.status.flags.startStopState=stateOff; 
+      //stateMachine.status.flags.startStopState=stateOff; 
+      stateMachine.status.flags.startPress=0;
+      enableInterrupt(KEYPAD_START);
     }    
   }
   if(buttons) {
-    //Serial.printf("buttons: %d\n", buttons);
     keyPresses.push_back(buttons);
   }   
 }
 
 void keyDebounce(void) {
   digitalWriteFast(GPS_INT, HIGH);
-  //startStopState=digitalReadFast(KEYPAD_START);
-  //because we are in the debounce routine, startStopState is 0, coming into 
-  //this routine, so the only transition we could get would be to 1, which would
-  //represent the button being released
-  //if(startStopState==1) {
-  //  stateMachine.status.flags.startStopState=stateOff; 
-  //}      
-  enableInterrupt(KEYPAD_START);
+  //enableInterrupt(KEYPAD_START);
 }
 
 uint8_t getKeyPress(void) {

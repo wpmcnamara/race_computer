@@ -68,11 +68,14 @@ void gpsSetup(void) {
   gps.getPowerSaveMode(false);
   gps.enableGNSS(true, SFE_UBLOX_GNSS_ID_GPS);
   gps.enableGNSS(true, SFE_UBLOX_GNSS_ID_SBAS);
-  gps.enableGNSS(true, SFE_UBLOX_GNSS_ID_GLONASS);
+  gps.enableGNSS(true, SFE_UBLOX_GNSS_ID_QZSS);
+  //gps.enableGNSS(true, SFE_UBLOX_GNSS_ID_GLONASS);
   gps.setPortOutput(COM_PORT_SPI, COM_TYPE_UBX);  //Set the SPI port to output UBX only (turn off NMEA noise)
-  gps.setNavigationFrequency(20);                 //Set output to 20 times a second
+  //gps.setNavigationFrequency(20);                 //Set output to 20 times a second
+
   gps.setDynamicModel(DYN_MODEL_AUTOMOTIVE);
   gps.setAutoTIMTM2callbackPtr(&TIMTM2dataCallback);
+  gps.setAutoTIMTM2(true);
 
 
     // Disable the jamming / interference monitor
@@ -131,7 +134,7 @@ void gpsSetup(void) {
   }
   gps.resetOdometer();
   gps.setAutoNAVODOcallbackPtr(&gpsODOcallback);  // Enable automatic NAV ODO messages with callback to printODOdata
-
+  gps.setAutoNAVODO(true);
 
   timePulseParameters.tpIdx = 1;  // Or we could select the TIMEPULSE2 pin instead, if the module has one
 
@@ -162,13 +165,22 @@ void gpsSetup(void) {
 
   gps.setAutoPVTcallbackPtr(&gpsNAVcallback);
   gps.setAutoPVT(true);  //Tell the GNSS to "send" each solution
-  gpsUpdateEvent=new event_t(gpsUpdate, eventRepeat, true, false, 0, 10, &Serial, "gpsUpdate");
+
+
+  gps.setMeasurementRate(50);
+  gps.setNavigationRate(1);
+  gps.setAutoPVTrate(1);
+  gps.setAutoTIMTM2rate(1);
+  gps.setAutoNAVODOrate(1);
+  gpsUpdateEvent=new event_t(gpsUpdate, eventRepeat, true, false, 0, 5, &Serial, "gpsUpdate");
 }
 
 void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
   double ts;
   double startDelay;
   double mark;
+  //if(timer_run)
+  //  Serial.println("GPS TIMTM2dataCallback");
   ts= (ubxDataStruct->wnF * 604800000.0) + ubxDataStruct->towMsF;
   if (ubxDataStruct->flags.bits.newFallingEdge) {
     if (!race.legInProgress) {
@@ -229,6 +241,8 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   double targetTime;
   double elapsedTime;
   double speedDelta;
+  //if(timer_run)
+  //  Serial.println("GPS gpsODOcallback");
   //GPS reports distance in meters.  We convert to millimeters for internal use.
   gpsData.distance = (double)ubxDataStruct->distance*1000.0L;
   //Since we have an updated distamce, if we have a race in progress, then we should update
@@ -237,7 +251,8 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
   //keeps us from adding the the distance if there is a delay between hitting the start/stop button and recieving
   //the time mark from the GPS.
   if (race.legInProgress && timer_run) {
-    elapsedTime = getTimeStamp() - race.timerOffset;
+    elapsedTime = getTimeStamp();
+    //elapsedTime = getTimeStamp() - race.timerOffset;
     race.legTime=elapsedTime;
     race.raceTime=race.raceTimeComplete+elapsedTime;
     race.legDistanceComplete = gpsData.distance - race.distanceOffset;
@@ -300,6 +315,8 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
 
 void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
   double avgSpeed=0;
+  //if(timer_run)
+  //  Serial.println("GPS gpsNAVcallback");
   gpsData.fix = ubxDataStruct->fixType;
   gpsData.siv = ubxDataStruct->numSV;
   gpsData.lat = ubxDataStruct->lat / 10000000.0;

@@ -8,11 +8,14 @@ SdFat32 sdCard;
 //SdVolume volume;
 bool sdCardPresent;
 
+#define SD_CONFIG SdSpiConfig(SDCARD_CS, DEDICATED_SPI, SPI_SPEED)
+
 void storageSetup(void) {
   uint32_t size;
   uint32_t sizeMB;
   doSPILock();
   if (!sdCard.begin(SDCARD_CS, SPI_SPEED)) {  
+  //if (!sdCard.begin(SD_CONFIG)) {  
     sdCardPresent=false; 
     if (sdCard.card()->errorCode()) { 
       Serial.println("initialization failed. Things to check:");

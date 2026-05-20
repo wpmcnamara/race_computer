@@ -49,6 +49,9 @@ void event::exec(void) {
     return;
   }
   if(delay==0 || delay==1) {
+    //if(timer_run) {
+    //  serialPort->println(name);
+    //}
     action();
   } else {
     delay--;
@@ -76,4 +79,8 @@ void event::exec(void) {
 void event::setDelay(unsigned long newDelay) {
   delay=newDelay;
   delayReload=newDelay;
+}
+
+void event::stagger(unsigned long staggerAmount) {
+  delay+=staggerAmount;
 }

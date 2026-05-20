@@ -233,6 +233,6 @@ class raceData {
     std::vector<racePoint_t *>::iterator activePoint;
 };
 
-extern volatile raceData_t race;
+extern raceData_t race;
 
 #endif 

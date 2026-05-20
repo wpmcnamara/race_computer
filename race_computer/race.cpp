@@ -8,7 +8,7 @@
 #include <ArduinoJson.h>
 #include <CSV_Parser.h>
 
-volatile raceData_t race;
+raceData_t race;
 raceData_t tmpLeg;
 event_t *delayedStartEvent;
 std::list<raceDef_t *> races; 

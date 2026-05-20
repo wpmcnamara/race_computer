@@ -38,6 +38,10 @@ raceLegDef_t *dispRaceLeg;
 bool raceSelectHighlight=false;
 bool raceLegSelectHighlight=false;
 event_t *displayUpdateEvent;
+event_t *displayUpdateEvent1;
+event_t *displayUpdateEvent2;
+event_t *displayUpdateEvent3;
+event_t *displayUpdateEvent4;
 event_t *displayUpdateFastEvent;
 void (*ledDispFunc)(void)=NULL;
 uint8_t ledBrightness;
@@ -229,7 +233,17 @@ void displaySetup(void) {
   oledDisp3.sendBuffer();
   oledDisp4.sendBuffer();
   displayUpdateFastEvent=new event_t(displayUpdateFast, eventRepeat, true, false, 0, 1, &Serial, "displayUpdateFast");
-  displayUpdateEvent=new event_t(displayUpdate, eventRepeat, true, false, 0, 10, &Serial, "displayUpdate");
+  //displayUpdateEvent=new event_t(displayUpdate, eventRepeat, true, false, 0, 10, &Serial, "displayUpdate");
+  //Since we update each display independently and we don't want them to occur all at the same event tick, we add a
+  //stagger() to each one to offset them by one event tick.
+  displayUpdateEvent1=new event_t(displayUpdate1, eventRepeat, true, false, 0, 10, &Serial, "displayUpdate1");
+  displayUpdateEvent1->stagger(1);
+  displayUpdateEvent2=new event_t(displayUpdate2, eventRepeat, true, false, 0, 10, &Serial, "displayUpdate2");
+  displayUpdateEvent2->stagger(2);
+  displayUpdateEvent3=new event_t(displayUpdate3, eventRepeat, true, false, 0, 10, &Serial, "displayUpdate3");
+  displayUpdateEvent3->stagger(3);
+  displayUpdateEvent4=new event_t(displayUpdate4, eventRepeat, true, false, 0, 10, &Serial, "displayUpdate4");
+  displayUpdateEvent4->stagger(4);
   gpsDataPtr=getGpsData();
   gpsTimePtr=getGpsTime();
 }
@@ -249,6 +263,72 @@ void displayUpdate() {
   oledDisp1.sendBuffer();
   oledDisp2.sendBuffer();
   oledDisp3.sendBuffer();
+  oledDisp4.sendBuffer();
+}
+//dare I say that the following four functions are poor code?  The ++it has got to be an anti-pattern of some sort.  However,
+//they were tossed in to test a theory and ugly, brute-force was way faster than re-writing for the test.  ...and the test
+//confirmed my suspicisions.  Updating all four OLEDs in one event callback is bad.  It takes significantly longer than the
+//base event tick of 10ms.  Splitting them up allows each one to complete in less that 10ms.  
+//
+//We'll fix the ++it later -- famous last words.
+void displayUpdate1() {
+  std::list<displayContent_t *>::iterator it=displayList.begin();
+    if(SPILock) {
+    //Serial.println("displayUpdate: SPI Collision");
+    return;
+  }
+  oledDisp1.clearBuffer();
+  if(displayList.size()>0)
+  {  
+    ((*it)->display)();
+  }
+  oledDisp1.sendBuffer();
+}
+
+void displayUpdate2() {
+  std::list<displayContent_t *>::iterator it=displayList.begin();
+    if(SPILock) {
+    //Serial.println("displayUpdate: SPI Collision");
+    return;
+  }
+  oledDisp2.clearBuffer();
+  if(displayList.size()>1)
+  {  
+    ++it;
+    ((*it)->display)();
+  }
+  oledDisp2.sendBuffer();
+}
+
+void displayUpdate3() {
+  std::list<displayContent_t *>::iterator it=displayList.begin();
+    if(SPILock) {
+    //Serial.println("displayUpdate: SPI Collision");
+    return;
+  }
+  oledDisp3.clearBuffer();
+  if(displayList.size()>2)
+  {  
+    ++it;
+    ++it;
+    ((*it)->display)();
+  }
+  oledDisp3.sendBuffer();
+}
+void displayUpdate4() {
+  std::list<displayContent_t *>::iterator it=displayList.begin();
+    if(SPILock) {
+    //Serial.println("displayUpdate: SPI Collision");
+    return;
+  }
+  oledDisp4.clearBuffer();
+  if(displayList.size()>3)
+  {  
+    ++it;
+    ++it;
+    ++it;
+    ((*it)->display)();
+  }
   oledDisp4.sendBuffer();
 }
 
@@ -1419,7 +1499,7 @@ void ledDispLegTime(void) {
   volatile int32_t ts=(int32_t)getTimeStamp();
   int seconds;
   int millis;
-  ts-=race.timerOffset;
+  //ts-=race.timerOffset;
   seconds=ts/1000;
   millis=ts%1000;
   if(!race.legInProgress) {
@@ -1441,7 +1521,7 @@ void ledDispRaceTime(void) {
   volatile double ts=getTimeStamp();
   int seconds;
   int millis;
-  ts-=race.timerOffset;
+  //ts-=race.timerOffset;
   ts+=race.raceTimeComplete;
   seconds=ts/1000;
   millis=fmod(ts,1000);
@@ -1559,7 +1639,7 @@ void ledDispBlank(void) {
 
 void ledDispStartCountdown(void) {
   volatile double ts=getTimeStamp();
-  ts-=race.timerOffset;
+  //ts-=race.timerOffset;
 
   ledDisp.RefreshMe();
   sprintf(buffer, "%9.2f", TIME_INTERNAL_TO_SECONDS(ts));
