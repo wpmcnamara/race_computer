@@ -20,6 +20,10 @@ IMXRT_TMR_t * TMRx = (IMXRT_TMR_t *)&IMXRT_TMR4;
 std::list<event_t *> intervalTimerCallbackList;
 
 void it1cb() {
+  //if(timer_run) {
+    //Serial.printf("%02d:%02d:%02d.%03d\n", gpsData.gpsTime.hour, gpsData.gpsTime.minute, gpsData.gpsTime.second, gpsData.gpsTime.millis);
+  //  Serial.printf("%f\n", getTimeStamp());
+  //}
   for (std::list<event_t *>::iterator it=intervalTimerCallbackList.begin(); it != intervalTimerCallbackList.end(); ++it) {
       ((*it)->exec)();
   }
@@ -92,7 +96,7 @@ double getTimeStamp(void) {
   if((timerCtrl & TMR_CSCTRL_TCF1)) {
     secondCapture++;
   }
-  timeStamp=(secondCapture*1000)+milliCapture;
+  timeStamp=(double)((secondCapture*1000)+milliCapture)-race.timerOffset;
   return timeStamp;
 }
   

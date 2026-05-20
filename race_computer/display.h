@@ -99,6 +99,10 @@ extern uint8_t oledBrightness;
 extern uint8_t ledBrightnessTmp;
 extern uint8_t oledBrightnessTmp;
 extern event_t *displayUpdateEvent;
+extern event_t *displayUpdateEvent1;
+extern event_t *displayUpdateEvent2;
+extern event_t *displayUpdateEvent3;
+extern event_t *displayUpdateEvent4;
 extern event_t *displayUpdateFastEvent;
 extern uint8_t displayTimeout;
 extern uint8_t displayTimeoutTmp;
@@ -124,6 +128,10 @@ class displayContent {
 
 void displaySetup(void);
 extern "C" void displayUpdate(void);
+extern "C" void displayUpdate1(void);
+extern "C" void displayUpdate2(void);
+extern "C" void displayUpdate3(void);
+extern "C" void displayUpdate4(void);
 void displayUpdateFast(void);
 
 void displayGpsSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);

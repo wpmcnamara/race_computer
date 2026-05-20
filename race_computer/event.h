@@ -18,6 +18,7 @@ class event {
     ~event();
     void exec(void);
     void setDelay(unsigned long newDelay);
+    void stagger(unsigned long staggerAmount);
     bool active;
   private:
     void (*action)(void);

@@ -1130,8 +1130,7 @@ void stateMachine::run(void) {
     }
   }
 
-  if(status.flags.startStopState!=lastStatus.flags.startStopState) {
-    //Serial.printf("flags.startStopState=%d last flags.startStopState=%d\n", status.flags.startStopState, lastStatus.flags.startStopState);
+  if(status.flags.startStopState!=lastStatus.flags.startStopState || status.flags.startPress != lastStatus.flags.startPress) {
     switch(lastStatus.flags.startStopState) {
       case stateBlink:
         startStopStopBlink();
@@ -1142,45 +1141,49 @@ void stateMachine::run(void) {
       default:
         break;
     }
-    switch(status.flags.startStopState) {
-      case stateBlink:
-        //Serial.println("start blink");
-        startStopStartBlink();
-        break;
-      case stateBreath:
-        //Serial.println("start breath");
-        startStopStartBreath();
-        break;
-      case stateOn:
-        //Serial.println("start on");
-        startStopOn(startStopColor);
-        break;
-      case stateOff:
-        //Serial.println("start off");
-        if(status.flags.legActive) {
-          status.flags.startStopState=stateOn;
-          startStopColor=COLOR_GREEN;
+    if(status.flags.startPress) {
+      startStopOn(COLOR_WHITE);
+    } else {
+      switch(status.flags.startStopState) {
+        case stateBlink:
+          //Serial.println("start blink");
+          startStopStartBlink();
+          break;
+        case stateBreath:
+          //Serial.println("start breath");
+          startStopStartBreath();
+          break;
+        case stateOn:
+          //Serial.println("start on");
           startStopOn(startStopColor);
-        } else {
-          if(status.flags.delayedStart) {
-            startStopColor=COLOR_GREEN;
-            status.flags.startStopState=stateBlink;
-            startStopStartBlink();
-          } else if(status.flags.gpsReady && state==stateRaceStart) {
-            startStopColor=COLOR_GREEN;
-            status.flags.startStopState=stateBreath;
-            startStopStartBreath();
-          } else if(status.flags.legActive) {
+          break;
+        case stateOff:
+          Serial.println("start off");
+          if(status.flags.legActive) {
             status.flags.startStopState=stateOn;
-            startStopOn(startStopColor);           
+            startStopColor=COLOR_GREEN;
+            startStopOn(startStopColor);
           } else {
-            status.flags.startStopState=stateOff;
-            startStopOff();
+            if(status.flags.delayedStart) {
+              startStopColor=COLOR_GREEN;
+              status.flags.startStopState=stateBlink;
+              startStopStartBlink();
+            } else if(status.flags.gpsReady && state==stateRaceStart) {
+              startStopColor=COLOR_GREEN;
+              status.flags.startStopState=stateBreath;
+              startStopStartBreath();
+            } else if(status.flags.legActive) {
+              status.flags.startStopState=stateOn;
+              startStopOn(startStopColor);           
+            } else {
+              status.flags.startStopState=stateOff;
+              startStopOff();
+            }
           }
-        }
-        break;
-      default:
-        break;
+          break;
+        default:
+          break;
+      }
     }
   }
 

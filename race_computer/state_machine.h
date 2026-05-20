@@ -76,7 +76,8 @@ union statusUnion {
     bool keyPress:1;
     bool delayedStart:1;
     bool legActive:1;
-    uint32_t pack:22;
+    bool startPress:1;
+    uint32_t pack:21;
   } flags;
 };
 
