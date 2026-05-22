@@ -3,6 +3,7 @@
 
 #include "bsp.h"
 #include <math.h>
+#include <Timezone.h>
 
 #define PRREG(x) Serial.print(#x" 0x"); Serial.println(x,HEX)
 #define ROUND3(x) ((round((x)*1000.0)/1000.0))
@@ -21,7 +22,7 @@
 #define IMR_INDEX   5
 #define ISR_INDEX   6
 
-#define VERSION_STRING "FW Version: 0.11.0"
+#define VERSION_STRING "FW Version: 0.12.1"
 
 inline void disableInterrupt(uint8_t pin) {
 	if (pin >= CORE_NUM_DIGITAL) return;

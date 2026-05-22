@@ -213,10 +213,7 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
           race.delayedStart = true;
           stateMachine.status.flags.delayedStart=true;
           race.timerOffset = startDelay;
-          //delay routine seems to run about 1.3 to 1.4x slow due to things being done in it.  We scale the
-          //start delay appropriately, to get it close to correct.  Actual timing will be correct, we just
-          //want the display to look right-ish
-          delayedStartEvent->setDelay(startDelay / 13);
+          delayedStartEvent->setDelay(startDelay / 10);
           delayedStartEvent->active = true;
         }
       }
@@ -327,6 +324,7 @@ void gpsNAVcallback(UBX_NAV_PVT_data_t *ubxDataStruct) {
   gpsData.gpsTime.second = ubxDataStruct->sec;
   gpsData.gpsTime.millis = ubxDataStruct->nano / 1000000;
   gpsData.timeValid=ubxDataStruct->valid.bits.validTime;
+  setTime(gpsData.gpsTime.hour, gpsData.gpsTime.minute, gpsData.gpsTime.second , ubxDataStruct->day, ubxDataStruct->month, ubxDataStruct->year);
   //speed is reported in mm/s.  This is the same value as us/ms that is used for internal
   //speed representation, so we don't have to do any scaling or other conversions.
   //If we aren't actively tracking a leg, then force the speed to zero.  This keeps
