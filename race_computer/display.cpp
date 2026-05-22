@@ -13,6 +13,12 @@
 CK_MAX ledDisp(LED_DISP_LOAD);
 
 
+// US Central Time Zone (Chicago, Houston)
+TimeChangeRule usCDT = {"CDT", Second, Sun, Mar, 2, -300};
+TimeChangeRule usCST = {"CST", First, Sun, Nov, 2, -360};
+Timezone usCT(usCDT, usCST);
+
+
 #define ROTATION U8G2_R0
 
 //OLED displays
@@ -333,11 +339,15 @@ void displayUpdate4() {
 }
 
 void displayGPSInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
+  time_t utc = now();
+  TimeChangeRule *tcr;
+  time_t t = usCT.toLocal(utc, &tcr);
+
   display.setFont(u8g2_font_spleen16x32_mf);   
-  sprintf(buffer, "%02d:%02d:%02d", gpsTimePtr->hour, gpsTimePtr->minute, gpsTimePtr->second);
+  sprintf(buffer, "%02d:%02d:%02d", hour(t), minute(t), second(t));
   display.drawStr(64,20,buffer);    
   display.setFont(u8g2_font_spleen6x12_mf);
-  display.drawStr(194,20,"GMT");
+  display.drawStr(194,20,tcr->abbrev);
   sprintf(buffer, "lattitude: %f\xB0", gpsDataPtr->lat);
   display.drawStr(0,32,buffer);	
   sprintf(buffer, "longitude: %f\xB0", gpsDataPtr->lon);
@@ -931,6 +941,9 @@ void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t po
   unsigned long ts=millis();
   static bool signalVisible=false;
   const char *title=(*menuStack.back()).getMenuTitle();
+  time_t utc = now();
+  TimeChangeRule *tcr;
+  time_t t = usCT.toLocal(utc, &tcr);
   if(ts-ts_last > 500) {
     signalVisible=!signalVisible;
     ts_last=ts;
@@ -959,19 +972,18 @@ void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t po
     display.drawStr(9,9,buffer);
     sprintf(buffer, "%2d", gpsDataPtr->siv);
     display.drawStr(9,17,buffer);
-    sprintf(buffer, "lat: %f\xB0", gpsDataPtr->lat);
+    sprintf(buffer, "lat: %+4f\xB0", gpsDataPtr->lat);
     x=128-(display.getStrWidth(buffer)/2);
     display.drawStr(x,7,buffer);	
-    sprintf(buffer, "lon: %f\xB0", gpsDataPtr->lon);
+    sprintf(buffer, "lon: %+4f\xB0", gpsDataPtr->lon);
     x=128-(display.getStrWidth(buffer)/2);
     display.drawStr(x,15,buffer);	
   }
   display.setFont(u8g2_font_spleen6x12_mf);	
-  sprintf(buffer, "%02d:%02d:%02d", gpsTimePtr->hour, gpsTimePtr->minute, gpsTimePtr->second);
+  sprintf(buffer, "%02d:%02d:%02d", hour(t), minute(t), second(t));
   display.drawStr(207,9,buffer);	
   display.setFont(u8g2_font_spleen5x8_mf);
-  sprintf(buffer, "GMT");
-  display.drawStr(240,16,buffer);
+  display.drawStr(240,16,tcr->abbrev);
   
 }
 
