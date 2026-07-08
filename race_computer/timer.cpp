@@ -37,6 +37,7 @@ void intervalTimerDelCallback(event_t *eventPtr) {
   for (std::list<event_t *>::iterator it=intervalTimerCallbackList.begin(); it != intervalTimerCallbackList.end(); ++it) {
     if(*it==eventPtr) {
       intervalTimerCallbackList.erase(it);
+      break;
     }
   }  
 }
