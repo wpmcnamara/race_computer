@@ -14,7 +14,8 @@ void storageSetup(void) {
   uint32_t size;
   uint32_t sizeMB;
   doSPILock();
-  if (!sdCard.begin(SDCARD_CS, SPI_SPEED)) {  
+  if (!sdCard.begin(SdSpiConfig(SDCARD_CS, DEDICATED_SPI, SD_SCK_MHZ(4), &SPI1))) {
+  //if (!sdCard.begin(SDCARD_CS, SPI_SPEED)) {  
   //if (!sdCard.begin(SD_CONFIG)) {  
     sdCardPresent=false; 
     if (sdCard.card()->errorCode()) { 

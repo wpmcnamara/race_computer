@@ -29,7 +29,7 @@
 //Neopixel line for the start/stop button
 #define KEYPAD_LED 14
 
-#define SDCARD_CS 1
+#define SDCARD_CS 28
 
 
 #define HWVERSTRUCTVER 1
