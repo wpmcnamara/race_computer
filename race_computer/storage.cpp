@@ -2,6 +2,7 @@
 #include "display.h"
 #include <ArduinoJson.h>
 #include "keypad.h"
+#include "time_date.h"
 //setup global objects on the board.
 // set up variables using the SD utility library functions:
 SdFat32 sdCard;
@@ -13,8 +14,8 @@ bool sdCardPresent;
 void storageSetup(void) {
   uint32_t size;
   uint32_t sizeMB;
-  doSPILock();
-  if (!sdCard.begin(SdSpiConfig(SDCARD_CS, DEDICATED_SPI, SD_SCK_MHZ(4), &SPI1))) {
+  //doSPILock();
+  if (!sdCard.begin(SdSpiConfig(SDCARD_CS, DEDICATED_SPI, SD_SCK_MHZ(8), &SPI1))) {
   //if (!sdCard.begin(SDCARD_CS, SPI_SPEED)) {  
   //if (!sdCard.begin(SD_CONFIG)) {  
     sdCardPresent=false; 
@@ -25,17 +26,17 @@ void storageSetup(void) {
       Serial.println("* did you change the chipSelect pin to match your shield or module?");
       Serial.printf("errorCode: 0x%0X\n",int(sdCard.card()->errorCode()));
       Serial.printf("errorData: 0x%0X\n",int(sdCard.card()->errorData()));
-      doSPIUnlock();
+      //doSPIUnlock();
       return;
     }
     Serial.println("Card successfully initialized.\n");
     if (sdCard.vol()->fatType() == 0) {
       Serial.println("Can't find a valid FAT16/FAT32/exFAT partition.\n");
-      doSPIUnlock();
+      //doSPIUnlock();
       return;
     }
     Serial.println("Can't determine error type\n");
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   } else {
    Serial.println("Wiring is correct and a card is present.");
@@ -45,7 +46,7 @@ void storageSetup(void) {
   size = sdCard.card()->sectorCount();
   if (size == 0) {
     Serial.println("Can't determine the card size.\n");
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }
   sizeMB = 0.000512 * size + 0.5;
@@ -65,10 +66,10 @@ void storageSetup(void) {
     Serial.println("\nThis card should be reformatted for best performance.");
     Serial.println("Use a cluster size of 32 KB for cards larger than 1 GB.");
     Serial.println("Only cards larger than 2 GB should be formatted FAT32.\n");
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }
-  doSPIUnlock();
+  //doSPIUnlock();
   return;
 }
 
@@ -81,12 +82,12 @@ void saveSettings(void) {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  //doSPILock();
   if(!sdCard.exists("orrc")) {
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }
-  doSPIUnlock();
+  //doSPIUnlock();
   Serial.println("Saving settings...");
   doc["displayTimeout"]=displayTimeout;
   doc["oledBrightness"]=oledBrightness;
@@ -99,7 +100,8 @@ void saveSettings(void) {
   doc["ledDisp"]=LEDDisplayActive;
   doc["adjustLegTime"]=autoAdjustLegTime;
   doc["speedBandSource"]=speedBandSource;
-  doSPILock();
+  doc["timezone"]=timeDateSettings.getTzIndex();
+  //doSPILock();
   if(sdCard.exists("orrc/system/settings.yml")) {
     Serial.println("clearing saved settings");
     sdCard.remove("orrc/system/settings.yml");
@@ -107,14 +109,14 @@ void saveSettings(void) {
   settings=sdCard.open("orrc/system/settings.yml", FILE_WRITE);
   if(!settings) {
     Serial.println("Settings open failed");
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }
   serializeYml(doc, settings);
   serializeYml(doc, Serial);
   Serial.println();
   settings.close();
-  doSPIUnlock();
+  //doSPIUnlock();
 
 };
 
@@ -130,9 +132,9 @@ void loadSettings(void) {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  //doSPILock();
   if(!sdCard.exists("orrc/system/settings.yml")) {
-    doSPIUnlock();
+    //doSPIUnlock();
     Serial.println("No settings file found.");
     return;
   }  
@@ -148,7 +150,7 @@ void loadSettings(void) {
   len=settings.read(buffer, len);
   buffer[len]=0;
   settings.close();
-  doSPIUnlock();
+  //doSPIUnlock();
 
   error=deserializeYml(doc, (const char *)buffer);
   free(buffer);
@@ -197,6 +199,10 @@ void loadSettings(void) {
     speedBandSource=doc["speedBandSource"].as<bool>();
     Serial.printf("Speed Band Comparison Source=%d\n", speedBandSource);
   }  
+  if(!doc["timezone"].isNull()) {
+    timeDateSettings.setTzIndex(doc["speedBandSource"].as<int8_t>());
+    Serial.printf("timezone index=%d\n", timeDateSettings.getTzIndex());
+  }
 
 };
 
@@ -243,12 +249,12 @@ void logRace(raceData_t *race, uint8_t type) {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  //doSPILock();
   if(!sdCard.exists("orrc/logs")) {
     ret=sdCard.mkdir("orrc/logs");
     if(!ret) {
       Serial.println("error creating orrc/logs");
-      doSPIUnlock();
+      //doSPIUnlock();
       return;
     }
   }  
@@ -256,7 +262,7 @@ void logRace(raceData_t *race, uint8_t type) {
     writeHeader=true;
   }
   if(!logFile.open("orrc/logs/race_log.csv", O_WRITE | O_APPEND | O_CREAT)) {
-    doSPIUnlock();
+    //doSPIUnlock();
     Serial.println("Error opening log file");
     return;
   }
@@ -366,7 +372,7 @@ void logRace(raceData_t *race, uint8_t type) {
   logFile.sync();
   logFile.close();
 
-  doSPIUnlock();
+  //doSPIUnlock();
   free(buffer);
 }
 
@@ -374,9 +380,9 @@ void resetSettings(void) {
   bool ret;
   if(sdCard.exists("orrc/system/settings.yml")) {
     Serial.println("clearing saved settings");
-    doSPILock();
+    //doSPILock();
     ret=sdCard.remove("orrc/system/settings.yml");
-    doSPIUnlock();
+    //doSPIUnlock();
     if(ret) {
       Serial.println("success");
     } else {

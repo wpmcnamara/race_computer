@@ -46,7 +46,7 @@ void bsp_setup(void) {
     case 0:
       Serial.println("Hardware version structure uninitialized.");
       hardwareVersion.pcbMajor=2;
-      hardwareVersion.pcbMinor=1;
+      hardwareVersion.pcbMinor=2;
       strncpy(hardwareVersion.pcbOther, "beta",16);
       hardwareVersion.pcbOther[15]=0;
       hardwareVersion.serialNo=2;
@@ -83,14 +83,15 @@ bool checkForUpdate(void) {
     Serial.println("No SD card.  Skipping firmware update");
     return false;
   }
+  
   //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  //doSPILock();
   if(!sdCard.exists("orrc/system/race_computer.ino.hex")) {
-    doSPIUnlock();
+    //doSPIUnlock();
     Serial.println("No firmware file found.");
     return false;
   }  
-  doSPIUnlock();
+  //doSPIUnlock();
   Serial.println("Found orrc/system/racec_omputer.ino.hex");
   return true;
 }
@@ -111,7 +112,7 @@ bool doFirmwareUpdate(void) {
   File32 firmwareFile=sdCard.open("orrc/system/race_computer.ino.hex");
   if(!firmwareFile) {
     Serial.println("  file open error");
-    doSPIUnlock();
+    //doSPIUnlock();
     return false;
   }
   Serial.printf( "target = %s (%dK flash in %dK sectors)\n", FLASH_ID, FLASH_SIZE/1024, FLASH_SECTOR_SIZE/1024);
