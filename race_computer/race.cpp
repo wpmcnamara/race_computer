@@ -126,33 +126,33 @@ void loadRaces() {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  //doSPILock();
   //race data files will be stored in a directory called "orc"
   //if it doesn't exist, then we've got races to load.
   if(!sdCard.exists("orrc")) {
     Serial.println("Data directory not found.  Loading default race definitions.");
-    doSPIUnlock();
+    //doSPIUnlock();
     loadDefaultRaces();
     return;
   }
   File32 orcDir=sdCard.open("orrc/races");
-  doSPIUnlock();
+  //doSPIUnlock();
   //process the orc directory.  Anything that ends in .csv will be considered a race file.
   while (true) {
-    doSPILock();
+    //doSPILock();
     entry =  orcDir.openNextFile();
     if (! entry) {
-      doSPIUnlock();
+      //doSPIUnlock();
       break;
     }
     //We are looking for files right now, so skip directories.
     if(entry.isDirectory()) {
-      doSPIUnlock();
+      //doSPIUnlock();
       continue;
     }
     entry.getName(fileName,256);
     if(strstr(fileName, ".yml")==NULL) {
-      doSPIUnlock();
+      //doSPIUnlock();
       continue;
     }
     noRaceFound=false;
@@ -169,7 +169,7 @@ void loadRaces() {
     entry.getName(fileName, 256);
     raceFile->fileName=fileName;
     entry.close();
-    doSPIUnlock();
+    //doSPIUnlock();
     error=deserializeYml(doc,(const char *) buffer);
     free(buffer);
     if (error) {
@@ -323,9 +323,9 @@ void loadRacePoints(raceLegDef_t *raceLeg) {
   CSV_Parser cp(/*format*/ "udsfss", /*has_header*/ true, /*delimiter*/ ',');
   sprintf(path, "orrc/races/%s", race.activeLeg->pointsFile.c_str());
   //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  //doSPILock();
   if(!sdCard.exists(path)) {
-    doSPIUnlock();
+    //doSPIUnlock();
     Serial.println("point file not found");
     return;
   }
@@ -336,14 +336,14 @@ void loadRacePoints(raceLegDef_t *raceLeg) {
   File32 pointFile=sdCard.open(path);
   if(!pointFile) {
     Serial.println("  file open error");
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }
   while (pointFile.available()) {
     cp << (char)pointFile.read();
   }
   pointFile.close();
-  doSPIUnlock();
+  //doSPIUnlock();
   // ensure that the last value of the file is parsed (even if the file doesn't end with '\n')
   cp.parseLeftover();
   cp.print(); // assumes that "Serial.begin()" was called before (otherwise it won't work)
@@ -418,9 +418,9 @@ void raceCheckPoint(void) {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  //doSPILock();
   if(!sdCard.exists("orrc")) {
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }
   if(sdCard.exists("orrc/system/race_checkpoint.yml")) {
@@ -429,7 +429,7 @@ void raceCheckPoint(void) {
   }
   if(race.raceInProgress!=true) {
     Serial.println("no race in progress");
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }
   Serial.println("Dumping race checkpoint");
@@ -463,7 +463,7 @@ void raceCheckPoint(void) {
   serializeYml(doc, Serial);
   Serial.println();
   checkPoint.close();
-  doSPIUnlock();
+  //doSPIUnlock();
 
 }
 
@@ -481,9 +481,9 @@ void loadRaceCheckPoint(void) {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  //doSPILock();
   if(!sdCard.exists("orrc/system/race_checkpoint.yml")) {
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }  
   Serial.println("Found race checkpoint");
@@ -497,7 +497,7 @@ void loadRaceCheckPoint(void) {
   len=checkPoint.read(buffer, len);
   buffer[len]=0;
   checkPoint.close();
-  doSPIUnlock();
+  //doSPIUnlock();
   error=deserializeYml(doc, (const char *)buffer);
   if (error) {
     Serial.println("deserialization error");

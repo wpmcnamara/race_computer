@@ -8,15 +8,16 @@
 #include "menu.h"
 #include "bsp.h"
 #include "keypad.h"
+#include "time_date.h"
 
 //8 digit LED display
 CK_MAX ledDisp(LED_DISP_LOAD);
 
 
 // US Central Time Zone (Chicago, Houston)
-TimeChangeRule usCDT = {"CDT", Second, Sun, Mar, 2, -300};
-TimeChangeRule usCST = {"CST", First, Sun, Nov, 2, -360};
-Timezone usCT(usCDT, usCST);
+//TimeChangeRule usCDT = {"CDT", Second, Sun, Mar, 2, -300};
+//TimeChangeRule usCST = {"CST", First, Sun, Nov, 2, -360};
+//Timezone usCT(usCDT, usCST);
 
 
 #define ROTATION U8G2_R0
@@ -341,7 +342,7 @@ void displayUpdate4() {
 void displayGPSInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   time_t utc = now();
   TimeChangeRule *tcr;
-  time_t t = usCT.toLocal(utc, &tcr);
+  time_t t = timeDateSettings.getTz()->toLocal(utc, &tcr);
 
   display.setFont(u8g2_font_spleen16x32_mf);   
   sprintf(buffer, "%02d:%02d:%02d", hour(t), minute(t), second(t));
@@ -943,7 +944,7 @@ void displayMenuTitle(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t po
   const char *title=(*menuStack.back()).getMenuTitle();
   time_t utc = now();
   TimeChangeRule *tcr;
-  time_t t = usCT.toLocal(utc, &tcr);
+  time_t t = timeDateSettings.getTz()->toLocal(utc, &tcr);
   if(ts-ts_last > 500) {
     signalVisible=!signalVisible;
     ts_last=ts;

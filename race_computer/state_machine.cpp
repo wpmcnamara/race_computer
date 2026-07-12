@@ -472,7 +472,7 @@ void stateMachine::run(void) {
         Serial.println("  to: stateSetHwVer");  
         displayList.erase(displayList.begin(), displayList.end());
         ledDispFunc=ledDispDashes;
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySystemInfo));                 
+        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displaySystemInfo));                 
         break;             
       case stateResetAllSettings:
         Serial.println("  to: stateResetAllSettings");
