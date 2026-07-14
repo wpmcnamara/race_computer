@@ -403,7 +403,7 @@ uint8_t menuAdjustLegTime(uint8_t key) {
                 }
                 //Time changed, so recalculate target speed.  Time is in milliseconds.
                 //Scale time to hours to calculate miles per hour.
-                legAdjustSpeed=legAdjustDist/(legAdjustTime*3600000.0);
+                legAdjustSpeed=legAdjustDist/(legAdjustTime/3600000.0);
             }
             ret=0;
             break;
