@@ -88,7 +88,7 @@ extern menu_t configDisplayMenu;
 extern menu_t ledBrightMenu;
 extern menu_t oledBrightMenu;
 extern menu_t screenTimeoutMenu;
-extern menu_t autoAjustLegTimeMenu;
+extern menu_t autoAdjustLegTimeMenu;
 extern menu_t resetAllSettingsMenu;
 extern menu_t speedBandSourceMenu;
 

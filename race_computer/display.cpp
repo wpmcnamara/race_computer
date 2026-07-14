@@ -453,7 +453,7 @@ void displayLegDeltaSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispP
   display.setFont(u8g2_font_spleen16x32_mf);	
 
   sprintf(buffer, "%8.3f",SPEED_INTERNAL_TO_MPH(race.legSpeedDelta));
-  oledDisp2.drawStr(97,y,buffer);
+  display.drawStr(97,y,buffer);
   display.setFont(u8g2_font_spleen6x12_mf);	
   display.drawStr(225,y,"mph");  
 }
@@ -506,7 +506,7 @@ void displayLegDistRemainMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispP
   display.setFont(u8g2_font_spleen8x16_mf);	
   display.drawStr(0,y," dist rem:");	
   display.setFont(u8g2_font_spleen16x32_mf);	
-  sprintf(buffer, "%8.3f", SPEED_INTERNAL_TO_MPH(race.legDistanceRemaining));
+  sprintf(buffer, "%8.3f", DISTANCE_INTERNAL_TO_MILES(race.legDistanceRemaining));
   display.drawStr(97,y,buffer);	
   display.setFont(u8g2_font_spleen6x12_mf);	
   display.drawStr(225,y,"miles");	
@@ -531,7 +531,7 @@ void displayGpsSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t 
       break;
   }
   display.setFont(u8g2_font_spleen8x16_mf);	
-  oledDisp4.drawStr(0,y,"    speed:");	 
+  display.drawStr(0,y,"    speed:");	 
   display.setFont(u8g2_font_spleen16x32_mf);	
   sprintf(buffer, "%8.3f", SPEED_INTERNAL_TO_MPH(gpsDataPtr->speed));
   display.drawStr(97,y,buffer);	
@@ -721,7 +721,7 @@ void displayRaceDeltaSpeedLarge(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, di
   display.drawTriangle(7,38, 12,27, 17,38);
   display.setDrawColor(1);
   display.setFont(u8g2_font_logisoso50_tn);
-  sprintf(buffer, "%7.3f", SPEED_INTERNAL_TO_MPH(race.raceAverageSpeed));
+  sprintf(buffer, "%7.3f", SPEED_INTERNAL_TO_MPH(race.raceSpeedDelta));
   display.drawStr(42,61,buffer);	
   display.setFont(u8g2_font_spleen12x24_mf);	
   display.drawStr(0,61,"mph");
@@ -1285,7 +1285,12 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
     distRemaining=DISTANCE_INTERNAL_TO_MILES(distRemainingInt);
     //Calculate time to point based on our current instantaneous speed
     //We convert this to floating point seconds to make the rest of the logic simpler
-    timeRemaining=TIME_INTERNAL_TO_SECONDS(distRemainingInt/gpsData.speed);
+    if(gpsData.speed!=0) {
+      timeRemaining=TIME_INTERNAL_TO_SECONDS(distRemainingInt/gpsData.speed);
+    } else {
+      timeRemaining=0;
+      tUnit[0]=0;
+    }
     //if we are more than sixty seconds out(60,000 milliseconds), we are going to print time in either 
     //minutes or hours
     if(timeRemaining>60) {
@@ -1322,12 +1327,7 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
       sprintf(buffer, "%4.2f", distRemaining);
     }
     display.drawStr(73, 25, buffer);
-
-    if(gpsData.speed==0) {
-      timeRemaining=0;
-      tUnit[0]=0;
-      sprintf(buffer, "%5.2f", 0.0);
-    } 
+    
     sprintf(buffer, "%5.2f", timeRemaining);
     display.drawStr(153, 25, buffer);   
 

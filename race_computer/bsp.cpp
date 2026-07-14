@@ -38,8 +38,8 @@ void bsp_setup(void) {
   digitalWrite(OLED_DISP2_CS, HIGH);
   pinMode(OLED_DISP3_CS, OUTPUT);
   digitalWrite(OLED_DISP3_CS, HIGH);
-  pinMode(OLED_DISP3_CS, OUTPUT);
-  digitalWrite(OLED_DISP1_CS, HIGH);
+  pinMode(OLED_DISP4_CS, OUTPUT);
+  digitalWrite(OLED_DISP4_CS, HIGH);
 
   ret=loadHardwareVersionStruct();
   switch(ret) {
@@ -63,7 +63,7 @@ void bsp_setup(void) {
       }
       Serial.printf("Serial #: %06d", hardwareVersion.serialNo);
       if(strlen(hardwareVersion.serialOther)!=0) {
-        Serial.printf("-%s\n", hardwareVersion.serialNo);
+        Serial.printf("-%s\n", hardwareVersion.serialOther);
       } else {
         Serial.println("");
       }   

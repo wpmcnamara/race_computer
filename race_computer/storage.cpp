@@ -29,7 +29,7 @@ void storageSetup(void) {
       //doSPIUnlock();
       return;
     }
-    Serial.println("Card successfully initialized.\n");
+    Serial.println("Card initialization failed.\n");
     if (sdCard.vol()->fatType() == 0) {
       Serial.println("Can't find a valid FAT16/FAT32/exFAT partition.\n");
       //doSPIUnlock();

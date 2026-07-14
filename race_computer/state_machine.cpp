@@ -85,10 +85,10 @@ void stateMachine::run(void) {
         Serial.print("from: stateSetLegTimeAdjust");
         break; 
       case stateSetOledBrightness:
-        Serial.print("from: stateDoFirmwareUpdate");
+        Serial.print("from: stateSetOledBrightness");
         break; 
       case stateSetScreenBlankTime:
-        Serial.print("from: stateSetOledBrightness");
+        Serial.print("from: stateSetScreenBlankTime");
         break; 
       case stateScreenBlank:
         Serial.print("from: stateScreenBlank");
@@ -489,7 +489,8 @@ void stateMachine::run(void) {
         ledDispFunc=ledDispDashes;
         displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
         displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetSpeedBandSource));            
+        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetSpeedBandSource));         
+        break;   
       case stateUnknown:
         Serial.println("  to: stateUnknown");
         break;
