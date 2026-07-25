@@ -18,6 +18,62 @@ std::vector<raceLegDef_t *>::iterator selectedRaceLeg;
 
 bool autoAdjustLegTime=true;
 
+double raceData::getLegTargetTime(void) {
+  return TIME_INTERNAL_TO_SECONDS(legTargetTime);
+}
+
+double raceData::getLegAdjustedTargetSpeed(units_t units) {
+  if(units==mph) {
+    return SPEED_INTERNAL_TO_MPH(legAdjustedTargetSpeed);
+  } else {
+    return SPEED_INTERNAL_TO_KPH(legAdjustedTargetSpeed);
+  }
+}
+
+double raceData::getLegAverageSpeed(units_t units) {
+  if(units==mph) {
+    return SPEED_INTERNAL_TO_MPH(legAverageSpeed);
+  } else {
+    return SPEED_INTERNAL_TO_KPH(legAverageSpeed);
+  }  
+}
+
+double raceData::getLegDistanceTraveled(units_t units) {
+  if(units==mph) {
+    return DISTANCE_INTERNAL_TO_MILES(legDistanceComplete);
+  } else {
+    return DISTANCE_INTERNAL_TO_KILOMETERS(legDistanceComplete);
+  }  
+}
+
+double raceData::getLegDistanceRemaining(units_t units) {
+  if(units==mph) {
+    return DISTANCE_INTERNAL_TO_MILES(legDistanceRemaining);
+  } else {
+    return DISTANCE_INTERNAL_TO_KILOMETERS(legDistanceRemaining);
+  }  
+}
+
+double raceData::getLegSpeedDelta(units_t units) {
+  if(units==mph) {
+    return SPEED_INTERNAL_TO_MPH(legSpeedDelta);
+  } else {
+    return SPEED_INTERNAL_TO_KPH(legSpeedDelta);
+  }  
+}
+
+double raceData::getRaceDeltaSpeed(units_t units) {
+  if(units==mph) {
+    return SPEED_INTERNAL_TO_MPH(raceSpeedDelta);
+  } else {
+    return SPEED_INTERNAL_TO_KPH(raceSpeedDelta);
+  }   
+}
+
+double raceData::getLegTimeDelta(void) {
+  return TIME_INTERNAL_TO_SECONDS(legTimeDelta);
+}
+
 void raceSetup(void) {
   race.activeRace=NULL;
   race.raceSpeedDelta=0;
@@ -48,7 +104,7 @@ void raceSetup(void) {
   race.startTs=0;
   race.endTs=0;
   race.startMark=0;
-  race.delayedStart=0;
+  race.delayedStart=false;
   race.timerOffset=0;
 
   delayedStartEvent=new event_t(raceLegStart, eventSingle, false, false, 0, 0, &Serial, "delayedStartEvent");
@@ -77,13 +133,24 @@ void computeRace (raceDef_t *raceDefinition) {
   double cumulativeRaceDriveDistance=0;
   raceLegIt=raceDefinition->raceLegs.begin();
   while(raceLegIt!=raceDefinition->raceLegs.end()) {
-    (*raceLegIt)->driveSpeed=(*raceLegIt)->driveDistance/(*raceLegIt)->targetTime;
-
+    if((*raceLegIt)->targetTime) {
+      (*raceLegIt)->driveSpeed=(*raceLegIt)->driveDistance/(*raceLegIt)->targetTime;
+    } else {
+      //can't have infinite speed, and shouldn't have a leg with zero target time, but just
+      //in case, we will force speed to 0 if we have 0 time, as an error condition.
+      (*raceLegIt)->driveSpeed=0;
+    }
     cumulativeRaceDistance+=(*raceLegIt)->distance;
     cumulativeRaceDriveDistance+=(*raceLegIt)->driveDistance;
     cumulativeRaceTime+=(*raceLegIt)->targetTime;
 
-    (*raceLegIt)->raceLegEndAvgSpeed=cumulativeRaceDistance/cumulativeRaceTime;      
+    if(cumulativeRaceTime!=0) {
+      (*raceLegIt)->raceLegEndAvgSpeed=cumulativeRaceDistance/cumulativeRaceTime;      
+    } else {
+      //Like above, we should never end up with a cumulativeRaceTimeValue that is zero, but if
+      //we do, force the ending average speed to zero as the error condition.
+      (*raceLegIt)->raceLegEndAvgSpeed=0;
+    }
     (*raceLegIt)->raceLegEndDriveAvgSpeed=cumulativeRaceDriveDistance/cumulativeRaceTime;
     (*raceLegIt)->raceLegEndTargetDistance=cumulativeRaceDistance;
     (*raceLegIt)->raceLegEndDriveDistance=cumulativeRaceDriveDistance;
@@ -280,7 +347,7 @@ void setLeg(raceLegDef_t *selectedRaceLeg) {
   race.startTs=0;
   race.endTs=0;
   race.startMark=selectedRaceLeg->mark;
-  race.delayedStart=0;
+  race.delayedStart=false;
   race.timerOffset=0;
 
   if(autoAdjustLegTime) {
@@ -290,10 +357,22 @@ void setLeg(raceLegDef_t *selectedRaceLeg) {
   //contant is the time.  We need to cover the drive distance in the time specified by
   //the leg distance.
     race.legTargetTime-=race.raceTimeDelta;
+    //under some test conditions we might end up with a negative target time, so we set
+    //the floor to zero, which is still weird, but at least not negative.
+    if(race.legTargetTime<0) {
+      race.legTargetTime=0;
+    }
   } 
   //now figure the adjusted targer based on how long the leg should take, and the 
   //actual distance we will drive.
-  race.legAdjustedTargetSpeed=selectedRaceLeg->driveDistance/race.legTargetTime;
+  if(race.legTargetTime!=0) {
+    race.legAdjustedTargetSpeed=selectedRaceLeg->driveDistance/race.legTargetTime;
+  } else {
+    //Can't have infinite speed, so we force it to zero as an error condition.  In reality,
+    //this should never be and is mainly here to ensure code analysis doesn't complain about
+    //the uncheckd potential for divide by zero.
+    race.legAdjustedTargetSpeed=0;
+  }
 }
 
 void prepRace(void) {
@@ -308,7 +387,7 @@ void prepRace(void) {
   race.distanceOffset=0;
   race.startTs=0;
   race.endTs=0;
-  race.delayedStart=0;
+  race.delayedStart=false;
   race.timerOffset=0;
 
   race.legDistanceRemaining=race.activeLeg->driveDistance;
@@ -321,7 +400,7 @@ void loadRacePoints(raceLegDef_t *raceLeg) {
   char path[256];
 
   CSV_Parser cp(/*format*/ "udsfss", /*has_header*/ true, /*delimiter*/ ',');
-  sprintf(path, "orrc/races/%s", race.activeLeg->pointsFile.c_str());
+  sprintf(path, "orrc/races/%s", raceLeg->pointsFile.c_str());
   //disable display and GPS use of the SPI bus to prevent collisions
   //doSPILock();
   if(!sdCard.exists(path)) {
@@ -375,11 +454,15 @@ void loadRacePoints(raceLegDef_t *raceLeg) {
 }
 
 void clearRacePoints(raceLegDef_t *raceLeg) {
-  while(!raceLeg->points.empty()){
-    Serial.printf("Deleting race point id: %d\n", (*(raceLeg->points.back())).id);
-    delete raceLeg->points.back();
-    raceLeg->points.erase(raceLeg->points.end()-1);
+  racePoint_t *content;
+  for (std::vector<racePoint_t *>::iterator it=raceLeg->points.begin(); it != raceLeg->points.end(); ++it) {
+    //We could get interuptted in the middle of clean up, so we save the pointer and null the iterator 
+    //reference before we delete the object.  
+    content=*it;
+    *it=NULL;
+    delete content;
   }
+  raceLeg->points.clear();
   race.activePoint=raceLeg->points.end();
 }
 

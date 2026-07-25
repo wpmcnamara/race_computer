@@ -77,9 +77,6 @@ enum LEDRaceDisplayTypedef {
 };
 typedef enum LEDRaceDisplayTypedef LEDRaceDisplayTypedef_t;
 
-
-
-extern std::list<displayContent_t*> displayList;
 extern uint8_t menuItem;
 extern raceDef_t *dispRace;
 extern raceLegDef_t *dispRaceLeg;
@@ -98,7 +95,6 @@ extern uint8_t ledBrightness;
 extern uint8_t oledBrightness;
 extern uint8_t ledBrightnessTmp;
 extern uint8_t oledBrightnessTmp;
-extern event_t *displayUpdateEvent;
 extern event_t *displayUpdateEvent1;
 extern event_t *displayUpdateEvent2;
 extern event_t *displayUpdateEvent3;
@@ -112,27 +108,46 @@ extern bool displayTimeOutEnable;
 extern void (*OLEDDisplayFuncs[OLEDDispFuncMaxValue])(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 extern void (*LEDDisplayFuncs[LEDDispFuncMaxValue])(void);
 
-class displayContent {
-  public:
-    displayContent(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &argScreen, 
-      dispPos_t argPosX, 
-      dispPos_t argPosY, 
-      void (*argShowFunc)(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &, dispPos_t, dispPos_t));
-    void display(void);
-  private:
-    U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &screen;
-    dispPos_t posX;
-    dispPos_t posY;
-    void (*showFunc)(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
+struct displayContent {
+  dispPos_t posX;
+  dispPos_t posY;
+  void (*display)(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 };
+
+typedef struct displayContent displayContent_t;
+
+class display {
+  public:
+    display(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &argScreen);
+    void addContent(dispPos_t argPosX, dispPos_t argPosY, void (*argShowFunc)(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI&, dispPos_t, dispPos_t));
+    void removeContent(displayContent_t *content);
+    void clear(void);
+    void show(void);
+    void init(uint8_t brightness); //need to move default brightness to a #define in helpers.h or elsewhere.
+    void setBrightness(uint8_t brightness);
+    private:
+    U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &screen;
+    std::list<displayContent_t*> contentList; 
+
+};
+
+typedef class display display_t;
+
+extern display_t oledDisplay1;
+extern display_t oledDisplay2;
+extern display_t oledDisplay3;    
+extern display_t oledDisplay4;
 
 void displaySetup(void);
 extern "C" void displayUpdate(void);
-extern "C" void displayUpdate1(void);
-extern "C" void displayUpdate2(void);
-extern "C" void displayUpdate3(void);
-extern "C" void displayUpdate4(void);
+void displayUpdate1(void);
+void displayUpdate2(void);
+void displayUpdate3(void);
+void displayUpdate4(void);
+
 void displayUpdateFast(void);
+
+void clearDisplays(void);;
 
 void displayGpsSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
 void displayLegAvgSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY);
@@ -192,8 +207,6 @@ void ledDispLegDeltaTime(void);
 void ledDispLegDistance(void);
 void ledDispGpsSpeed(void);
 
-void ledDispRaceTime(void);
-void ledDispRaceDeltaSpeed(void);
 void ledDispRaceTime(void);
 void ledDispRaceDeltaSpeed(void);
 void ledDispRaceAverageSpeed(void);

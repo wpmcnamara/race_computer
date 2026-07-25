@@ -2,6 +2,7 @@
 #define __MENU__
 #include <string>
 #include <vector>
+#include <cstdint>
 
 enum menuAction {
   menuActionNone=0,
@@ -71,7 +72,7 @@ extern std::vector<menuEntry_t> mainMenuEntries;
 extern std::vector<menuEntry_t> raceMenuEntries;
 extern std::vector<menuEntry_t> configMenuEntries;
 extern std::vector<menuEntry_t> systemMenuEntries;
-extern std::vector<menuEntry_t> settinsResetMenuEntries;
+extern std::vector<menuEntry_t> settingsResetMenuEntries;
 extern std::vector<menuEntry_t> dummyMenuEntries;
 
 extern menu_t mainMenu;

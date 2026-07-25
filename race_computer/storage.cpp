@@ -196,11 +196,11 @@ void loadSettings(void) {
     Serial.printf("Auto Adjust Leg Time=%d\n", autoAdjustLegTime);
   }
   if(!doc["speedBandSource"].isNull()) {  
-    speedBandSource=doc["speedBandSource"].as<bool>();
+    speedBandSource=doc["speedBandSource"].as<int>();
     Serial.printf("Speed Band Comparison Source=%d\n", speedBandSource);
   }  
   if(!doc["timezone"].isNull()) {
-    timeDateSettings.setTzIndex(doc["speedBandSource"].as<int8_t>());
+    timeDateSettings.setTzIndex(doc["timezone"].as<int8_t>());
     Serial.printf("timezone index=%d\n", timeDateSettings.getTzIndex());
   }
 
@@ -268,7 +268,7 @@ void logRace(raceData_t *race, uint8_t type) {
   }
   if(writeHeader) {
     logFile.write("type,description,targetTime,targetSpeed,targetDistance,driveDistance,driveSpeed,adjustedTargetTime,adjustedDriveSpeed,EOL targetTime,EOL targetSpeed,EOL targetDistance,\
-      EOL driveDistance,EOL driveAvgSpeed,targetDistanceComplete,driveDistanceComplete,actualDistancceComplete,distanceComplete,distanceRemaining,EOL distanceRemainging,\
+      EOL driveDistance,EOL driveAvgSpeed,targetDistanceComplete,driveDistanceComplete,actualDistanceComplete,distanceComplete,distanceRemaining,EOL distanceRemaining,\
       targetTimeComplete,timeComplete,time,averageSpeed,adjustedAverageSpeed,speedDelta,EOL speedDelta,timeDelta,startTS,endTS\n");
   }
   
