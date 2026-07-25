@@ -41,7 +41,7 @@ Timezone usPT(usPDT, usPST);
 // US Alaska Time Zone (Anchorage)
 TimeChangeRule usAKDT = {"AKDT", Second, Sun, Mar, 2, -480};
 TimeChangeRule usAKST = {"AKST", First, Sun, Nov, 2, -540};
-Timezone usAKT(usPDT, usPST);
+Timezone usAKT(usAKDT, usAKST);
 
 // Hawaii
 TimeChangeRule htRule = {"HST", Last, Sun, Mar, 1, -600};     // UTC

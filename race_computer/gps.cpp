@@ -166,8 +166,12 @@ void gpsSetup(void) {
   gps.setAutoPVTcallbackPtr(&gpsNAVcallback);
   gps.setAutoPVT(true);  //Tell the GNSS to "send" each solution
 
-
+  //Rate functions are a bit confusing in the library.  Measurement rate function takes a
+  //period in milliseconds to set the rate.  The message rate functions take a divisor and
+  //generate a message for every 1/n measurements.
+  //Generate measurements every 50ms (20Hz)
   gps.setMeasurementRate(50);
+  //Generate Nav, PVT, TIM, and ODO messages for every measurement
   gps.setNavigationRate(1);
   gps.setAutoPVTrate(1);
   gps.setAutoTIMTM2rate(1);
@@ -254,7 +258,11 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     race.raceTime=race.raceTimeComplete+elapsedTime;
     race.legDistanceComplete = gpsData.distance - race.distanceOffset;
     race.legDistanceRemaining = race.activeLeg->driveDistance - race.legDistanceComplete;
-    race.legAverageSpeed = race.legDistanceComplete / elapsedTime;
+    if(elapsedTime!=0) {
+      race.legAverageSpeed = race.legDistanceComplete / elapsedTime;
+    } else {
+      race.legAverageSpeed=0;
+    }
     //we use the adjustedTargetSpeed here as there isn't a good way to scale things from drive distance
     //to leg distance.  We could technically do it, but the scaling factor is tiny (0.1% as an example)
     //and ensuring no loss of precision isn't worth the hassle.
@@ -272,7 +280,11 @@ void gpsODOcallback(UBX_NAV_ODO_data_t *ubxDataStruct) {
     race.raceDistanceComplete=race.raceDriveDistanceComplete + race.legDistanceComplete;
     race.raceDistanceRemaining = race.activeRace->driveDistance - race.raceDistanceComplete;
     race.raceLegEndDistanceRemaining = race.activeLeg->raceLegEndDriveDistance - race.raceDistanceComplete;
-    race.raceAverageSpeed = race.raceDistanceComplete / (race.raceTimeComplete+elapsedTime);
+    if(race.raceTimeComplete!=0 || elapsedTime!=0) {
+      race.raceAverageSpeed = race.raceDistanceComplete / (race.raceTimeComplete+elapsedTime);
+    } else {
+      race.raceAverageSpeed=0;
+    }
     race.raceSpeedDelta = race.raceAverageSpeed - race.activeRace->driveSpeed;
     race.raceLegEndSpeedDelta = race.raceAverageSpeed - race.activeLeg->raceLegEndDriveAvgSpeed;    
     //redo the same time delta calculations as above, only for the entire race distance instead of 

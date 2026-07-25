@@ -135,6 +135,14 @@ class raceDef {
     //in a leg definition
     double mark;
     std::vector<raceLegDef_t *> raceLegs;
+
+    double getSpeed(units_t units);
+    double getDriveSpeed(units_t units);
+    double getSpeedRange(units_t units);
+    double getDistance(units_t units);
+    double getDriveDistance(units_t units);
+    double getTargetTime(void);
+    double getMark(void);
   private:
 
 
@@ -231,6 +239,16 @@ class raceData {
     //active leg within the race definition;
     raceLegDef_t *activeLeg;
     std::vector<racePoint_t *>::iterator activePoint;
+    double getLegTargetTime(void);
+    double getLegAdjustedTargetSpeed(units_t units);
+    double getLegAverageSpeed(units_t units);
+    double getLegDistanceTraveled(units_t units);
+    double getLegSpeedDelta(units_t units);
+    double getRaceDeltaSpeed(units_t units);
+    double getLegDistanceRemaining(units_t units);
+    double getLegTimeDelta(void);
+    
+
 };
 
 extern raceData_t race;

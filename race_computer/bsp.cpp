@@ -92,7 +92,7 @@ bool checkForUpdate(void) {
     return false;
   }  
   //doSPIUnlock();
-  Serial.println("Found orrc/system/racec_omputer.ino.hex");
+  Serial.println("Found orrc/system/race_computer.ino.hex");
   return true;
 }
 

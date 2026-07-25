@@ -30,10 +30,10 @@ U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI oledDisp2(ROTATION, OLED_DISP2_CS, OLED_DISP
 U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI oledDisp3(ROTATION, OLED_DISP3_CS, OLED_DISP_DC, OLED_DISP3_RESET);
 U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI oledDisp4(ROTATION, OLED_DISP4_CS, OLED_DISP_DC, OLED_DISP4_RESET);
 
-uint8_t *oledDisp1Buffer;
-uint8_t *oledDisp2Buffer;
-uint8_t *oledDisp3Buffer;
-uint8_t *oledDisp4Buffer;
+display_t oledDisplay1(oledDisp1);
+display_t oledDisplay2(oledDisp2);
+display_t oledDisplay3(oledDisp3);
+display_t oledDisplay4(oledDisp4);
 
 char buffer[256];
 
@@ -44,15 +44,17 @@ raceDef_t *dispRace;
 raceLegDef_t *dispRaceLeg;
 bool raceSelectHighlight=false;
 bool raceLegSelectHighlight=false;
-event_t *displayUpdateEvent;
+//event_t *displayUpdateEvent;// = NULL;
 event_t *displayUpdateEvent1;
 event_t *displayUpdateEvent2;
 event_t *displayUpdateEvent3;
 event_t *displayUpdateEvent4;
 event_t *displayUpdateFastEvent;
+
 void (*ledDispFunc)(void)=NULL;
+
 uint8_t ledBrightness;
-uint8_t oledBrightness;
+uint8_t oledBrightness=125;
 uint8_t ledBrightnessTmp;
 uint8_t oledBrightnessTmp;
 uint8_t displayTimeout;
@@ -148,6 +150,7 @@ bool displaySelectLineMode=false;
 
 std::list<displayContent_t*> displayList;
 
+/*
 displayContent::displayContent(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &argScreen, 
   dispPos_t argPosX, 
   dispPos_t argPosY, 
@@ -157,33 +160,78 @@ displayContent::displayContent(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &argScreen,
 void displayContent::display(void) {
   showFunc(screen, posX, posY);
 }
+*/
+
+display::display(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &argScreen) : screen(argScreen) {};
+
+void display::init(uint8_t brightness=125) {
+  screen.setBufferPtr(new uint8_t[screen.getBufferSize()]);
+  screen.initDisplay();
+  screen.clearDisplay();
+  screen.setPowerSave(0);
+  setBrightness(brightness);
+  screen.clearBuffer();
+  screen.drawBox(0,0,256,64);
+  screen.sendBuffer();
+}
+
+void display::setBrightness(uint8_t brightness) {
+  screen.setContrast(brightness);
+}
+
+void display::addContent(dispPos_t argPosX, dispPos_t argPosY, void (*argShowFunc)(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI&, dispPos_t, dispPos_t)) {
+  displayContent_t *newContent=new displayContent_t{argPosX, argPosY,argShowFunc};
+  //newContent->posX=argPosX;
+  //newContent->posY=argPosY;
+  //newContent->display=argShowFunc;
+  contentList.push_back(newContent);
+}
+
+void display::removeContent(displayContent_t *content) {
+  //displayContent_t *contentPtr;
+  contentList.remove(content);
+  delete content;
+}
+
+void display::clear(void) {
+  displayContent_t *content;
+  for (std::list<displayContent_t *>::iterator it=contentList.begin(); it != contentList.end(); ++it) {
+    //We could get interuptted in the middle of clean up, so we save the pointer and null the iterator 
+    //reference before we delete the object.  If we are interrupted and show() is executed, the NULL 
+    //check will prevent a crash.
+    content=*it;
+    *it=NULL;
+    delete content;
+  }
+  //now that all the entries are null, we can clear the list.
+  contentList.clear();
+}
+
+void display::show(void) {
+  //if something else is using the SPI bus, we don't want to try to use it.  We'll just skip this update and try again next time.
+  if(SPILock) {
+    return;
+  }
+  screen.clearBuffer();
+  for (std::list<displayContent_t *>::iterator it=contentList.begin(); it != contentList.end(); ++it) {
+    if (*it != NULL) {
+      ((*it)->display)(screen, (*it)->posX, (*it)->posY);
+    }
+  }
+  screen.sendBuffer();
+}
 
 void displaySetup(void) {
   int x;
   displayTimeout=30;
   dispRace=NULL;
   dispRaceLeg=NULL;
-  oledDisp1.setBufferPtr(new uint8_t[oledDisp1.getBufferSize()]);
-  oledDisp1.initDisplay();
-  oledDisp1.clearDisplay();
-  oledDisp1.setPowerSave(0);
-  oledDisp2.setBufferPtr(new uint8_t[oledDisp2.getBufferSize()]);
-  oledDisp2.initDisplay();
-  oledDisp2.clearDisplay();
-  oledDisp2.setPowerSave(0);  
-  oledDisp3.setBufferPtr(new uint8_t[oledDisp3.getBufferSize()]);
-  oledDisp3.initDisplay();
-  oledDisp3.clearDisplay();
-  oledDisp3.setPowerSave(0);  
-  oledDisp4.setBufferPtr(new uint8_t[oledDisp4.getBufferSize()]);
-  oledDisp4.initDisplay();
-  oledDisp4.clearDisplay();
-  oledDisp4.setPowerSave(0);  
-  oledBrightness=125;
-  oledDisp1.setContrast(oledBrightness);
-  oledDisp2.setContrast(oledBrightness);
-  oledDisp3.setContrast(oledBrightness);
-  oledDisp4.setContrast(oledBrightness);
+  //we can't do display initalization during object construction because the SPI bus is not yet initialized.  
+  //So we have to do it here in setup.
+  oledDisplay1.init();
+  oledDisplay2.init();
+  oledDisplay3.init();
+  oledDisplay4.init();
   
   ledDisp.begin();
   ledDisp.Set_Brightness(3);
@@ -194,22 +242,12 @@ void displaySetup(void) {
   ledDisp.Set_Position(0);
   ledDisp.ShowMe("88888888");
 
-  oledDisp1.clearBuffer();
-  oledDisp1.drawBox(0,0,256,64);
-  oledDisp1.sendBuffer();
-  oledDisp2.clearBuffer();
-  oledDisp2.drawBox(0,0,256,64);
-  oledDisp2.sendBuffer();
-  oledDisp3.clearBuffer();
-  oledDisp3.drawBox(0,0,256,64);
-  oledDisp3.sendBuffer();
-  oledDisp4.clearBuffer();
-  oledDisp4.drawBox(0,0,256,64);
-  oledDisp4.sendBuffer();
-
   delay(1000);
   ledDisp.ShowMe("--------");
   ledDisp.Set_Position(0);
+
+  //This following chunk needs to be re-architected into display functions and display content objects.  
+  // For now, it is a quick and dirty way to get the splash screen up on the displays.
   oledDisp1.clearBuffer();
   oledDisp1.drawXBM(18,2,agr_top_width, agr_top_height, agr_logo_top);
   oledDisp1.sendBuffer();
@@ -255,89 +293,38 @@ void displaySetup(void) {
   gpsTimePtr=getGpsTime();
 }
 
-void displayUpdate() {
-  if(SPILock) {
-    //Serial.println("displayUpdate: SPI Collision");
-    return;
-  }
-  oledDisp1.clearBuffer();
-  oledDisp2.clearBuffer();
-  oledDisp3.clearBuffer();
-  oledDisp4.clearBuffer();
-  for (std::list<displayContent_t *>::iterator it=displayList.begin(); it != displayList.end(); ++it) {
-      ((*it)->display)();
-  }
-  oledDisp1.sendBuffer();
-  oledDisp2.sendBuffer();
-  oledDisp3.sendBuffer();
-  oledDisp4.sendBuffer();
-}
-//dare I say that the following four functions are poor code?  The ++it has got to be an anti-pattern of some sort.  However,
-//they were tossed in to test a theory and ugly, brute-force was way faster than re-writing for the test.  ...and the test
-//confirmed my suspicisions.  Updating all four OLEDs in one event callback is bad.  It takes significantly longer than the
-//base event tick of 10ms.  Splitting them up allows each one to complete in less that 10ms.  
-//
-//We'll fix the ++it later -- famous last words.
-void displayUpdate1() {
-  std::list<displayContent_t *>::iterator it=displayList.begin();
-    if(SPILock) {
-    //Serial.println("displayUpdate: SPI Collision");
-    return;
-  }
-  oledDisp1.clearBuffer();
-  if(displayList.size()>0)
-  {  
-    ((*it)->display)();
-  }
-  oledDisp1.sendBuffer();
+void clearDisplays(void) {
+  oledDisplay1.clear();
+  oledDisplay2.clear();
+  oledDisplay3.clear();
+  oledDisplay4.clear();
 }
 
-void displayUpdate2() {
-  std::list<displayContent_t *>::iterator it=displayList.begin();
-    if(SPILock) {
-    //Serial.println("displayUpdate: SPI Collision");
-    return;
-  }
-  oledDisp2.clearBuffer();
-  if(displayList.size()>1)
-  {  
-    ++it;
-    ((*it)->display)();
-  }
-  oledDisp2.sendBuffer();
+extern "C" void displayUpdate(void) {
+  oledDisplay1.show();
+  oledDisplay2.show();
+  oledDisplay3.show();
+  oledDisplay4.show();  
 }
 
-void displayUpdate3() {
-  std::list<displayContent_t *>::iterator it=displayList.begin();
-    if(SPILock) {
-    //Serial.println("displayUpdate: SPI Collision");
-    return;
-  }
-  oledDisp3.clearBuffer();
-  if(displayList.size()>2)
-  {  
-    ++it;
-    ++it;
-    ((*it)->display)();
-  }
-  oledDisp3.sendBuffer();
+void displayUpdate1(void) {
+  oledDisplay1.show();
 }
-void displayUpdate4() {
-  std::list<displayContent_t *>::iterator it=displayList.begin();
-    if(SPILock) {
-    //Serial.println("displayUpdate: SPI Collision");
-    return;
-  }
-  oledDisp4.clearBuffer();
-  if(displayList.size()>3)
-  {  
-    ++it;
-    ++it;
-    ++it;
-    ((*it)->display)();
-  }
-  oledDisp4.sendBuffer();
+
+void displayUpdate2(void) {
+  oledDisplay2.show();
 }
+
+void displayUpdate3(void) {
+  oledDisplay3.show();
+}
+
+void displayUpdate4(void) {
+  oledDisplay4.show();
+}
+
+
+
 
 void displayGPSInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   time_t utc = now();
@@ -1509,7 +1496,7 @@ void displayUpdateFast(void) {
 }
 
 void ledDispLegTime(void) {
-  volatile int32_t ts=(int32_t)getTimeStamp();
+  int32_t ts=(int32_t)getTimeStamp();
   int seconds;
   int millis;
   //ts-=race.timerOffset;
@@ -1556,14 +1543,15 @@ void ledDispRaceTime(void) {
 
 void ledDispLegDeltaSpeed(void) {
   ledDisp.RefreshMe();
-  sprintf(buffer, "%9.3f", SPEED_INTERNAL_TO_MPH(race.legSpeedDelta));
+  //sprintf(buffer, "%9.3f", SPEED_INTERNAL_TO_MPH(race.legSpeedDelta));
+  sprintf(buffer, "%9.3f", race.getLegSpeedDelta(mph));
   ledDisp.Set_Position(0);
   ledDisp.ShowMe(buffer); 
 }
 
 void ledDispRaceDeltaSpeed(void) {
   ledDisp.RefreshMe();
-  sprintf(buffer, "%9.3f", SPEED_INTERNAL_TO_MPH(race.raceLegEndSpeedDelta));
+  sprintf(buffer, "%9.3f", race.getRaceDeltaSpeed(mph));
   ledDisp.Set_Position(0);
   ledDisp.ShowMe(buffer); 
 }
@@ -1577,21 +1565,21 @@ void ledDispGpsSpeed(void) {
 
 void ledDispLegAverageSpeed(void) {
   ledDisp.RefreshMe();
-  sprintf(buffer, "%9.3f", SPEED_INTERNAL_TO_MPH(race.legAverageSpeed));
+  sprintf(buffer, "%9.3f",race.getLegAverageSpeed(mph));
   ledDisp.Set_Position(0);
   ledDisp.ShowMe(buffer); 
 }
 
 void ledDispLegDistanceRemain(void) {
   ledDisp.RefreshMe();
-  sprintf(buffer, "%9.3f", DISTANCE_INTERNAL_TO_MILES(race.legDistanceRemaining));
+  sprintf(buffer, "%9.3f", race.getLegDistanceRemaining(mph));
   ledDisp.Set_Position(0);
   ledDisp.ShowMe(buffer); 
 }
 
 void ledDispLegDeltaTime(void) {
   ledDisp.RefreshMe();
-  sprintf(buffer, "%9.3f", TIME_INTERNAL_TO_SECONDS(race.legTimeDelta));
+  sprintf(buffer, "%9.3f", race.getLegTimeDelta());
   ledDisp.Set_Position(0);
   ledDisp.ShowMe(buffer); 
 }
