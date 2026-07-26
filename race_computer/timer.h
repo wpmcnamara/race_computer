@@ -5,7 +5,7 @@
 #include "bsp.h"
 #include "helpers.h"
 #include "event.h"
-#include "race.h"
+#include "raceData.h"
 
 
 extern volatile bool timer_run;
