@@ -6,7 +6,7 @@
 #include "bsp.h"
 #include "helpers.h"
 #include <list>
-#include "race.h"
+#include "raceData.h"
 
 typedef class displayContent displayContent_t;
 typedef class screen screen_t;

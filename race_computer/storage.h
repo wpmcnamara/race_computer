@@ -8,7 +8,7 @@
 #include <SdFat.h>
 #include <ArduinoYaml.h>
 #include <YAMLDuino.h>
-#include "race.h"
+#include "raceData.h"
 
 #define SD_FAT_TYPE 1
 
