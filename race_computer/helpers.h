@@ -23,8 +23,14 @@
 #define TIME_SECONDS_TO_INTERNAL(x) ((double)round(((double)(x))*1000.0))
 
 enum units_enum {
-	mph=0,
-	kph=1
+	imperial=0,
+	metric,
+	seconds,
+	milliseconds,
+	miles,
+	kilometers,
+	mph,
+	kph
 };
 
 typedef enum units_enum units_t;

@@ -777,7 +777,7 @@ uint8_t menuAdjustLegMark(uint8_t key) {
             } else {
                 switch(legAdjustColumn) {
                     case 1:
-                        if(legAdjustMark>1) {
+                        if(legAdjustMark>0) {
                             legAdjustMark-=1;
                         }
                         break;

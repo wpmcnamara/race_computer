@@ -92,7 +92,7 @@ double getTimeStamp(void) {
   if((timerCtrl & TMR_CSCTRL_TCF1)) {
     secondCapture++;
   }
-  timeStamp=(double)((secondCapture*1000)+milliCapture)-race.timerOffset();
+  timeStamp=(double)((secondCapture*1000)+milliCapture)-race.timerOffset(milliseconds);
   return timeStamp;
 }
   
