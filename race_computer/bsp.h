@@ -66,7 +66,7 @@ void doReboot(void);
 uint8_t loadHardwareVersionStruct(void);
 bool storeHardwareVersionStruct(hardwareVersionStruct_t* hwVerPtr);
 
-#define SPI_SPEED 4000000
+#define SPI_SPEED 5000000
 
 
 

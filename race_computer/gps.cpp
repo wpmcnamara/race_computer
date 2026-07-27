@@ -191,19 +191,19 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
       keysLocked=true;
       //save the start time stamp.  We may adjust this later if we are delaying start to
       //align with a timing mark.
-      race.startTs(ts);
+      race.startTs(ts, milliseconds);
       //check to see if we are aligning the start to a timing mark.
       //if not then we just start the race timing on button push.  If we
       //are aligning timing the we have to check the various scenarios to
       //figure out how long to wait before beginning timing.
-      if (race.startMark() == 0) {
-        race.timerOffset(0);
+      if (race.startMark(milliseconds) == 0) {
+        race.timerOffset(0, milliseconds);
         race.raceLegStart();
       } else {
-        mark = fmod(ts,race.startMark());
+        mark = fmod(ts,race.startMark(milliseconds));
         //calculate the delay before next starting mark, in milliseconds.  This will be invalid if the button
         //was pushed exactly on the current starting mark, but that will be handled in a special case.
-        startDelay = race.startMark() - mark;
+        startDelay = race.startMark(milliseconds) - mark;
         //calculate the possible timing delay based on whether the button push was
         //exactly on the second or not.
         if (mark == 0) {
@@ -213,16 +213,16 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
         } else {
           //delay the start of timing until the next timing mark.  Adjust the start timestamp
           //to align with that mark;
-          race.startTs(ts+startDelay);
+          race.startTs(ts+startDelay, milliseconds);
           race.delayedStart(true);
           stateMachine.status.flags.delayedStart=true;
-          race.timerOffset(startDelay);
+          race.timerOffset(startDelay, milliseconds);
           delayedStartEvent->setDelay(startDelay / 10);
           delayedStartEvent->active = true;
         }
       }
     } else {
-      race.endTs(ts);
+      race.endTs(ts, milliseconds);
       keysLocked=false;
       race.raceLegStop();
     }

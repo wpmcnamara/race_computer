@@ -433,11 +433,11 @@ void stateMachine::run(void) {
         //convert distance and speed from floating point miles and mph back to internal integer units.
         //Time carries through directly as milliseconds.
         race.activeLeg->driveDistance=DISTANCE_MILES_TO_INTERNAL(legAdjustDist);
-        race.legAdjustedTargetSpeed(legAdjustSpeed, mph);
-        race.startMark((double)legAdjustMark);
+        race.legAdjustedTargetSpeed(legAdjustSpeed, imperial);
+        race.startMark((double)legAdjustMark, seconds);
         //Since we change the parameters of a leg, we need to recalculate the whole race parameters.
         computeRace(race.activeRace);
-        race.legTargetTime(legAdjustTime);
+        race.legTargetTime(legAdjustTime, milliseconds);
         legAdjustMode=0;
         break;       
       case stateAdjustLegRestore:
@@ -458,9 +458,9 @@ void stateMachine::run(void) {
         //We convert distance and speed to miles and mph to make the edit logic way, way
         //easier.
         legAdjustDist=DISTANCE_INTERNAL_TO_MILES(race.activeLeg->driveDistance);
-        legAdjustSpeed=race.legAdjustedTargetSpeed(mph);
-        legAdjustTime=(int32_t)round(TIME_SECONDS_TO_INTERNAL(race.legTargetTime()));
-        legAdjustMark=(int32_t)TIME_INTERNAL_TO_SECONDS(race.startMark());
+        legAdjustSpeed=race.legAdjustedTargetSpeed(imperial);
+        legAdjustTime=(int32_t)round(race.legTargetTime(milliseconds));
+        legAdjustMark=(int32_t)race.startMark(seconds);
         break;
       case stateAdjustLegResetValues:
         //probably could just use stateSaveSelection as it is the same action, but if we need to do something
