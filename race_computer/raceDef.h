@@ -17,34 +17,34 @@ class raceDef {
     String fileName;
     String descr;
     //unit: mm/ms  Race target speed
-    double speed;
-    //unit: mm/ms  target speed, scaled for driving distance of the race.  The will be the actual speed goal when
-    //driving the race.
-    double driveSpeed;    
-    //unit: mm/ms  How close to target is considered to be "on target". Applies to all legs unless
-    //overidden in a leg definition 
-    double speedRange;
-    //unit: mm  Total race distance
-    double distance;
-    //unit : mm Total driving distance of the race
-    double driveDistance;
-    //unit: ms  target completion time for the entire race
-    double  targetTime;
-    bool inProgress;
-    //unit: ms  timing mark for GPS synchronized start.  Applys to all legs unless overidden
-    //in a leg definition
-    double mark;
+
     std::vector<raceLegDef_t *> raceLegs;
 
-    double getSpeed(units_t units);
-    double getDriveSpeed(units_t units);
-    double getSpeedRange(units_t units);
-    double getDistance(units_t units);
-    double getDriveDistance(units_t units);
-    double getTargetTime(void);
-    double getMark(void);
+    double speed(units_t units);
+    double driveSpeed(units_t units);
+    double speedRange(units_t units);
+    double distance(units_t units);
+    double driveDistance(units_t units);
+    double targetTime(units_t units);
+    double mark(units_t units);
   private:
-
+    double mSpeed;
+    //unit: mm/ms  target speed, scaled for driving distance of the race.  The will be the actual speed goal when
+    //driving the race.
+    double mDriveSpeed;    
+    //unit: mm/ms  How close to target is considered to be "on target". Applies to all legs unless
+    //overidden in a leg definition 
+    double mSpeedRange;
+    //unit: mm  Total race distance
+    double mDistance;
+    //unit : mm Total driving distance of the race
+    double mDriveDistance;
+    //unit: ms  target completion time for the entire race
+    double  mTargetTime;
+    bool mInProgress;
+    //unit: ms  timing mark for GPS synchronized start.  Applys to all legs unless overidden
+    //in a leg definition
+    double mMark;
 
 };
 
