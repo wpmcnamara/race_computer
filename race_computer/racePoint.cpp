@@ -56,7 +56,7 @@ void loadRacePoints(raceLegDef_t *raceLeg) {
     }
     Serial.printf("   dir: %d\n", point->turnDir);
     point->distance=DISTANCE_MILES_TO_INTERNAL(distance[row]);
-    Serial.printf("   distance: %fmi, %dum\n", distance[row], point->distance);
+    Serial.printf("   distance: %fmi, %lfum\n", distance[row], point->distance);
     point->descrLine1=descr1[row];
     Serial.printf("   descr1: %s\n", point->descrLine1.c_str());
     point->descrLine2=descr2[row];
