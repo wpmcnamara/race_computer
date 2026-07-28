@@ -1,7 +1,6 @@
 #include "state_machine.h"
 #include "keypad.h"
 #include "display.h"
-#include "raceData.h"
 #include "bsp.h"
 #include "menu.h"
 #include "storage.h"
@@ -332,7 +331,7 @@ void stateMachine::run(void) {
         clearDisplays();
         oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
         oledDisplay2.addContent(dispNA, dispNA, displayMenu);
-        oledDisplay3.addContent(dispNA, dispNA, displaySetLegTimeAdjust); 
+        oledDisplay3.addContent(dispNA, dispNA, displaySetDisplayTimeout); 
         break; 
       case stateSetLegTimeAdjust:
         Serial.println("  to: stateSetLegTimeAdjust");
@@ -980,7 +979,7 @@ void stateMachine::run(void) {
       }
       break; 
     case stateSetLegTimeAdjust:
-      menuAction=menuAutoAjustLegTime(keys);
+      menuAction=menuAutoAdjustLegTime(keys);
       switch(menuAction) {
         case 0:
           break;

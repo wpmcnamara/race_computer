@@ -73,7 +73,14 @@ void timeDateSettings::decTz(void) {
     }
 }
 
-void timeDateSettings::setTzIndex(int8_t index) {tzIndex=index;}
+void timeDateSettings::setTzIndex(int8_t index) {
+    if(tzIndex<tzList.size() && tzIndex>=0) {
+        tzIndex=index;
+    } else {
+        //pass it an invalid timezone and you get set to CST/CDT
+        tzIndex=4;
+    }
+}
 
 
 String timeDateSettings::getTzDesc() {

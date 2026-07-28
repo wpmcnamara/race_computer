@@ -134,7 +134,7 @@ uint8_t menuAdjustLegSpeed(uint8_t key);
 uint8_t menuAdjustLegMark(uint8_t key);
 uint8_t menuConfirmSettingsReset(uint8_t key);
 uint8_t menuSetHwVer(uint8_t key);
-uint8_t menuAutoAjustLegTime(uint8_t key);
+uint8_t menuAutoAdjustLegTime(uint8_t key);
 uint8_t menuSpeedBandSource(uint8_t key);
 
 #endif

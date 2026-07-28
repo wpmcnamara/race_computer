@@ -86,7 +86,7 @@ menu_t adjustSaveMenu("Save Adjustments", dummyMenuEntries, 0);
 std::vector<menu_t*> menuStack = { &mainMenu };
 
 int legAdjustRow=0;
-int legAdjustColumn=0;
+int legAdjustColumn=-1;
 int legAdjustMode=0;
 int32_t legAdjustTime;
 int32_t legAdjustTimeTmp;
@@ -851,7 +851,7 @@ uint8_t menuSetHwVer(uint8_t key) {
     return 0;
 }
 
-uint8_t menuAutoAjustLegTime(uint8_t key) {
+uint8_t menuAutoAdjustLegTime(uint8_t key) {
     switch (key) {
         case KEYPAD_KEY_START_STOP:
             return 0;

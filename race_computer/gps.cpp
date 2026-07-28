@@ -217,6 +217,9 @@ void TIMTM2dataCallback(UBX_TIM_TM2_data_t *ubxDataStruct) {
           race.delayedStart(true);
           stateMachine.status.flags.delayedStart=true;
           race.timerOffset(startDelay, milliseconds);
+          //event tick rate is 100Hz (every 10ms).  Scale the millisecond delay to the nearest 10ms
+          //tick.  This really just controls when the display begins updating.  The actual start time was
+          //adjusted to the millisecond above.
           delayedStartEvent->setDelay(startDelay / 10);
           delayedStartEvent->active = true;
         }

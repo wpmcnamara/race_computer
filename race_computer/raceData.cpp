@@ -333,9 +333,9 @@ double raceData::legAdjustedAverageSpeed(units_t units) {
 
 double raceData::raceAdjustedAverageSpeed(units_t units) {
   if(units==imperial) {
-    return SPEED_INTERNAL_TO_MPH(mLegAdjustedAverageSpeed);
+    return SPEED_INTERNAL_TO_MPH(mRaceAdjustedAverageSpeed);
   } else {
-    return SPEED_INTERNAL_TO_KPH(mLegAdjustedAverageSpeed);
+    return SPEED_INTERNAL_TO_KPH(mRaceAdjustedAverageSpeed);
   }   
 }
 
@@ -346,7 +346,7 @@ void computeRace (raceDef_t *raceDefinition) {
   double cumulativeRaceDriveDistance=0;
   raceLegIt=raceDefinition->raceLegs.begin();
   while(raceLegIt!=raceDefinition->raceLegs.end()) {
-    if((*raceLegIt)->targetTime) {
+    if((*raceLegIt)->targetTime!=0) {
       (*raceLegIt)->driveSpeed=(*raceLegIt)->driveDistance/(*raceLegIt)->targetTime;
     } else {
       //can't have infinite speed, and shouldn't have a leg with zero target time, but just
@@ -358,34 +358,42 @@ void computeRace (raceDef_t *raceDefinition) {
     cumulativeRaceTime+=(*raceLegIt)->targetTime;
 
     if(cumulativeRaceTime!=0) {
-      (*raceLegIt)->raceLegEndAvgSpeed=cumulativeRaceDistance/cumulativeRaceTime;      
+      (*raceLegIt)->raceLegEndAvgSpeed=cumulativeRaceDistance/cumulativeRaceTime;   
+      (*raceLegIt)->raceLegEndDriveAvgSpeed=cumulativeRaceDriveDistance/cumulativeRaceTime;   
     } else {
       //Like above, we should never end up with a cumulativeRaceTimeValue that is zero, but if
-      //we do, force the ending average speed to zero as the error condition.
+      //we do, force the ending average speed to zero as the error condition. 
       (*raceLegIt)->raceLegEndAvgSpeed=0;
+      (*raceLegIt)->raceLegEndDriveAvgSpeed=0;
     }
-    (*raceLegIt)->raceLegEndDriveAvgSpeed=cumulativeRaceDriveDistance/cumulativeRaceTime;
+    
     (*raceLegIt)->raceLegEndTargetDistance=cumulativeRaceDistance;
     (*raceLegIt)->raceLegEndDriveDistance=cumulativeRaceDriveDistance;
     (*raceLegIt)->raceLegEndTargetTime=cumulativeRaceTime;
     raceLegIt++;
   }
   raceDefinition->driveDistance=cumulativeRaceDriveDistance;
-  raceDefinition->driveSpeed=cumulativeRaceDriveDistance/cumulativeRaceTime;
-  //Sanity check defined race speed against the calculated speed from the cumulative leg average.
-  if(abs(raceDefinition->speed-(cumulativeRaceDistance/cumulativeRaceTime))>0.0001) {
-    Serial.println("  race speed mismatch, using calculate value\n");
-    raceDefinition->speed=cumulativeRaceDistance/cumulativeRaceTime;
+  //if you define a silly race with zero time, we force the speeds to zero to keep from
+  //breaking the laws of physics with infinite speed.
+  if(cumulativeRaceTime!=0) {
+    raceDefinition->driveSpeed=cumulativeRaceDriveDistance/cumulativeRaceTime;
+    //Sanity check defined race speed against the calculated speed from the cumulative leg average.
+    if(abs(raceDefinition->speed-(cumulativeRaceDistance/cumulativeRaceTime))>0.0001) {
+        Serial.println("  race speed mismatch, using calculate value\n");
+        raceDefinition->speed=cumulativeRaceDistance/cumulativeRaceTime;
+    }
+  } else {
+    raceDefinition->driveSpeed=0;
+    raceDefinition->speed=0;
   }
   if(abs(raceDefinition->targetTime-cumulativeRaceTime)>0.0001) {
-    Serial.println("  race time mismatch, using calculated value\n");
-    raceDefinition->targetTime=cumulativeRaceTime;
+      Serial.println("  race time mismatch, using calculated value\n");
+      raceDefinition->targetTime=cumulativeRaceTime;
   }
   if(abs(raceDefinition->distance-cumulativeRaceDistance)>0.0001) {
-    Serial.println("  race distance mismatch, using calculated value\n");
-    raceDefinition->distance=cumulativeRaceDistance;
+      Serial.println("  race distance mismatch, using calculated value\n");
+      raceDefinition->distance=cumulativeRaceDistance;
   }
-
 }
 void loadRaces() {
   File32 entry;
@@ -614,7 +622,14 @@ void raceData::prepRace(void) {
 void raceData::updateRace(void) {
   activeLeg->complete=true;
   mLegTime=mEndTs-mStartTs;
-  mLegAverageSpeed = mLegDistanceComplete / mLegTime;
+  //I don't think we can ever end up here with a legTime of 0, but in case we do, we force leg
+  //average speed to zero in that case.  Same things for leg adjusted averages speed.
+  if(mLegTime!=0) {
+    mLegAverageSpeed = mLegDistanceComplete / mLegTime;
+  } else {
+    mLegAverageSpeed=0;
+    mLegAdjustedAverageSpeed=activeLeg->distance/mLegTime;    
+  }
   mLegSpeedDelta = mLegAverageSpeed - mLegAdjustedTargetSpeed;
   mLegTimeDelta=mLegTime-mLegTargetTime;
 
@@ -627,14 +642,18 @@ void raceData::updateRace(void) {
   mRaceDriveDistanceComplete+=activeLeg->driveDistance;
   mRaceTargetDistanceComplete+=activeLeg->distance;
   mRaceDistanceRemaining=activeRace->driveDistance-mRaceDriveDistanceComplete;
-
-  mRaceAverageSpeed=mRaceDistanceComplete/mRaceTimeComplete;
+  //both prior race time complete and current leg time would need to be zero, in the above addition
+  //but in case we somehow get that case, force race average speed to zero rather than div/0. Same
+  //thing for race adjusted average speed.
+  if(mRaceTimeComplete!=0) {
+    mRaceAverageSpeed=mRaceDistanceComplete/mRaceTimeComplete;
+    mRaceAdjustedAverageSpeed=activeLeg->raceLegEndTargetDistance/mRaceTimeComplete;
+  } else {
+    mRaceAverageSpeed=0;
+    mRaceAdjustedAverageSpeed=0;
+  }
   mRaceSpeedDelta = mRaceAverageSpeed - activeRace->driveSpeed;
-  mRaceLegEndSpeedDelta = mRaceAverageSpeed - activeLeg->raceLegEndDriveAvgSpeed;      
-  
-  mLegAdjustedAverageSpeed=activeLeg->distance/mLegTime;
-  mRaceAdjustedAverageSpeed=activeLeg->raceLegEndTargetDistance/mRaceTimeComplete;
-
+  mRaceLegEndSpeedDelta = mRaceAverageSpeed - activeLeg->raceLegEndDriveAvgSpeed;        
 }
 
 void raceData::raceCheckPoint(void) {
@@ -911,7 +930,6 @@ void raceData::startMark(double mark, units_t units) {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
     }
-  mStartMark=mark;
 };
 
 void raceData::legAdjustedTargetSpeed(double speed, units_t units) {
