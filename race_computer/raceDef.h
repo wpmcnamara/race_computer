@@ -17,7 +17,7 @@ class raceDef {
     String fileName;
     String descr;
     //unit: mm/ms  Race target speed
-
+    raceDef();
     std::vector<raceLegDef_t *> raceLegs;
 
     double speed(units_t units);
@@ -27,6 +27,17 @@ class raceDef {
     double driveDistance(units_t units);
     double targetTime(units_t units);
     double mark(units_t units);
+    bool inProgress(void);
+
+    void speed(double value, units_t units);    
+    void driveSpeed(double value, units_t units);
+    void speedRange(double value, units_t units);
+    void distance(double value, units_t units);
+    void driveDistance(double value, units_t units);
+    void targetTime(double value, units_t units);
+    void mark(double value, units_t units);
+    void inProgress(bool value); 
+
   private:
     double mSpeed;
     //unit: mm/ms  target speed, scaled for driving distance of the race.  The will be the actual speed goal when
