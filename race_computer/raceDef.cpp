@@ -20,7 +20,7 @@ double raceDef::speed(units_t units)  {
     if (units == imperial || units == mph) {
         return SPEED_INTERNAL_TO_MPH(mSpeed);
     } else if (units == metric || units == kph)  {
-        return SPEED_INTERNAL_TO_KMH(mSpeed);
+        return SPEED_INTERNAL_TO_KPH(mSpeed);
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -31,7 +31,7 @@ double raceDef::driveSpeed(units_t units)  {
     if (units == imperial || units == mph) {
         return SPEED_INTERNAL_TO_MPH(mDriveSpeed);
     } else if (units == metric || units == kph)  {
-        return SPEED_INTERNAL_TO_KMH(mDriveSpeed);
+        return SPEED_INTERNAL_TO_KPH(mDriveSpeed);
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -42,7 +42,7 @@ double raceDef::speedRange(units_t units)  {
     if (units == imperial || units == mph) {
         return SPEED_INTERNAL_TO_MPH(mSpeedRange);
     } else if (units == metric || units == kph)  {
-        return SPEED_INTERNAL_TO_KMH(mSpeedRange);
+        return SPEED_INTERNAL_TO_KPH(mSpeedRange);
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);

@@ -958,8 +958,8 @@ void loadDefaultRaces(void) {
   raceDef=new raceDef_t;
   raceDef->fileName="";
   raceDef->descr="Test and debugging drive (default)";
-  raceDef->speed=SPEED_MPH_TO_INTERNAL(29.5);
-  raceDef->speedRange=SPEED_MPH_TO_INTERNAL(0.5);
+  raceDef->speed(29.5, mph);
+  raceDef->speedRange(0.5, mph);
   raceDef->distance=DISTANCE_MILES_TO_INTERNAL(12.9);
   raceDef->mark=0;
   raceDef->inProgress=false;
