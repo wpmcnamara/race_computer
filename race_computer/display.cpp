@@ -819,8 +819,8 @@ void displayRaceStats1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t p
   );
   display.drawStr(1,50,buffer);
   sprintf(buffer, "pS:%3.03f dS:%3.03f",
-    SPEED_INTERNAL_TO_MPH(race.activeRace->speed),
-    SPEED_INTERNAL_TO_MPH(race.activeRace->driveSpeed)
+    race.activeRace->speed(imperial),
+    race.activeRace->driveSpeed(imperial)
   );
   display.drawStr(1,63,buffer);
 }
@@ -828,8 +828,8 @@ void displayRaceStats1(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t p
 void displayRaceStats2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, dispPos_t posY) {
   display.setFont(u8g2_font_spleen6x12_mf);
   sprintf(buffer, "tD:%4.03f dD:%4.03f tcD:%4.03f", 
-    DISTANCE_INTERNAL_TO_MILES(race.activeRace->distance),
-    DISTANCE_INTERNAL_TO_MILES(race.activeRace->driveDistance),
+    race.activeRace->distance(imperial),
+    race.activeRace->driveDistance(imperial),
     race.raceTargetDistanceComplete(imperial)
   );
   display.drawStr(1,11,buffer);  
@@ -840,7 +840,7 @@ void displayRaceStats2(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t p
   );
   display.drawStr(1,24,buffer); 
   sprintf(buffer, "tT:%4.03f cT:%4.03f",
-    TIME_INTERNAL_TO_SECONDS(race.activeRace->targetTime),
+    race.activeRace->targetTime(seconds),
     race.raceTimeComplete(seconds)
   );
   display.drawStr(1,50,buffer);  
@@ -857,7 +857,7 @@ void displayRaceInfo(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t pos
     } else {
       display.drawButtonUTF8(1, 24, U8G2_BTN_BW0, 255,  0,  0, buffer );
     }
-    sprintf(buffer, "dist: %8.3f  spd: %7.3f  mark: %0.0fs", DISTANCE_INTERNAL_TO_MILES(dispRace->distance), SPEED_INTERNAL_TO_MPH(dispRace->speed), TIME_INTERNAL_TO_SECONDS(dispRace->mark));
+    sprintf(buffer, "dist: %8.3f  spd: %7.3f  mark: %0.0fs", dispRace->distance(imperial), dispRace->speed(imperial), dispRace->mark(seconds));
     display.drawStr(1,36,buffer);
     sprintf(buffer, "leg: %s", dispRaceLeg->descr.c_str());
     if(raceLegSelectHighlight) {
