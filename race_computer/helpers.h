@@ -29,6 +29,7 @@ enum units_enum {
 	milliseconds,
 	miles,
 	kilometers,
+	km,
 	mph,
 	kph
 };

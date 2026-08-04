@@ -1,0 +1,33 @@
+[submodule "libraries/Timezone"]
+	path = libraries/Timezone
+	url = https://github.com/JChristensen/Timezone.git
+[submodule "libraries/YAMLDuino"]
+	path = libraries/YAMLDuino
+	url = https://github.com/tobozo/YAMLDuino.git
+[submodule "libraries/ArduinoJson"]
+	path = libraries/ArduinoJson
+	url = https://github.com/bblanchon/ArduinoJson
+[submodule "libraries/Adafruit_Seesaw"]
+	path = libraries/Adafruit_Seesaw
+	url = https://github.com/adafruit/Adafruit_Seesaw
+[submodule "libraries/Adafruit_BusIO"]
+	path = libraries/Adafruit_BusIO
+	url = https://github.com/adafruit/Adafruit_BusIO.git
+[submodule "libraries/u8g2"]
+	path = libraries/u8g2
+	url = https://github.com/olikraus/u8g2.git
+[submodule "libraries/U8g2_Arduino"]
+	path = libraries/U8g2_Arduino
+	url = https://github.com/olikraus/U8g2_Arduino.git
+[submodule "libraries/CK_MAX"]
+	path = libraries/CK_MAX
+	url = https://github.com/ChandanETE/CK_MAX.git
+[submodule "libraries/SparkFun_u-blox_GNSS_Arduino_Library"]
+	path = libraries/SparkFun_u-blox_GNSS_Arduino_Library
+	url = https://github.com/sparkfun/SparkFun_u-blox_GNSS_Arduino_Library.git
+[submodule "libraries/CSV-Parser-for-Arduino"]
+	path = libraries/CSV-Parser-for-Arduino
+	url = https://github.com/michalmonday/CSV-Parser-for-Arduino.git
+[submodule "libraries/SdFat"]
+	path = libraries/SdFat
+	url = https://github.com/PaulStoffregen/SdFat.git

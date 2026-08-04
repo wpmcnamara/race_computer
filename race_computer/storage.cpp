@@ -306,11 +306,11 @@ void logRace(raceData_t *race, uint8_t type) {
   } else {
     entryType=raceStr;
     descr=race->activeRace->descr.c_str();
-    targetTime=TIME_INTERNAL_TO_SECONDS(race->activeRace->targetTime);
-    targetSpeed=SPEED_INTERNAL_TO_MPH(race->activeRace->speed);
-    targetDistance=DISTANCE_INTERNAL_TO_MILES(race->activeRace->distance);
-    driveDistance=DISTANCE_INTERNAL_TO_MILES(race->activeRace->driveDistance);
-    driveSpeed=SPEED_INTERNAL_TO_MPH(race->activeRace->driveSpeed);
+    targetTime=race->activeRace->targetTime(seconds);
+    targetSpeed=race->activeRace->speed(imperial);
+    targetDistance=race->activeRace->distance(imperial);
+    driveDistance=race->activeRace->driveDistance(imperial);
+    driveSpeed=race->activeRace->driveSpeed(imperial);
     adjustedTargetTime=targetTime;
     adjustedDriveSpeed=driveSpeed;
     eolTargetTime=TIME_INTERNAL_TO_SECONDS(race->activeLeg->raceLegEndTargetTime);

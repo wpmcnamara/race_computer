@@ -221,7 +221,7 @@ void stateMachine::run(void) {
         Serial.println("  to: stateRaceComplete");   
         race.raceInProgress(false);
         if(race.activeRace!=NULL ) {
-          race.activeRace->inProgress=false;
+          race.activeRace->inProgress(false);
         }
         race.activeLeg=NULL;
         race.activeRace=NULL;
