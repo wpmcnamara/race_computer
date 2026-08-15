@@ -341,35 +341,37 @@ double raceData::raceAdjustedAverageSpeed(units_t units) {
 
 void computeRace (raceDef_t *raceDefinition) {
   std::vector<raceLegDef_t *>::iterator raceLegIt;
-  double cumulativeRaceDistance=0;
-  double cumulativeRaceTime=0;
-  double cumulativeRaceDriveDistance=0;
+  double cumulativeRaceDistance=0;  // miles
+  double cumulativeRaceTime=0;      // seconds
+  double cumulativeRaceDriveDistance=0;  // miles
   raceLegIt=raceDefinition->raceLegs.begin();
   while(raceLegIt!=raceDefinition->raceLegs.end()) {
-    if((*raceLegIt)->targetTime!=0) {
-      (*raceLegIt)->driveSpeed=(*raceLegIt)->driveDistance/(*raceLegIt)->targetTime;
+    if((*raceLegIt)->targetTime(seconds)!=0) {
+      // driveSpeed in mph = driveDistance(miles) / targetTime(hours) = driveDistance * 3600 / targetTime(seconds)
+      (*raceLegIt)->driveSpeed((*raceLegIt)->driveDistance(imperial)*3600.0/(*raceLegIt)->targetTime(seconds), imperial);
     } else {
       //can't have infinite speed, and shouldn't have a leg with zero target time, but just
       //in case, we will force speed to 0 if we have 0 time, as an error condition.
-      (*raceLegIt)->driveSpeed=0;
+      (*raceLegIt)->driveSpeed(0, imperial);
     }
-    cumulativeRaceDistance+=(*raceLegIt)->distance;
-    cumulativeRaceDriveDistance+=(*raceLegIt)->driveDistance;
-    cumulativeRaceTime+=(*raceLegIt)->targetTime;
+    cumulativeRaceDistance+=(*raceLegIt)->distance(imperial);
+    cumulativeRaceDriveDistance+=(*raceLegIt)->driveDistance(imperial);
+    cumulativeRaceTime+=(*raceLegIt)->targetTime(seconds);
 
     if(cumulativeRaceTime!=0) {
-      (*raceLegIt)->raceLegEndAvgSpeed=cumulativeRaceDistance/cumulativeRaceTime;   
-      (*raceLegIt)->raceLegEndDriveAvgSpeed=cumulativeRaceDriveDistance/cumulativeRaceTime;   
+      // speed in mph = distance(miles) / time(hours) = distance * 3600 / time(seconds)
+      (*raceLegIt)->raceLegEndAvgSpeed(cumulativeRaceDistance*3600.0/cumulativeRaceTime, imperial);   
+      (*raceLegIt)->raceLegEndDriveAvgSpeed(cumulativeRaceDriveDistance*3600.0/cumulativeRaceTime, imperial);   
     } else {
       //Like above, we should never end up with a cumulativeRaceTimeValue that is zero, but if
       //we do, force the ending average speed to zero as the error condition. 
-      (*raceLegIt)->raceLegEndAvgSpeed=0;
-      (*raceLegIt)->raceLegEndDriveAvgSpeed=0;
+      (*raceLegIt)->raceLegEndAvgSpeed(0, imperial);
+      (*raceLegIt)->raceLegEndDriveAvgSpeed(0, imperial);
     }
     
-    (*raceLegIt)->raceLegEndTargetDistance=cumulativeRaceDistance;
-    (*raceLegIt)->raceLegEndDriveDistance=cumulativeRaceDriveDistance;
-    (*raceLegIt)->raceLegEndTargetTime=cumulativeRaceTime;
+    (*raceLegIt)->raceLegEndTargetDistance(cumulativeRaceDistance, imperial);
+    (*raceLegIt)->raceLegEndDriveDistance(cumulativeRaceDriveDistance, imperial);
+    (*raceLegIt)->raceLegEndTargetTime(cumulativeRaceTime, seconds);
     raceLegIt++;
   }
   raceDefinition->driveDistance(DISTANCE_INTERNAL_TO_MILES(cumulativeRaceDriveDistance), imperial);
@@ -483,42 +485,42 @@ void loadRaces() {
 
     for (JsonObject jsonLeg : doc["legs"].as<JsonArray>()) {
       raceLegFile=new raceLegDef_t;
-      raceLegFile->descr=jsonLeg["descr"].as<String>();
-      Serial.printf("   leg descr: %s\n", raceLegFile->descr.c_str());
-      raceLegFile->pointsFile=jsonLeg["points"].as<String>();
-      Serial.printf("   leg pointsFile: %s\n", raceLegFile->pointsFile.c_str());
-      raceLegFile->id=jsonLeg["id"].as<int>();
-      Serial.printf("   leg id: %d\n", raceLegFile->id);
-      raceLegFile->speed=SPEED_MPH_TO_INTERNAL(jsonLeg["speed"].as<float>());
-      Serial.printf("   leg speed: %0.3fimperial, %0.3fmm/ms\n", jsonLeg["speed"].as<float>(),raceLegFile->speed);
+      raceLegFile->descr(jsonLeg["descr"].as<String>());
+      Serial.printf("   leg descr: %s\n", raceLegFile->descr().c_str());
+      raceLegFile->pointsFile(jsonLeg["points"].as<String>());
+      Serial.printf("   leg pointsFile: %s\n", raceLegFile->pointsFile().c_str());
+      raceLegFile->id(jsonLeg["id"].as<int>());
+      Serial.printf("   leg id: %d\n", raceLegFile->id());
+      raceLegFile->speed(jsonLeg["speed"].as<float>(), imperial);
+      Serial.printf("   leg speed: %0.3fimperial, %0.3fmm/ms\n", jsonLeg["speed"].as<float>(), raceLegFile->speed(imperial));
       if(jsonLeg["speed_range"].isNull()) {
-        raceLegFile->speedRange=SPEED_MPH_TO_INTERNAL(raceFile->speedRange(imperial));
-        Serial.printf("   speed range (from race): %0.3f\n", raceLegFile->speedRange);
+        raceLegFile->speedRange(raceFile->speedRange(imperial), imperial);
+        Serial.printf("   speed range (from race): %0.3f\n", raceLegFile->speedRange(imperial));
       } else {
-        raceLegFile->speedRange=SPEED_MPH_TO_INTERNAL(jsonLeg["speedRange"].as<float>());
-        Serial.printf("   speed range: %0.3fimperial, %0.3fmm/ms\n", jsonLeg["speedRange"].as<float>(), raceLegFile->speedRange);
+        raceLegFile->speedRange(jsonLeg["speedRange"].as<float>(), imperial);
+        Serial.printf("   speed range: %0.3fimperial, %0.3fmm/ms\n", jsonLeg["speedRange"].as<float>(), raceLegFile->speedRange(imperial));
       }
-      raceLegFile->distance=DISTANCE_MILES_TO_INTERNAL(jsonLeg["distance"].as<float>());
-      Serial.printf("   leg distance: %0.3fmi, %0.3fmm\n", jsonLeg["distance"].as<float>(), raceLegFile->distance);      
-      raceLegFile->targetTime=raceLegFile->distance/raceLegFile->speed;
+      raceLegFile->distance(jsonLeg["distance"].as<float>(), imperial);
+      Serial.printf("   leg distance: %0.3fmi, %0.3fmm\n", jsonLeg["distance"].as<float>(), raceLegFile->distance(imperial));      
+      raceLegFile->targetTime(raceLegFile->distance(imperial)/raceLegFile->speed(imperial)*3600.0, seconds);
       if(jsonLeg["driveDistance"].isNull()) {
-        raceLegFile->driveDistance=raceLegFile->distance;
-        Serial.printf("   drive distance is leg distance: %0.3f\n", raceLegFile->driveDistance);
+        raceLegFile->driveDistance(raceLegFile->distance(imperial), imperial);
+        Serial.printf("   drive distance is leg distance: %0.3f\n", raceLegFile->driveDistance(imperial));
       } else {
-        raceLegFile->driveDistance=DISTANCE_MILES_TO_INTERNAL(jsonLeg["driveDistance"].as<float>());
-        Serial.printf("   drive distance: %0.3fmi, %0.3fmm\n", jsonLeg["driveDistance"].as<float>(), raceLegFile->driveDistance);
+        raceLegFile->driveDistance(jsonLeg["driveDistance"].as<float>(), imperial);
+        Serial.printf("   drive distance: %0.3fmi, %0.3fmm\n", jsonLeg["driveDistance"].as<float>(), raceLegFile->driveDistance(imperial));
       }
 
       if(jsonLeg["tmark"].isNull()) {
-        raceLegFile->mark=TIME_SECONDS_TO_INTERNAL(raceFile->mark(seconds));
-        Serial.printf("   leg mark(from race): %0.3fms\n", raceLegFile->mark);
+        raceLegFile->mark(raceFile->mark(seconds), seconds);
+        Serial.printf("   leg mark(from race): %0.3fms\n", raceLegFile->mark(milliseconds));
       } else{
-        raceLegFile->mark=TIME_SECONDS_TO_INTERNAL(jsonLeg["tmark"].as<int>());
-        Serial.printf("   leg mark: %ds, %0.3fms\n", jsonLeg["tmark"].as<int>(),raceLegFile->mark);
+        raceLegFile->mark(jsonLeg["tmark"].as<int>(), seconds);
+        Serial.printf("   leg mark: %ds, %0.3fms\n", jsonLeg["tmark"].as<int>(), raceLegFile->mark(milliseconds));
       }
       Serial.println("");
-      raceLegFile->inProgress=false;
-      raceLegFile->complete=false;
+      raceLegFile->inProgress(false);
+      raceLegFile->complete(false);
 
       raceFile->raceLegs.push_back(raceLegFile);
     } 
@@ -553,20 +555,20 @@ void raceData::setRace(raceDef_t *selectedRace) {
 void raceData::setLeg(raceLegDef_t *selectedRaceLeg) {
   activeLeg=selectedRaceLeg;
 
-  mLegTargetTime=selectedRaceLeg->targetTime;
+  mLegTargetTime=selectedRaceLeg->targetTime(milliseconds);
   mLegAdjustedTargetSpeed=0;
   mLegAverageSpeed=0;
   mLegSpeedDelta=0;
   mLegDistanceComplete=0;
   mLegTime=0;
-  mLegDistanceRemaining=selectedRaceLeg->driveDistance;
+  mLegDistanceRemaining=selectedRaceLeg->driveDistance(imperial);
   mLegTimeDelta=0;
   mLegInProgress=false;
 
   mDistanceOffset=0;
   mStartTs=0;
   mEndTs=0;
-  mStartMark=selectedRaceLeg->mark;
+  mStartMark=selectedRaceLeg->mark(milliseconds);
   mDelayedStart=false;
   mTimerOffset=0;
 
@@ -586,7 +588,7 @@ void raceData::setLeg(raceLegDef_t *selectedRaceLeg) {
   //now figure the adjusted targer based on how long the leg should take, and the 
   //actual distance we will drive.
   if(mLegTargetTime!=0) {
-    mLegAdjustedTargetSpeed=selectedRaceLeg->driveDistance/mLegTargetTime;
+    mLegAdjustedTargetSpeed=selectedRaceLeg->driveDistance(imperial)/mLegTargetTime;
   } else {
     //Can't have infinite speed, so we force it to zero as an error condition.  In reality,
     //this should never be and is mainly here to ensure code analysis doesn't complain about
@@ -610,7 +612,7 @@ void raceData::prepRace(void) {
   mDelayedStart=false;
   mTimerOffset=0;
 
-  mLegDistanceRemaining=activeLeg->driveDistance;
+  mLegDistanceRemaining=activeLeg->driveDistance(imperial);
   loadRacePoints(activeLeg);
   activePoint=activeLeg->points.begin();
 }
@@ -620,7 +622,7 @@ void raceData::prepRace(void) {
 //bit.  We need to do a final set of calculates to update all the running values that depend on time.
 //Beyond that, we update final values based on the end of leg data.
 void raceData::updateRace(void) {
-  activeLeg->complete=true;
+  activeLeg->complete(true);
   mLegTime=mEndTs-mStartTs;
   //I don't think we can ever end up here with a legTime of 0, but in case we do, we force leg
   //average speed to zero in that case.  Same things for leg adjusted averages speed.
@@ -628,32 +630,32 @@ void raceData::updateRace(void) {
     mLegAverageSpeed = mLegDistanceComplete / mLegTime;
   } else {
     mLegAverageSpeed=0;
-    mLegAdjustedAverageSpeed=activeLeg->distance/mLegTime;    
+    mLegAdjustedAverageSpeed=activeLeg->distance(imperial)/mLegTime;    
   }
   mLegSpeedDelta = mLegAverageSpeed - mLegAdjustedTargetSpeed;
   mLegTimeDelta=mLegTime-mLegTargetTime;
 
   mRaceTimeComplete+=mLegTime;
   mRaceTime=mRaceTimeComplete;
-  mRaceTargetTimeComplete+=activeLeg->targetTime;
+  mRaceTargetTimeComplete+=activeLeg->targetTime(milliseconds);
   mRaceTimeDelta=mRaceTimeComplete-mRaceTargetTimeComplete;
 
   mRaceActualDistanceComplete+=mLegDistanceComplete;
-  mRaceDriveDistanceComplete+=activeLeg->driveDistance;
-  mRaceTargetDistanceComplete+=activeLeg->distance;
+  mRaceDriveDistanceComplete+=activeLeg->driveDistance(imperial);
+  mRaceTargetDistanceComplete+=activeLeg->distance(imperial);
   mRaceDistanceRemaining=DISTANCE_MILES_TO_INTERNAL(activeRace->driveDistance(imperial))-mRaceDriveDistanceComplete;
   //both prior race time complete and current leg time would need to be zero, in the above addition
   //but in case we somehow get that case, force race average speed to zero rather than div/0. Same
   //thing for race adjusted average speed.
   if(mRaceTimeComplete!=0) {
     mRaceAverageSpeed=mRaceDistanceComplete/mRaceTimeComplete;
-    mRaceAdjustedAverageSpeed=activeLeg->raceLegEndTargetDistance/mRaceTimeComplete;
+    mRaceAdjustedAverageSpeed=activeLeg->raceLegEndTargetDistance(imperial)/mRaceTimeComplete;
   } else {
     mRaceAverageSpeed=0;
     mRaceAdjustedAverageSpeed=0;
   }
   mRaceSpeedDelta = mRaceAverageSpeed - SPEED_MPH_TO_INTERNAL(activeRace->driveSpeed(imperial));
-  mRaceLegEndSpeedDelta = mRaceAverageSpeed - activeLeg->raceLegEndDriveAvgSpeed;        
+  mRaceLegEndSpeedDelta = mRaceAverageSpeed - activeLeg->raceLegEndDriveAvgSpeed(imperial);        
 }
 
 void raceData::raceCheckPoint(void) {
@@ -682,9 +684,9 @@ void raceData::raceCheckPoint(void) {
   doc["raceFile"]=activeRace->fileName;
   doc["activeRaceInProgress"]=activeRace->inProgress();
   doc["raceInProgress"]=mRaceInProgress; 
-  doc["legId"]=activeLeg->id;
-  doc["activeLegInProgress"]=activeLeg->inProgress;
-  doc["activeLegComplete"]=activeLeg->complete;
+  doc["legId"]=activeLeg->id();
+  doc["activeLegInProgress"]=activeLeg->inProgress();
+  doc["activeLegComplete"]=activeLeg->complete();
 
   doc["raceActualDistanceComplete"]=mRaceActualDistanceComplete;
   doc["raceDriveDistanceComplete"]=mRaceDriveDistanceComplete;
@@ -775,7 +777,7 @@ void raceData::loadRaceCheckPoint(void) {
       return;
     } else {
       Serial.print("Race leg: ");
-      Serial.println((*raceLegIt)->descr);
+      Serial.println((*raceLegIt)->descr());
     }
   } else {
     return;
@@ -853,7 +855,7 @@ void raceData::updateRunning(double elapsedTime, double distance) {
   mLegTime=elapsedTime;
   mRaceTime=mRaceTimeComplete+elapsedTime;
   mLegDistanceComplete = distance - mDistanceOffset;
-  mLegDistanceRemaining = activeLeg->driveDistance - mLegDistanceComplete;
+  mLegDistanceRemaining = activeLeg->driveDistance(imperial) - mLegDistanceComplete;
   if(elapsedTime!=0) {
     mLegAverageSpeed = mLegDistanceComplete / elapsedTime;
   } else {
@@ -875,18 +877,18 @@ void raceData::updateRunning(double elapsedTime, double distance) {
   //published distance are only valid at the end of a leg.
   mRaceDistanceComplete=mRaceDriveDistanceComplete + mLegDistanceComplete;
   mRaceDistanceRemaining = DISTANCE_MILES_TO_INTERNAL(activeRace->driveDistance(imperial)) - mRaceDistanceComplete;
-  mRaceLegEndDistanceRemaining = activeLeg->raceLegEndDriveDistance - mRaceDistanceComplete;
+  mRaceLegEndDistanceRemaining = activeLeg->raceLegEndDriveDistance(imperial) - mRaceDistanceComplete;
   if(mRaceTimeComplete!=0 || elapsedTime!=0) {
     mRaceAverageSpeed = mRaceDistanceComplete / (mRaceTimeComplete+elapsedTime);
   } else {
     mRaceAverageSpeed=0;
   }
   mRaceSpeedDelta = mRaceAverageSpeed - SPEED_MPH_TO_INTERNAL(activeRace->driveSpeed(imperial));
-  mRaceLegEndSpeedDelta = mRaceAverageSpeed - activeLeg->raceLegEndDriveAvgSpeed;    
+  mRaceLegEndSpeedDelta = mRaceAverageSpeed - activeLeg->raceLegEndDriveAvgSpeed(imperial);    
   //redo the same time delta calculations as above, only for the entire race distance instead of 
   //just the current leg.
 
-  targetTime=mRaceDistanceComplete / activeLeg->raceLegEndDriveAvgSpeed;
+  targetTime=mRaceDistanceComplete / activeLeg->raceLegEndDriveAvgSpeed(imperial);
   mRaceTimeDelta=mRaceTime-targetTime;
 
   //This sets the color for the keypad buttons based on our speed delta.  Green if we are in-band.
@@ -899,9 +901,9 @@ void raceData::updateRunning(double elapsedTime, double distance) {
   }
   
   if(speedBandSource!=0) {
-    if(speedDelta<(activeLeg->speedRange*-1.0)) {
+    if(speedDelta<(activeLeg->speedRange(imperial)*-1.0)) {
       stateMachine.status.flags.buttonColor=1;
-    } else if (speedDelta>activeLeg->speedRange) {
+    } else if (speedDelta>activeLeg->speedRange(imperial)) {
       stateMachine.status.flags.buttonColor=2;
     } else {
       stateMachine.status.flags.buttonColor=3;
@@ -966,29 +968,29 @@ void loadDefaultRaces(void) {
   races.push_back(raceDef);
 
   raceLegDef=new raceLegDef_t;
-  raceLegDef->descr="Test Drive -- clockwise";
-  raceLegDef->pointsFile="";
-  raceLegDef->id=1;
-  raceLegDef->speed=SPEED_MPH_TO_INTERNAL(31.9);
-  raceLegDef->speedRange=SPEED_MPH_TO_INTERNAL(0.5);
-  raceLegDef->distance=DISTANCE_MILES_TO_INTERNAL(6.4);
-  raceLegDef->driveDistance=DISTANCE_MILES_TO_INTERNAL(6.4);
-  raceLegDef->mark=0;
-  raceLegDef->inProgress=false;
-  raceLegDef->complete=false;
+  raceLegDef->descr("Test Drive -- clockwise");
+  raceLegDef->pointsFile("");
+  raceLegDef->id(1);
+  raceLegDef->speed(31.9, imperial);
+  raceLegDef->speedRange(0.5, imperial);
+  raceLegDef->distance(6.4, imperial);
+  raceLegDef->driveDistance(6.4, imperial);
+  raceLegDef->mark(0, milliseconds);
+  raceLegDef->inProgress(false);
+  raceLegDef->complete(false);
   raceDef->raceLegs.push_back(raceLegDef);
 
   raceLegDef=new raceLegDef_t;
-  raceLegDef->descr="Test Drive -- counterclockwise";
-  raceLegDef->pointsFile="";
-  raceLegDef->id=2;
-  raceLegDef->speed=SPEED_MPH_TO_INTERNAL(26.5);
-  raceLegDef->speedRange=SPEED_MPH_TO_INTERNAL(0.5);
-  raceLegDef->distance=DISTANCE_MILES_TO_INTERNAL(6.5);
-  raceLegDef->driveDistance=DISTANCE_MILES_TO_INTERNAL(6.5);
-  raceLegDef->mark=0;
-  raceLegDef->inProgress=false;
-  raceLegDef->complete=false;
+  raceLegDef->descr("Test Drive -- counterclockwise");
+  raceLegDef->pointsFile("");
+  raceLegDef->id(2);
+  raceLegDef->speed(26.5, imperial);
+  raceLegDef->speedRange(0.5, imperial);
+  raceLegDef->distance(6.5, imperial);
+  raceLegDef->driveDistance(6.5, imperial);
+  raceLegDef->mark(0, milliseconds);
+  raceLegDef->inProgress(false);
+  raceLegDef->complete(false);
   raceDef->raceLegs.push_back(raceLegDef);
   computeRace(raceDef);
   selectedRace=races.begin();

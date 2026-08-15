@@ -431,7 +431,7 @@ void stateMachine::run(void) {
         Serial.println("to: stateAdjustLegSave");
         //convert distance and speed from floating point miles and mph back to internal integer units.
         //Time carries through directly as milliseconds.
-        race.activeLeg->driveDistance=DISTANCE_MILES_TO_INTERNAL(legAdjustDist);
+        race.activeLeg->driveDistance(legAdjustDist, imperial);
         race.legAdjustedTargetSpeed(legAdjustSpeed, imperial);
         race.startMark((double)legAdjustMark, seconds);
         //Since we change the parameters of a leg, we need to recalculate the whole race parameters.
@@ -456,7 +456,7 @@ void stateMachine::run(void) {
         //time is in milliseconds and can easily be manipulated that way.
         //We convert distance and speed to miles and mph to make the edit logic way, way
         //easier.
-        legAdjustDist=DISTANCE_INTERNAL_TO_MILES(race.activeLeg->driveDistance);
+        legAdjustDist=race.activeLeg->driveDistance(imperial);
         legAdjustSpeed=race.legAdjustedTargetSpeed(imperial);
         legAdjustTime=(int32_t)round(race.legTargetTime(milliseconds));
         legAdjustMark=(int32_t)race.startMark(seconds);
