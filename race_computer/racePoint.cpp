@@ -12,7 +12,7 @@ void loadRacePoints(raceLegDef_t *raceLeg) {
   char path[256];
 
   CSV_Parser cp(/*format*/ "udsfss", /*has_header*/ true, /*delimiter*/ ',');
-  sprintf(path, "orrc/races/%s", raceLeg->pointsFile.c_str());
+  sprintf(path, "orrc/races/%s", raceLeg->pointsFile().c_str());
   //disable display and GPS use of the SPI bus to prevent collisions
   //doSPILock();
   if(!sdCard.exists(path)) {

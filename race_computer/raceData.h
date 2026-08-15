@@ -5,7 +5,6 @@
 #include <list>
 #include <string>
 #include <stdint.h>
-
 #include <YAMLDuino.h>
 #include "racePoint.h"
 #include "raceDef.h"

@@ -274,12 +274,12 @@ void logRace(raceData_t *race, uint8_t type) {
   
   if(type==0) {
     entryType=legStr;
-    descr=race->activeLeg->descr.c_str();
-    targetTime=TIME_INTERNAL_TO_SECONDS(race->activeLeg->targetTime);
-    targetSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->speed);
-    targetDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->distance);
-    driveDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->driveDistance);
-    driveSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->driveSpeed);
+    descr=race->activeLeg->descr().c_str();
+    targetTime=race->activeLeg->targetTime(seconds);
+    targetSpeed=race->activeLeg->speed(imperial);
+    targetDistance=race->activeLeg->distance(imperial);
+    driveDistance=race->activeLeg->driveDistance(imperial);
+    driveSpeed=race->activeLeg->driveSpeed(imperial);
     adjustedTargetTime=race->legTargetTime(seconds);
     adjustedDriveSpeed=race->legAdjustedTargetSpeed(imperial);
     eolTargetTime=targetTime;
@@ -294,7 +294,7 @@ void logRace(raceData_t *race, uint8_t type) {
     distanceRemaining=race->legDistanceRemaining(imperial);
     eolDistanceRemaining=distanceRemaining;
     time=race->legTime(seconds);
-    targetTimeComplete=TIME_INTERNAL_TO_SECONDS(race->activeLeg->targetTime);
+    targetTimeComplete=race->activeLeg->targetTime(seconds);
     timeComplete=time;
     averageSpeed=race->legAverageSpeed(imperial);
     adjustedAverageSpeed=race->legAdjustedAverageSpeed(imperial);
@@ -313,11 +313,11 @@ void logRace(raceData_t *race, uint8_t type) {
     driveSpeed=race->activeRace->driveSpeed(imperial);
     adjustedTargetTime=targetTime;
     adjustedDriveSpeed=driveSpeed;
-    eolTargetTime=TIME_INTERNAL_TO_SECONDS(race->activeLeg->raceLegEndTargetTime);
-    eolTargetSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->raceLegEndAvgSpeed);
-    eolTargetDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->raceLegEndTargetDistance);
-    eolDriveDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->raceLegEndDriveDistance);
-    eolDriveAvgSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->raceLegEndDriveAvgSpeed);
+    eolTargetTime=race->activeLeg->raceLegEndTargetTime(seconds);
+    eolTargetSpeed=race->activeLeg->raceLegEndAvgSpeed(imperial);
+    eolTargetDistance=race->activeLeg->raceLegEndTargetDistance(imperial);
+    eolDriveDistance=race->activeLeg->raceLegEndDriveDistance(imperial);
+    eolDriveAvgSpeed=race->activeLeg->raceLegEndDriveAvgSpeed(imperial);
     targetDistanceComplete=race->raceTargetDistanceComplete(imperial);
     driveDistanceComplete=race->raceDriveDistanceComplete(imperial);
     actualDistanceComplete=race->raceActualDistanceComplete(imperial);

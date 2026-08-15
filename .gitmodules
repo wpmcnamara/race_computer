@@ -28,3 +28,6 @@
 [submodule "libraries/SdFat"]
 	path = libraries/SdFat
 	url = https://github.com/PaulStoffregen/SdFat.git
+[submodule "libraries/YAMLDuino"]
+	path = libraries/YAMLDuino
+	url = git@github.com:wpmcnamara/YAMLDuino.git

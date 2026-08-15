@@ -31,7 +31,8 @@ enum units_enum {
 	kilometers,
 	km,
 	mph,
-	kph
+	kph,
+	internal
 };
 
 typedef enum units_enum units_t;
