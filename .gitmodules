@@ -31,3 +31,4 @@
 [submodule "libraries/YAMLDuino"]
 	path = libraries/YAMLDuino
 	url = git@github.com:wpmcnamara/YAMLDuino.git
+	branch = teensy_no_I18N_FS
