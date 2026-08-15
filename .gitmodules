@@ -1,9 +1,6 @@
 [submodule "libraries/Timezone"]
 	path = libraries/Timezone
 	url = https://github.com/JChristensen/Timezone.git
-[submodule "libraries/YAMLDuino"]
-	path = libraries/YAMLDuino
-	url = https://github.com/tobozo/YAMLDuino.git
 [submodule "libraries/ArduinoJson"]
 	path = libraries/ArduinoJson
 	url = https://github.com/bblanchon/ArduinoJson
