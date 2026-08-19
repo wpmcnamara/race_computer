@@ -21,6 +21,8 @@ double raceDef::speed(units_t units)  {
         return SPEED_INTERNAL_TO_MPH(mSpeed);
     } else if (units == metric || units == kph)  {
         return SPEED_INTERNAL_TO_KPH(mSpeed);
+    } else if (units == internal) {
+        return mSpeed;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -32,6 +34,8 @@ double raceDef::driveSpeed(units_t units)  {
         return SPEED_INTERNAL_TO_MPH(mDriveSpeed);
     } else if (units == metric || units == kph)  {
         return SPEED_INTERNAL_TO_KPH(mDriveSpeed);
+    } else if (units == internal) {
+        return mDriveSpeed;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -43,6 +47,8 @@ double raceDef::speedRange(units_t units)  {
         return SPEED_INTERNAL_TO_MPH(mSpeedRange);
     } else if (units == metric || units == kph)  {
         return SPEED_INTERNAL_TO_KPH(mSpeedRange);
+    } else if (units == internal) {
+        return mSpeedRange;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -54,6 +60,8 @@ double raceDef::distance(units_t units)  {
         return DISTANCE_INTERNAL_TO_MILES(mDistance);
     } else if (units == metric || units == km)  {
         return DISTANCE_INTERNAL_TO_KILOMETERS(mDistance);
+    } else if (units == internal) {
+        return mDistance;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -65,6 +73,8 @@ double raceDef::driveDistance(units_t units) {
         return DISTANCE_INTERNAL_TO_MILES(mDriveDistance);
     } else if (units == metric || units == km)  {
         return DISTANCE_INTERNAL_TO_KILOMETERS(mDriveDistance);
+    } else if (units == internal) {
+        return mDriveDistance;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -74,7 +84,7 @@ double raceDef::driveDistance(units_t units) {
 double raceDef::targetTime(units_t units) {
     if (units == seconds) {
         return TIME_INTERNAL_TO_SECONDS(mTargetTime);
-    } else if (units == milliseconds)  {
+    } else if (units == milliseconds || units == internal)  {
         return mTargetTime;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -85,7 +95,7 @@ double raceDef::targetTime(units_t units) {
 double raceDef::mark(units_t units) {
     if (units == seconds) {
         return TIME_INTERNAL_TO_SECONDS(mMark);
-    } else if (units == milliseconds)  {
+    } else if (units == milliseconds || units == internal)  {
         return mMark;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -102,6 +112,8 @@ void raceDef::speed(double value, units_t units) {
         mSpeed=SPEED_MPH_TO_INTERNAL(value);
     } else if (units == metric || units == kph)  {
         mSpeed=SPEED_KPH_TO_INTERNAL(value);
+    } else if (units == internal) {
+        mSpeed=value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -113,6 +125,8 @@ void raceDef::driveSpeed(double value, units_t units) {
         mDriveSpeed=SPEED_MPH_TO_INTERNAL(value);
     } else if (units == metric || units == kph)  {
         mDriveSpeed=SPEED_KPH_TO_INTERNAL(value);
+    } else if (units == internal) {
+        mDriveSpeed=value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -124,6 +138,8 @@ void raceDef::speedRange(double value, units_t units) {
         mSpeedRange=SPEED_MPH_TO_INTERNAL(value);
     } else if (units == metric || units == kph)  {
         mSpeedRange=SPEED_KPH_TO_INTERNAL(value);
+    } else if (units == internal) {
+        mSpeedRange=value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -135,6 +151,8 @@ void raceDef::distance(double value, units_t units) {
         mDistance=DISTANCE_MILES_TO_INTERNAL(value);
     } else if (units == metric || units == km)  {
         mDistance=DISTANCE_KILOMETERS_TO_INTERNAL(value);
+    } else if (units == internal) {
+        mDistance=value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -146,6 +164,8 @@ void raceDef::driveDistance(double value, units_t units) {
         mDriveDistance=DISTANCE_MILES_TO_INTERNAL(value);
     } else if (units == metric || units == km)  {
         mDriveDistance=DISTANCE_KILOMETERS_TO_INTERNAL(value);
+    } else if (units == internal) {
+        mDriveDistance=value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -155,7 +175,7 @@ void raceDef::driveDistance(double value, units_t units) {
 void raceDef::targetTime(double value, units_t units) {
     if (units == seconds) {
         mTargetTime=TIME_SECONDS_TO_INTERNAL(value);
-    } else if (units == milliseconds)  {
+    } else if (units == milliseconds || units == internal)  {
         mTargetTime=value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -166,7 +186,7 @@ void raceDef::targetTime(double value, units_t units) {
 void raceDef::mark(double value, units_t units) {
     if (units == seconds) {
         mMark=TIME_SECONDS_TO_INTERNAL(value);
-    } else if (units == milliseconds)  {
+    } else if (units == milliseconds || units == internal)  {
         mMark=value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);

@@ -286,6 +286,8 @@ void raceLegDef::speedRange(double value, units_t units) {
         mSpeedRange = SPEED_MPH_TO_INTERNAL(value);
     } else if (units == metric || units == kph) {
         mSpeedRange = SPEED_KPH_TO_INTERNAL(value);
+    } else if (units == internal) {
+        mSpeedRange = value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -297,6 +299,8 @@ void raceLegDef::distance(double value, units_t units) {
         mDistance = DISTANCE_MILES_TO_INTERNAL(value);
     } else if (units == metric || units == km) {
         mDistance = DISTANCE_KILOMETERS_TO_INTERNAL(value);
+    } else if (units == internal) {
+        mDistance = value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -308,6 +312,8 @@ void raceLegDef::driveDistance(double value, units_t units) {
         mDriveDistance = DISTANCE_MILES_TO_INTERNAL(value);
     } else if (units == metric || units == km) {
         mDriveDistance = DISTANCE_KILOMETERS_TO_INTERNAL(value);
+    } else if (units == internal) {
+        mDriveDistance = value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
         while(1);
@@ -317,7 +323,7 @@ void raceLegDef::driveDistance(double value, units_t units) {
 void raceLegDef::targetTime(double value, units_t units) {
     if (units == seconds) {
         mTargetTime = TIME_SECONDS_TO_INTERNAL(value);
-    } else if (units == milliseconds) {
+    } else if (units == milliseconds || units == internal) {
         mTargetTime = value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -328,7 +334,7 @@ void raceLegDef::targetTime(double value, units_t units) {
 void raceLegDef::mark(double value, units_t units) {
     if (units == seconds) {
         mMark = TIME_SECONDS_TO_INTERNAL(value);
-    } else if (units == milliseconds) {
+    } else if (units == milliseconds || units == internal) {
         mMark = value;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
