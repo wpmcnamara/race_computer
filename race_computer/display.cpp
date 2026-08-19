@@ -1256,7 +1256,7 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
     tUnit[0]=0;
   } else {
     //Calculate distance to next point in 
-    distRemainingInt=(*race.activePoint)->distance-DISTANCE_MILES_TO_INTERNAL(race.legDistanceComplete(imperial));
+    distRemainingInt=(*race.activePoint)->distance-race.legDistanceComplete(internal);
     distRemaining=DISTANCE_INTERNAL_TO_MILES(distRemainingInt);
     //Calculate time to point based on our current instantaneous speed
     //We convert this to floating point seconds to make the rest of the logic simpler

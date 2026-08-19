@@ -72,7 +72,7 @@ void raceData::raceLegStop() {
 double raceData::legTargetTime(units_t units) {
     if(units==seconds) {
         return TIME_INTERNAL_TO_SECONDS(mLegTargetTime);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         return mLegTargetTime;
     } else {
         Serial.printf("Invalid units passed to %s: %d\n", __func__, units);
@@ -83,6 +83,8 @@ double raceData::legTargetTime(units_t units) {
 double raceData::legAdjustedTargetSpeed(units_t units) {
   if(units==imperial) {
     return SPEED_INTERNAL_TO_MPH(mLegAdjustedTargetSpeed);
+  } else if (units==internal) {
+    return mLegAdjustedTargetSpeed;
   } else {
     return SPEED_INTERNAL_TO_KPH(mLegAdjustedTargetSpeed);
   }
@@ -91,6 +93,8 @@ double raceData::legAdjustedTargetSpeed(units_t units) {
 double raceData::legAverageSpeed(units_t units) {
   if(units==imperial) {
     return SPEED_INTERNAL_TO_MPH(mLegAverageSpeed);
+  } else if (units==internal) {
+    return mLegAverageSpeed;
   } else {
     return SPEED_INTERNAL_TO_KPH(mLegAverageSpeed);
   }  
@@ -99,6 +103,8 @@ double raceData::legAverageSpeed(units_t units) {
 double raceData::legSpeedDelta(units_t units) {
   if(units==imperial) {
     return SPEED_INTERNAL_TO_MPH(mLegSpeedDelta);
+  } else if (units==internal) {
+    return mLegSpeedDelta;
   } else {
     return SPEED_INTERNAL_TO_KPH(mLegSpeedDelta);
   }  
@@ -107,6 +113,8 @@ double raceData::legSpeedDelta(units_t units) {
 double raceData::raceSpeedDelta(units_t units) {
   if(units==imperial) {
     return SPEED_INTERNAL_TO_MPH(mRaceSpeedDelta);
+  } else if (units==internal) {
+    return mRaceSpeedDelta;
   } else {
     return SPEED_INTERNAL_TO_KPH(mRaceSpeedDelta);
   }   
@@ -115,6 +123,8 @@ double raceData::raceSpeedDelta(units_t units) {
 double raceData::legDistanceRemaining(units_t units) {
   if(units==imperial) {
     return DISTANCE_INTERNAL_TO_MILES(mLegDistanceRemaining);
+  } else if (units==internal) {
+    return mLegDistanceRemaining;
   } else {
     return DISTANCE_INTERNAL_TO_KILOMETERS(mLegDistanceRemaining);
   }  
@@ -123,7 +133,7 @@ double raceData::legDistanceRemaining(units_t units) {
 double raceData::legTimeDelta(units_t units) {
     if(units==seconds) {
         return TIME_INTERNAL_TO_SECONDS(mLegTimeDelta);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         return mLegTimeDelta;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -134,6 +144,8 @@ double raceData::legTimeDelta(units_t units) {
 double raceData::raceAverageSpeed(units_t units) {
   if(units==imperial) {
     return SPEED_INTERNAL_TO_MPH(mRaceAverageSpeed);
+  } else if (units==internal) {
+    return mRaceAverageSpeed;
   } else {
     return SPEED_INTERNAL_TO_KPH(mRaceAverageSpeed);
   }  
@@ -142,6 +154,8 @@ double raceData::raceAverageSpeed(units_t units) {
 double raceData::raceLegEndSpeedDelta(units_t units) {
   if(units==imperial) {
     return SPEED_INTERNAL_TO_MPH(mRaceLegEndSpeedDelta);
+  } else if (units==internal) {
+    return mRaceLegEndSpeedDelta;
   } else {
     return SPEED_INTERNAL_TO_KPH(mRaceLegEndSpeedDelta);
   }   
@@ -150,6 +164,8 @@ double raceData::raceLegEndSpeedDelta(units_t units) {
 double raceData::raceDistanceComplete(units_t units) {
   if(units==imperial) {
     return DISTANCE_INTERNAL_TO_MILES(mRaceDistanceComplete);
+  } else if (units==internal) {
+    return mRaceDistanceComplete;
   } else {
     return DISTANCE_INTERNAL_TO_KILOMETERS(mRaceDistanceComplete);
   }  
@@ -158,6 +174,8 @@ double raceData::raceDistanceComplete(units_t units) {
 double raceData::raceTargetDistanceComplete(units_t units) {
   if(units==imperial) {
     return DISTANCE_INTERNAL_TO_MILES(mRaceTargetDistanceComplete);
+  } else if (units==internal) {
+    return mRaceTargetDistanceComplete;
   } else {
     return DISTANCE_INTERNAL_TO_KILOMETERS(mRaceTargetDistanceComplete);
   }  
@@ -166,6 +184,8 @@ double raceData::raceTargetDistanceComplete(units_t units) {
 double raceData::raceDriveDistanceComplete(units_t units) {
   if(units==imperial) {
     return DISTANCE_INTERNAL_TO_MILES(mRaceDriveDistanceComplete);
+  } else if (units==internal) {
+    return mRaceDriveDistanceComplete;
   } else {
     return DISTANCE_INTERNAL_TO_KILOMETERS(mRaceDriveDistanceComplete);
   }  
@@ -174,6 +194,8 @@ double raceData::raceDriveDistanceComplete(units_t units) {
 double raceData::raceActualDistanceComplete(units_t units) {
   if(units==imperial) {
     return DISTANCE_INTERNAL_TO_MILES(mRaceActualDistanceComplete);
+  } else if (units==internal) {
+    return mRaceActualDistanceComplete;
   } else {
     return DISTANCE_INTERNAL_TO_KILOMETERS(mRaceActualDistanceComplete);
   }  
@@ -182,7 +204,7 @@ double raceData::raceActualDistanceComplete(units_t units) {
 double raceData::raceTimeComplete(units_t units) {
     if(units==seconds) {
         return TIME_INTERNAL_TO_SECONDS(mRaceTimeComplete);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         return mRaceTimeComplete;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -193,7 +215,7 @@ double raceData::raceTimeComplete(units_t units) {
 double raceData::raceTargetTimeComplete(units_t units) {
     if(units==seconds) {
         return TIME_INTERNAL_TO_SECONDS(mRaceTargetTimeComplete);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         return mRaceTargetTimeComplete;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -204,6 +226,8 @@ double raceData::raceTargetTimeComplete(units_t units) {
 double raceData::legDistanceComplete(units_t units) {
   if(units==imperial) {
     return DISTANCE_INTERNAL_TO_MILES(mLegDistanceComplete);
+  } else if (units==internal) {
+    return mLegDistanceComplete;
   } else {
     return DISTANCE_INTERNAL_TO_KILOMETERS(mLegDistanceComplete);
   }  
@@ -212,7 +236,7 @@ double raceData::legDistanceComplete(units_t units) {
 double raceData::legTime(units_t units) {
     if(units==seconds) {
         return TIME_INTERNAL_TO_SECONDS(mLegTime);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         return mLegTime;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -224,7 +248,7 @@ double raceData::legTime(units_t units) {
 double raceData::raceTime(units_t units) {
     if(units==seconds) {
         return TIME_INTERNAL_TO_SECONDS(mRaceTime);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         return mRaceTime;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -235,6 +259,8 @@ double raceData::raceTime(units_t units) {
 double raceData::raceDistanceRemaining(units_t units) {
   if(units==imperial) {
     return DISTANCE_INTERNAL_TO_MILES(mRaceDistanceRemaining);
+  } else if (units==internal) {
+    return mRaceDistanceRemaining;
   } else {
     return DISTANCE_INTERNAL_TO_KILOMETERS(mRaceDistanceRemaining);
   }  
@@ -243,6 +269,8 @@ double raceData::raceDistanceRemaining(units_t units) {
 double raceData::raceLegEndDistanceRemaining(units_t units) {
   if(units==imperial) {
     return DISTANCE_INTERNAL_TO_MILES(mRaceLegEndDistanceRemaining);
+  } else if (units==internal) {
+    return mRaceLegEndDistanceRemaining;
   } else {
     return DISTANCE_INTERNAL_TO_KILOMETERS(mRaceLegEndDistanceRemaining);
   }  
@@ -251,6 +279,8 @@ double raceData::raceLegEndDistanceRemaining(units_t units) {
 double raceData::distanceOffset(units_t units) {
   if(units==imperial) {
     return DISTANCE_INTERNAL_TO_MILES(mDistanceOffset);
+  } else if (units==internal) {
+    return mDistanceOffset;
   } else {
     return DISTANCE_INTERNAL_TO_KILOMETERS(mDistanceOffset);
   }  
@@ -259,7 +289,7 @@ double raceData::distanceOffset(units_t units) {
 double raceData::startTs(units_t units) {
     if(units==seconds) {
         return TIME_INTERNAL_TO_SECONDS(mStartTs);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         return mStartTs;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -270,7 +300,7 @@ double raceData::startTs(units_t units) {
 double raceData::endTs(units_t units) {
     if(units==seconds) {
         return TIME_INTERNAL_TO_SECONDS(mEndTs);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         return mEndTs;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -281,7 +311,7 @@ double raceData::endTs(units_t units) {
 double raceData::startMark(units_t units) {
     if(units==seconds) {
         return TIME_INTERNAL_TO_SECONDS(mStartMark);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         return mStartMark;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -296,7 +326,7 @@ bool raceData::delayedStart(void) {
 double raceData::timerOffset(units_t units) {
     if(units==seconds) {
         return TIME_INTERNAL_TO_SECONDS(mTimerOffset);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         return mTimerOffset;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -307,7 +337,7 @@ double raceData::timerOffset(units_t units) {
 double raceData::raceTimeDelta(units_t units) {
     if(units==seconds) {
         return TIME_INTERNAL_TO_SECONDS(mRaceTimeDelta);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         return mRaceTimeDelta;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -326,6 +356,8 @@ bool raceData::legInProgress(void) {
 double raceData::legAdjustedAverageSpeed(units_t units) {
   if(units==imperial) {
     return SPEED_INTERNAL_TO_MPH(mLegAdjustedAverageSpeed);
+  } else if (units==internal) {
+    return mLegAdjustedAverageSpeed;
   } else {
     return SPEED_INTERNAL_TO_KPH(mLegAdjustedAverageSpeed);
   }   
@@ -334,67 +366,68 @@ double raceData::legAdjustedAverageSpeed(units_t units) {
 double raceData::raceAdjustedAverageSpeed(units_t units) {
   if(units==imperial) {
     return SPEED_INTERNAL_TO_MPH(mRaceAdjustedAverageSpeed);
+  } else if (units==internal) {
+    return mRaceAdjustedAverageSpeed;
   } else {
     return SPEED_INTERNAL_TO_KPH(mRaceAdjustedAverageSpeed);
   }   
 }
 
+//TODO:  move this into the raceDef class as thats where it belongs.
 void computeRace (raceDef_t *raceDefinition) {
   std::vector<raceLegDef_t *>::iterator raceLegIt;
-  double cumulativeRaceDistance=0;  // miles
-  double cumulativeRaceTime=0;      // seconds
-  double cumulativeRaceDriveDistance=0;  // miles
+  double cumulativeRaceDistance=0;  // internal -- mm
+  double cumulativeRaceTime=0;      // internal -- ms
+  double cumulativeRaceDriveDistance=0;  // internal -- mm
   raceLegIt=raceDefinition->raceLegs.begin();
   while(raceLegIt!=raceDefinition->raceLegs.end()) {
-    if((*raceLegIt)->targetTime(seconds)!=0) {
-      // driveSpeed in mph = driveDistance(miles) / targetTime(hours) = driveDistance * 3600 / targetTime(seconds)
-      (*raceLegIt)->driveSpeed((*raceLegIt)->driveDistance(imperial)*3600.0/(*raceLegIt)->targetTime(seconds), imperial);
+    if((*raceLegIt)->targetTime(internal)!=0) {
+      (*raceLegIt)->driveSpeed((*raceLegIt)->driveDistance(internal)/(*raceLegIt)->targetTime(internal), internal);
     } else {
       //can't have infinite speed, and shouldn't have a leg with zero target time, but just
       //in case, we will force speed to 0 if we have 0 time, as an error condition.
-      (*raceLegIt)->driveSpeed(0, imperial);
+      (*raceLegIt)->driveSpeed(0, internal);
     }
-    cumulativeRaceDistance+=(*raceLegIt)->distance(imperial);
-    cumulativeRaceDriveDistance+=(*raceLegIt)->driveDistance(imperial);
-    cumulativeRaceTime+=(*raceLegIt)->targetTime(seconds);
+    cumulativeRaceDistance+=(*raceLegIt)->distance(internal);
+    cumulativeRaceDriveDistance+=(*raceLegIt)->driveDistance(internal);
+    cumulativeRaceTime+=(*raceLegIt)->targetTime(internal);
 
     if(cumulativeRaceTime!=0) {
-      // speed in mph = distance(miles) / time(hours) = distance * 3600 / time(seconds)
-      (*raceLegIt)->raceLegEndAvgSpeed(cumulativeRaceDistance*3600.0/cumulativeRaceTime, imperial);   
-      (*raceLegIt)->raceLegEndDriveAvgSpeed(cumulativeRaceDriveDistance*3600.0/cumulativeRaceTime, imperial);   
+      (*raceLegIt)->raceLegEndAvgSpeed(cumulativeRaceDistance/cumulativeRaceTime, internal);   
+      (*raceLegIt)->raceLegEndDriveAvgSpeed(cumulativeRaceDriveDistance/cumulativeRaceTime, internal);   
     } else {
       //Like above, we should never end up with a cumulativeRaceTimeValue that is zero, but if
       //we do, force the ending average speed to zero as the error condition. 
-      (*raceLegIt)->raceLegEndAvgSpeed(0, imperial);
-      (*raceLegIt)->raceLegEndDriveAvgSpeed(0, imperial);
+      (*raceLegIt)->raceLegEndAvgSpeed(0, internal);
+      (*raceLegIt)->raceLegEndDriveAvgSpeed(0, internal);
     }
     
-    (*raceLegIt)->raceLegEndTargetDistance(cumulativeRaceDistance, imperial);
-    (*raceLegIt)->raceLegEndDriveDistance(cumulativeRaceDriveDistance, imperial);
-    (*raceLegIt)->raceLegEndTargetTime(cumulativeRaceTime, seconds);
+    (*raceLegIt)->raceLegEndTargetDistance(cumulativeRaceDistance, internal);
+    (*raceLegIt)->raceLegEndDriveDistance(cumulativeRaceDriveDistance, internal);
+    (*raceLegIt)->raceLegEndTargetTime(cumulativeRaceTime, internal);
     raceLegIt++;
   }
-  raceDefinition->driveDistance(DISTANCE_INTERNAL_TO_MILES(cumulativeRaceDriveDistance), imperial);
+  raceDefinition->driveDistance(cumulativeRaceDriveDistance, internal);
   //if you define a silly race with zero time, we force the speeds to zero to keep from
   //breaking the laws of physics with infinite speed.
   if(cumulativeRaceTime!=0) {
-    raceDefinition->driveSpeed(SPEED_INTERNAL_TO_MPH(cumulativeRaceDriveDistance/cumulativeRaceTime),imperial);
+    raceDefinition->driveSpeed(cumulativeRaceDriveDistance/cumulativeRaceTime,internal);
     //Sanity check defined race speed against the calculated speed from the cumulative leg average.
-    if(abs(SPEED_MPH_TO_INTERNAL(raceDefinition->speed(imperial))-(cumulativeRaceDistance/cumulativeRaceTime))>0.0001) {
-        Serial.println("  race speed mismatch, using calculate value\n");
-        raceDefinition->speed(SPEED_INTERNAL_TO_MPH(cumulativeRaceDistance/cumulativeRaceTime), imperial);
+    if(abs(raceDefinition->speed(internal)-(cumulativeRaceDistance/cumulativeRaceTime))>0.0001) {
+        Serial.println("  race speed mismatch, using calculated value\n");
+        raceDefinition->speed(cumulativeRaceDistance/cumulativeRaceTime, internal);
     }
   } else {
-    raceDefinition->driveSpeed(0, imperial);
-    raceDefinition->speed(0, imperial);
+    raceDefinition->driveSpeed(0, internal);
+    raceDefinition->speed(0, internal);
   }
-  if(abs(TIME_SECONDS_TO_INTERNAL(raceDefinition->targetTime(seconds))-cumulativeRaceTime)>0.0001) {
+  if(abs(raceDefinition->targetTime(internal)-cumulativeRaceTime)>0.0001) {
       Serial.println("  race time mismatch, using calculated value\n");
-      raceDefinition->targetTime(TIME_INTERNAL_TO_SECONDS(cumulativeRaceTime), seconds);
+      raceDefinition->targetTime(cumulativeRaceTime, internal);
   }
-  if(abs(DISTANCE_MILES_TO_INTERNAL(raceDefinition->distance(imperial))-cumulativeRaceDistance)>0.0001) {
+  if(abs(raceDefinition->distance(internal)-cumulativeRaceDistance)>0.0001) {
       Serial.println("  race distance mismatch, using calculated value\n");
-      raceDefinition->distance(cumulativeRaceDistance,imperial);
+      raceDefinition->distance(cumulativeRaceDistance,internal);
   }
 }
 void loadRaces() {
@@ -471,15 +504,17 @@ void loadRaces() {
     raceFile->descr=doc["descr"].as<String>();
     Serial.printf("race descr: %s\n", raceFile->descr.c_str());
     raceFile->distance(doc["distance"].as<float>(),imperial);
-    Serial.printf("race distance: %fmi, %0.3fmm\n",doc["distance"].as<float>(), DISTANCE_MILES_TO_INTERNAL(raceFile->distance(imperial)));       
+    Serial.printf("race distance: %fmi, %0.3fmm\n",doc["distance"].as<float>(), raceFile->distance(internal));       
     raceFile->speed(doc["speed"].as<float>(),imperial);
-    Serial.printf("race speed: %fimperial, %0.3fmm/ms\n",doc["speed"].as<float>(), SPEED_MPH_TO_INTERNAL(raceFile->speed(imperial)));  
+    Serial.printf("race speed: %fmph, %0.3fmm/ms\n",doc["speed"].as<float>(), raceFile->speed(internal));  
     raceFile->speedRange(doc["speedRange"].as<float>(),imperial);
-    Serial.printf("race speed range: %fimperial, %0.3fmm/ms\n", doc["speedRange"].as<float>(), SPEED_MPH_TO_INTERNAL(raceFile->speedRange(imperial)));
+    Serial.printf("race speed range: %fmph, %0.3fmm/ms\n", doc["speedRange"].as<float>(), raceFile->speedRange(internal));
     raceFile->mark(doc["tmark"].as<int>(),seconds);
-    Serial.printf("race mark: %ds, %0.3fms\n", doc["tmark"].as<int>(),TIME_SECONDS_TO_INTERNAL(raceFile->mark(seconds)));    
-    raceFile->targetTime(TIME_INTERNAL_TO_SECONDS(DISTANCE_MILES_TO_INTERNAL(raceFile->distance(imperial))/SPEED_MPH_TO_INTERNAL(raceFile->speed(imperial))), seconds);
-    Serial.printf("race target time: %0.03fs\n\n",TIME_INTERNAL_TO_SECONDS(raceFile->targetTime(seconds)));
+    Serial.printf("race mark: %ds, %0.3fms\n", doc["tmark"].as<int>(),raceFile->mark(internal));
+    //Rather than doing all the conversions to external units and back to internal and worrying about multiple passes of rounding and
+    //an impact on precision, well do the targetTime calcs in internal units.    
+    raceFile->targetTime(raceFile->distance(internal)/raceFile->speed(internal), internal);
+    Serial.printf("race target time: %0.03fs\n\n",raceFile->targetTime(seconds));
     raceFile->inProgress(false);
     races.push_back(raceFile);
 
@@ -492,27 +527,34 @@ void loadRaces() {
       raceLegFile->id(jsonLeg["id"].as<int>());
       Serial.printf("   leg id: %d\n", raceLegFile->id());
       raceLegFile->speed(jsonLeg["speed"].as<float>(), imperial);
-      Serial.printf("   leg speed: %0.3fimperial, %0.3fmm/ms\n", jsonLeg["speed"].as<float>(), raceLegFile->speed(imperial));
+      Serial.printf("   leg speed: %0.3fmph, %0.3fmm/ms\n", jsonLeg["speed"].as<float>(), raceLegFile->speed(internal));
       if(jsonLeg["speed_range"].isNull()) {
-        raceLegFile->speedRange(raceFile->speedRange(imperial), imperial);
-        Serial.printf("   speed range (from race): %0.3f\n", raceLegFile->speedRange(imperial));
+        //just copying the value over, no need to convert back and forth.  This does presume that both raceLegDef and raceDef store their
+        //units the same internally.  It would be silly not to, for the use case of this program.
+        raceLegFile->speedRange(raceFile->speedRange(internal), internal);
+        Serial.printf("   speed range (from race): %0.3fmph\n", raceLegFile->speedRange(imperial));
       } else {
         raceLegFile->speedRange(jsonLeg["speedRange"].as<float>(), imperial);
-        Serial.printf("   speed range: %0.3fimperial, %0.3fmm/ms\n", jsonLeg["speedRange"].as<float>(), raceLegFile->speedRange(imperial));
+        Serial.printf("   speed range: %0.3fmph, %0.3fmm/ms\n", jsonLeg["speedRange"].as<float>(), raceLegFile->speedRange(internal));
       }
       raceLegFile->distance(jsonLeg["distance"].as<float>(), imperial);
-      Serial.printf("   leg distance: %0.3fmi, %0.3fmm\n", jsonLeg["distance"].as<float>(), raceLegFile->distance(imperial));      
-      raceLegFile->targetTime(raceLegFile->distance(imperial)/raceLegFile->speed(imperial)*3600.0, seconds);
+      Serial.printf("   leg distance: %0.3fmi, %0.3fmm\n", jsonLeg["distance"].as<float>(), raceLegFile->distance(internal));     
+      //just keep all the values internal for calculating the targetTime.  In reality, for values that a used as the basic for calculating
+      //other values, we should update the dependent values in their setters and we could do away with this externl (to the class) code.
+      //thats a TODO 
+      raceLegFile->targetTime(raceLegFile->distance(internal)/raceLegFile->speed(internal), internal);
       if(jsonLeg["driveDistance"].isNull()) {
-        raceLegFile->driveDistance(raceLegFile->distance(imperial), imperial);
+        //same comment as speedRange above
+        raceLegFile->driveDistance(raceLegFile->distance(internal), internal);
         Serial.printf("   drive distance is leg distance: %0.3f\n", raceLegFile->driveDistance(imperial));
       } else {
         raceLegFile->driveDistance(jsonLeg["driveDistance"].as<float>(), imperial);
-        Serial.printf("   drive distance: %0.3fmi, %0.3fmm\n", jsonLeg["driveDistance"].as<float>(), raceLegFile->driveDistance(imperial));
+        Serial.printf("   drive distance: %0.3fmi, %0.3fmm\n", jsonLeg["driveDistance"].as<float>(), raceLegFile->driveDistance(internal));
       }
 
       if(jsonLeg["tmark"].isNull()) {
-        raceLegFile->mark(raceFile->mark(seconds), seconds);
+        //again, no reason to convert for just copying data.  Same caution as earlier about units.
+        raceLegFile->mark(raceFile->mark(internal), internal);
         Serial.printf("   leg mark(from race): %0.3fms\n", raceLegFile->mark(milliseconds));
       } else{
         raceLegFile->mark(jsonLeg["tmark"].as<int>(), seconds);
@@ -555,20 +597,20 @@ void raceData::setRace(raceDef_t *selectedRace) {
 void raceData::setLeg(raceLegDef_t *selectedRaceLeg) {
   activeLeg=selectedRaceLeg;
 
-  mLegTargetTime=selectedRaceLeg->targetTime(milliseconds);
+  mLegTargetTime=selectedRaceLeg->targetTime(internal);
   mLegAdjustedTargetSpeed=0;
   mLegAverageSpeed=0;
   mLegSpeedDelta=0;
   mLegDistanceComplete=0;
   mLegTime=0;
-  mLegDistanceRemaining=selectedRaceLeg->driveDistance(imperial);
+  mLegDistanceRemaining=selectedRaceLeg->driveDistance(internal);
   mLegTimeDelta=0;
   mLegInProgress=false;
 
   mDistanceOffset=0;
   mStartTs=0;
   mEndTs=0;
-  mStartMark=selectedRaceLeg->mark(milliseconds);
+  mStartMark=selectedRaceLeg->mark(internal);
   mDelayedStart=false;
   mTimerOffset=0;
 
@@ -588,7 +630,7 @@ void raceData::setLeg(raceLegDef_t *selectedRaceLeg) {
   //now figure the adjusted targer based on how long the leg should take, and the 
   //actual distance we will drive.
   if(mLegTargetTime!=0) {
-    mLegAdjustedTargetSpeed=selectedRaceLeg->driveDistance(imperial)/mLegTargetTime;
+    mLegAdjustedTargetSpeed=selectedRaceLeg->driveDistance(internal)/mLegTargetTime;
   } else {
     //Can't have infinite speed, so we force it to zero as an error condition.  In reality,
     //this should never be and is mainly here to ensure code analysis doesn't complain about
@@ -612,7 +654,7 @@ void raceData::prepRace(void) {
   mDelayedStart=false;
   mTimerOffset=0;
 
-  mLegDistanceRemaining=activeLeg->driveDistance(imperial);
+  mLegDistanceRemaining=activeLeg->driveDistance(internal);
   loadRacePoints(activeLeg);
   activePoint=activeLeg->points.begin();
 }
@@ -630,32 +672,32 @@ void raceData::updateRace(void) {
     mLegAverageSpeed = mLegDistanceComplete / mLegTime;
   } else {
     mLegAverageSpeed=0;
-    mLegAdjustedAverageSpeed=activeLeg->distance(imperial)/mLegTime;    
+    mLegAdjustedAverageSpeed=activeLeg->distance(internal)/mLegTime;    
   }
   mLegSpeedDelta = mLegAverageSpeed - mLegAdjustedTargetSpeed;
   mLegTimeDelta=mLegTime-mLegTargetTime;
 
   mRaceTimeComplete+=mLegTime;
   mRaceTime=mRaceTimeComplete;
-  mRaceTargetTimeComplete+=activeLeg->targetTime(milliseconds);
+  mRaceTargetTimeComplete+=activeLeg->targetTime(internal);
   mRaceTimeDelta=mRaceTimeComplete-mRaceTargetTimeComplete;
 
   mRaceActualDistanceComplete+=mLegDistanceComplete;
-  mRaceDriveDistanceComplete+=activeLeg->driveDistance(imperial);
-  mRaceTargetDistanceComplete+=activeLeg->distance(imperial);
-  mRaceDistanceRemaining=DISTANCE_MILES_TO_INTERNAL(activeRace->driveDistance(imperial))-mRaceDriveDistanceComplete;
+  mRaceDriveDistanceComplete+=activeLeg->driveDistance(internal);
+  mRaceTargetDistanceComplete+=activeLeg->distance(internal);
+  mRaceDistanceRemaining=activeRace->driveDistance(internal)-mRaceDriveDistanceComplete;
   //both prior race time complete and current leg time would need to be zero, in the above addition
   //but in case we somehow get that case, force race average speed to zero rather than div/0. Same
   //thing for race adjusted average speed.
   if(mRaceTimeComplete!=0) {
     mRaceAverageSpeed=mRaceDistanceComplete/mRaceTimeComplete;
-    mRaceAdjustedAverageSpeed=activeLeg->raceLegEndTargetDistance(imperial)/mRaceTimeComplete;
+    mRaceAdjustedAverageSpeed=activeLeg->raceLegEndTargetDistance(internal)/mRaceTimeComplete;
   } else {
     mRaceAverageSpeed=0;
     mRaceAdjustedAverageSpeed=0;
   }
-  mRaceSpeedDelta = mRaceAverageSpeed - SPEED_MPH_TO_INTERNAL(activeRace->driveSpeed(imperial));
-  mRaceLegEndSpeedDelta = mRaceAverageSpeed - activeLeg->raceLegEndDriveAvgSpeed(imperial);        
+  mRaceSpeedDelta = mRaceAverageSpeed - activeRace->driveSpeed(internal);
+  mRaceLegEndSpeedDelta = mRaceAverageSpeed - activeLeg->raceLegEndDriveAvgSpeed(internal);        
 }
 
 void raceData::raceCheckPoint(void) {
@@ -814,7 +856,7 @@ void raceData::loadRaceCheckPoint(void) {
 void raceData::startTs(double ts, units_t units){
     if(units==seconds) {
         mStartTs=TIME_SECONDS_TO_INTERNAL(ts);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         mStartTs=ts;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -825,7 +867,7 @@ void raceData::startTs(double ts, units_t units){
 void raceData::endTs(double ts, units_t units){
     if(units==seconds) {
         mEndTs=TIME_SECONDS_TO_INTERNAL(ts);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         mEndTs=ts;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -836,7 +878,7 @@ void raceData::endTs(double ts, units_t units){
 void raceData::timerOffset(double offset, units_t units){
     if(units==seconds) {
         mTimerOffset=TIME_SECONDS_TO_INTERNAL(offset);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         mTimerOffset=offset;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -855,7 +897,7 @@ void raceData::updateRunning(double elapsedTime, double distance) {
   mLegTime=elapsedTime;
   mRaceTime=mRaceTimeComplete+elapsedTime;
   mLegDistanceComplete = distance - mDistanceOffset;
-  mLegDistanceRemaining = activeLeg->driveDistance(imperial) - mLegDistanceComplete;
+  mLegDistanceRemaining = activeLeg->driveDistance(internal) - mLegDistanceComplete;
   if(elapsedTime!=0) {
     mLegAverageSpeed = mLegDistanceComplete / elapsedTime;
   } else {
@@ -876,19 +918,19 @@ void raceData::updateRunning(double elapsedTime, double distance) {
   //the race distance when the leg distance is actual distance driven.  Race values, using
   //published distance are only valid at the end of a leg.
   mRaceDistanceComplete=mRaceDriveDistanceComplete + mLegDistanceComplete;
-  mRaceDistanceRemaining = DISTANCE_MILES_TO_INTERNAL(activeRace->driveDistance(imperial)) - mRaceDistanceComplete;
-  mRaceLegEndDistanceRemaining = activeLeg->raceLegEndDriveDistance(imperial) - mRaceDistanceComplete;
+  mRaceDistanceRemaining = activeRace->driveDistance(internal) - mRaceDistanceComplete;
+  mRaceLegEndDistanceRemaining = activeLeg->raceLegEndDriveDistance(internal) - mRaceDistanceComplete;
   if(mRaceTimeComplete!=0 || elapsedTime!=0) {
     mRaceAverageSpeed = mRaceDistanceComplete / (mRaceTimeComplete+elapsedTime);
   } else {
     mRaceAverageSpeed=0;
   }
-  mRaceSpeedDelta = mRaceAverageSpeed - SPEED_MPH_TO_INTERNAL(activeRace->driveSpeed(imperial));
-  mRaceLegEndSpeedDelta = mRaceAverageSpeed - activeLeg->raceLegEndDriveAvgSpeed(imperial);    
+  mRaceSpeedDelta = mRaceAverageSpeed - activeRace->driveSpeed(internal);
+  mRaceLegEndSpeedDelta = mRaceAverageSpeed - activeLeg->raceLegEndDriveAvgSpeed(internal);    
   //redo the same time delta calculations as above, only for the entire race distance instead of 
   //just the current leg.
 
-  targetTime=mRaceDistanceComplete / activeLeg->raceLegEndDriveAvgSpeed(imperial);
+  targetTime=mRaceDistanceComplete / activeLeg->raceLegEndDriveAvgSpeed(internal);
   mRaceTimeDelta=mRaceTime-targetTime;
 
   //This sets the color for the keypad buttons based on our speed delta.  Green if we are in-band.
@@ -901,9 +943,9 @@ void raceData::updateRunning(double elapsedTime, double distance) {
   }
   
   if(speedBandSource!=0) {
-    if(speedDelta<(activeLeg->speedRange(imperial)*-1.0)) {
+    if(speedDelta<(activeLeg->speedRange(internal)*-1.0)) {
       stateMachine.status.flags.buttonColor=1;
-    } else if (speedDelta>activeLeg->speedRange(imperial)) {
+    } else if (speedDelta>activeLeg->speedRange(internal)) {
       stateMachine.status.flags.buttonColor=2;
     } else {
       stateMachine.status.flags.buttonColor=3;
@@ -926,7 +968,7 @@ void raceData::raceInProgress(bool state){
 void raceData::startMark(double mark, units_t units) {
     if(units==seconds) {
         mStartMark=TIME_SECONDS_TO_INTERNAL(mark);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         mStartMark=mark;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
@@ -937,6 +979,8 @@ void raceData::startMark(double mark, units_t units) {
 void raceData::legAdjustedTargetSpeed(double speed, units_t units) {
   if(units==imperial) {
     mLegAdjustedTargetSpeed=SPEED_MPH_TO_INTERNAL(speed);
+  } else if (units==internal) {
+    mLegAdjustedTargetSpeed=speed;
   } else {
     mLegAdjustedTargetSpeed=SPEED_KPH_TO_INTERNAL(speed);
   }
@@ -945,7 +989,7 @@ void raceData::legAdjustedTargetSpeed(double speed, units_t units) {
 void raceData::legTargetTime(double targetTime, units_t units) {
     if(units==seconds) {
         mLegTargetTime=TIME_SECONDS_TO_INTERNAL(targetTime);
-    } else if (units==milliseconds) {
+    } else if (units==milliseconds || units==internal) {
         mLegTargetTime=targetTime;
     } else {
         Serial.printf("Invalid units passed to %s\n", __func__);
