@@ -92,10 +92,11 @@ double getTimeStamp(void) {
   if((timerCtrl & TMR_CSCTRL_TCF1)) {
     secondCapture++;
   }
+  //this can generate negative timestamps.  The time stamp returned is relative to the start of the 
+  //current leg.  We actually depend on the timestamp being negative, in the case of a delay start.
+  //The start countdown displays the timestamp, which is negative and counts to zero as the leg
+  //starts.
   timeStamp=(double)(((double)secondCapture*1000.0)+milliCapture)-race.timerOffset(milliseconds);
-  if(timeStamp<0) {
-    timeStamp=0;
-  }
   return timeStamp;
 }
   
