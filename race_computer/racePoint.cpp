@@ -7,6 +7,158 @@
 #include "raceLegDef.h"
 #include "storage.h"
 
+racePoint::racePoint() {
+    mDistance = 0;
+    mSpeed = 0;
+    mTurn = 0;
+    mTurnDir = false;
+    mDescrLine1 = "";
+    mDescrLine2 = "";
+    mTimeToPoint = 0;
+    mDistToPoint = 0;
+    mId = 0;
+}
+
+double racePoint::distance(units_t units) {
+    if (units == imperial || units == miles) {
+        return DISTANCE_INTERNAL_TO_MILES(mDistance);
+    } else if (units == metric || units == km) {
+        return DISTANCE_INTERNAL_TO_KILOMETERS(mDistance);
+    } else if (units == internal) {
+        return mDistance;
+    } else {
+        Serial.printf("Invalid units passed to %s\n", __func__);
+        while(1);
+    }
+}
+
+void racePoint::distance(double value, units_t units) {
+    if (units == imperial || units == miles) {
+        mDistance = DISTANCE_MILES_TO_INTERNAL(value);
+    } else if (units == metric || units == km) {
+        mDistance = DISTANCE_KILOMETERS_TO_INTERNAL(value);
+    } else if (units == internal) {
+        mDistance = value;
+    } else {
+        Serial.printf("Invalid units passed to %s\n", __func__);
+        while(1);
+    }
+}
+
+double racePoint::speed(units_t units) {
+    if (units == imperial || units == mph) {
+        return SPEED_INTERNAL_TO_MPH(mSpeed);
+    } else if (units == metric || units == kph) {
+        return SPEED_INTERNAL_TO_KPH(mSpeed);
+    } else if (units == internal) {
+        return mSpeed;
+    } else {
+        Serial.printf("Invalid units passed to %s\n", __func__);
+        while(1);
+    }
+}
+
+void racePoint::speed(double value, units_t units) {
+    if (units == imperial || units == mph) {
+        mSpeed = SPEED_MPH_TO_INTERNAL(value);
+    } else if (units == metric || units == kph) {
+        mSpeed = SPEED_KPH_TO_INTERNAL(value);
+    } else if (units == internal) {
+        mSpeed = value;
+    } else {
+        Serial.printf("Invalid units passed to %s\n", __func__);
+        while(1);
+    }
+}
+
+int racePoint::turn(void) {
+    return mTurn;
+}
+
+void racePoint::turn(int value) {
+    mTurn = value;
+}
+
+bool racePoint::turnDir(void) {
+    return mTurnDir;
+}
+
+void racePoint::turnDir(bool value) {
+    mTurnDir = value;
+}
+
+String racePoint::descrLine1(void) {
+    return mDescrLine1;
+}
+
+void racePoint::descrLine1(String value) {
+    mDescrLine1 = value;
+}
+
+String racePoint::descrLine2(void) {
+    return mDescrLine2;
+}
+
+void racePoint::descrLine2(String value) {
+    mDescrLine2 = value;
+}
+
+double racePoint::timeToPoint(units_t units) {
+    if (units == seconds) {
+        return TIME_INTERNAL_TO_SECONDS(mTimeToPoint);
+    } else if (units == milliseconds || units == internal) {
+        return mTimeToPoint;
+    } else {
+        Serial.printf("Invalid units passed to %s\n", __func__);
+        while(1);
+    }
+}
+
+void racePoint::timeToPoint(double value, units_t units) {
+    if (units == seconds) {
+        mTimeToPoint = TIME_SECONDS_TO_INTERNAL(value);
+    } else if (units == milliseconds || units == internal) {
+        mTimeToPoint = value;
+    } else {
+        Serial.printf("Invalid units passed to %s\n", __func__);
+        while(1);
+    }
+}
+
+double racePoint::distToPoint(units_t units) {
+    if (units == imperial || units == miles) {
+        return DISTANCE_INTERNAL_TO_MILES(mDistToPoint);
+    } else if (units == metric || units == km) {
+        return DISTANCE_INTERNAL_TO_KILOMETERS(mDistToPoint);
+    } else if (units == internal) {
+        return mDistToPoint;
+    } else {
+        Serial.printf("Invalid units passed to %s\n", __func__);
+        while(1);
+    }
+}
+
+void racePoint::distToPoint(double value, units_t units) {
+    if (units == imperial || units == miles) {
+        mDistToPoint = DISTANCE_MILES_TO_INTERNAL(value);
+    } else if (units == metric || units == km) {
+        mDistToPoint = DISTANCE_KILOMETERS_TO_INTERNAL(value);
+    } else if (units == internal) {
+        mDistToPoint = value;
+    } else {
+        Serial.printf("Invalid units passed to %s\n", __func__);
+        while(1);
+    }
+}
+
+unsigned int racePoint::id(void) {
+    return mId;
+}
+
+void racePoint::id(unsigned int value) {
+    mId = value;
+}
+
 void loadRacePoints(raceLegDef_t *raceLeg) {
   racePoint_t *point;
   char path[256];
@@ -44,23 +196,23 @@ void loadRacePoints(raceLegDef_t *raceLeg) {
   char **descr1=(char **)cp["descr1"];
   char **descr2=(char **)cp["descr2"];
   for(int row = 0; row < cp.getRowsCount(); row++) {
-    point=new racePoint_t;
-    point->id=row;
-    Serial.printf(" point %d\n", point->id);
-    point->turn=turn[row];
-    Serial.printf("   turn: %d\n", point->turn);
+    point=new racePoint;
+    point->id(row);
+    Serial.printf(" point %d\n", point->id());
+    point->turn(turn[row]);
+    Serial.printf("   turn: %d\n", point->turn());
     if(strcmp(dir[row], "Right")==0) {
-      point->turnDir=1;
+      point->turnDir(true);
     } else {
-      point->turnDir=0;
+      point->turnDir(false);
     }
-    Serial.printf("   dir: %d\n", point->turnDir);
-    point->distance=DISTANCE_MILES_TO_INTERNAL(distance[row]);
-    Serial.printf("   distance: %fmi, %lfum\n", distance[row], point->distance);
-    point->descrLine1=descr1[row];
-    Serial.printf("   descr1: %s\n", point->descrLine1.c_str());
-    point->descrLine2=descr2[row];
-    Serial.printf("   descr2: %s\n", point->descrLine2.c_str());  
+    Serial.printf("   dir: %d\n", point->turnDir());
+    point->distance(distance[row], miles);
+    Serial.printf("   distance: %fmi, %lfum\n", distance[row], point->distance(internal));
+    point->descrLine1(descr1[row]);
+    Serial.printf("   descr1: %s\n", point->descrLine1().c_str());
+    point->descrLine2(descr2[row]);
+    Serial.printf("   descr2: %s\n", point->descrLine2().c_str());  
     raceLeg->points.push_back(point);     
   }  
 }
