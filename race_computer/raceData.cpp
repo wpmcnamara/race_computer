@@ -955,7 +955,7 @@ void raceData::updateRunning(double elapsedTime, double distance) {
   }
 
   if(activePoint!=activeLeg->points.end()) {
-    if(mLegDistanceComplete > (*(activePoint))->distance) {
+    if(mLegDistanceComplete > (*(activePoint))->distance(internal)) {
       activePoint++;
     }
   }
