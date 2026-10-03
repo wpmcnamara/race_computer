@@ -373,7 +373,7 @@ void displayLegDeltaTimeMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPo
       break;
   }
   display.setFont(u8g2_font_spleen8x16_mf);
-  display.drawStr(0,y,"   time  :");
+  display.drawStr(0,y," time l  :");
   display.drawLine(61,y,66,y-11);
   display.drawLine(62,y-1,66,y-10); 
 
@@ -391,7 +391,7 @@ void displayLegDeltaTimeMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPo
   } else if (timeDelta>0) {
     sign='+';
   }
-  sprintf(buffer, "%c%3ld.%03ld", sign, abs(timeDelta/1000), abs(timeDelta%1000) );
+  sprintf(buffer, "%c%4ld.%03ld", sign, abs(timeDelta/1000), abs(timeDelta%1000) );
   display.drawStr(81,y, buffer);
   display.setFont(u8g2_font_spleen6x12_mf);	
   display.drawStr(225,y,"sec");	
@@ -416,7 +416,7 @@ void displayLegDeltaSpeedMed(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispP
       break;
   }
   display.setFont(u8g2_font_spleen8x16_mf);
-  display.drawStr(0,y,"  speed  :");
+  display.drawStr(0,y,"speed l  :");
   display.drawLine(61,y,66,y-11);
   display.drawLine(62,y-1,66,y-10); 
 
@@ -1256,7 +1256,7 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
     tUnit[0]=0;
   } else {
     //Calculate distance to next point in 
-    distRemainingInt=(*race.activePoint)->distance-race.legDistanceComplete(internal);
+    distRemainingInt=(*race.activePoint)->distance(internal)-race.legDistanceComplete(internal);
     distRemaining=DISTANCE_INTERNAL_TO_MILES(distRemainingInt);
     //Calculate time to point based on our current instantaneous speed
     //We convert this to floating point seconds to make the rest of the logic simpler
@@ -1279,14 +1279,14 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
       }
       
     }
-    if((*(race.activePoint))->turnDir==0) {
+    if((*(race.activePoint))->turnDir()==0) {
       dir='L';
     } else {
       dir='R';
     }
-    if((*(race.activePoint))->turn>0) {
+    if((*(race.activePoint))->turn()>0) {
       display.setFont(u8g2_font_spleen16x32_mf);
-      sprintf(buffer, "%d%c", (*race.activePoint)->turn, dir );
+      sprintf(buffer, "%d%c", (*race.activePoint)->turn(), dir );
     } else {
       display.setFont(u8g2_font_open_iconic_embedded_2x_t);
       sprintf(buffer, "\x47\x47");
@@ -1309,8 +1309,8 @@ void displayPoint(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dispPos_t posX, 
 
 
     display.setFont(u8g2_font_spleen8x16_mf);
-    display.drawStr(0,46, (*race.activePoint)->descrLine1.c_str());
-    display.drawStr(0,60, (*race.activePoint)->descrLine2.c_str());
+    display.drawStr(0,46, (*race.activePoint)->descrLine1().c_str());
+    display.drawStr(0,60, (*race.activePoint)->descrLine2().c_str());
     
   }
   display.setFont(u8g2_font_spleen5x8_mf);
