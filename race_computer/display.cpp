@@ -1089,7 +1089,7 @@ void displayLegSummaryAdjusted(U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI &display, dis
 
   x=136;
   y=12;
-  sprintf(buffer, "Leg Adjusted   D: %+7.3f", race.activeLeg->distance(imperial)-race.activeLeg->driveDistance(imperial));
+  sprintf(buffer, "Leg Adjusted   D: %+7.3f", race.activeLeg->distance(imperial)-race.legDistanceComplete(imperial));
   display.drawStr(32,12,buffer);
   display.drawLine(x,y,x+5,y-11);
   display.drawLine(x+1,y-1,x+5,y-10); 

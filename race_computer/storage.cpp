@@ -212,7 +212,7 @@ void logRace(raceData_t *race, uint8_t type) {
   char * buffer;
   char legStr[]="leg";
   char raceStr[]="race";
-  const char *descr=nullptr;
+  String descr="";
   char *entryType;
   float targetTime=0;
   float targetSpeed=0;
@@ -274,7 +274,7 @@ void logRace(raceData_t *race, uint8_t type) {
   
   if(type==0) {
     entryType=legStr;
-    descr=race->activeLeg->descr().c_str();
+    descr=race->activeLeg->descr();
     targetTime=race->activeLeg->targetTime(seconds);
     targetSpeed=race->activeLeg->speed(imperial);
     targetDistance=race->activeLeg->distance(imperial);
@@ -305,7 +305,7 @@ void logRace(raceData_t *race, uint8_t type) {
     endTs=race->endTs(seconds);
   } else {
     entryType=raceStr;
-    descr=race->activeRace->descr.c_str();
+    descr=race->activeRace->descr;
     targetTime=race->activeRace->targetTime(seconds);
     targetSpeed=race->activeRace->speed(imperial);
     targetDistance=race->activeRace->distance(imperial);
@@ -338,7 +338,7 @@ void logRace(raceData_t *race, uint8_t type) {
   buffer=(char *)malloc(384);
   snprintf(buffer, 384, "%s,%s,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f\n",
     entryType,
-    descr,
+    descr.c_str(),
     targetTime,
     targetSpeed,
     targetDistance,

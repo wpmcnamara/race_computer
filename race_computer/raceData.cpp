@@ -596,7 +596,6 @@ void raceData::setRace(raceDef_t *selectedRace) {
 
 void raceData::setLeg(raceLegDef_t *selectedRaceLeg) {
   activeLeg=selectedRaceLeg;
-
   mLegTargetTime=selectedRaceLeg->targetTime(internal);
   mLegAdjustedTargetSpeed=0;
   mLegAverageSpeed=0;
@@ -670,9 +669,10 @@ void raceData::updateRace(void) {
   //average speed to zero in that case.  Same things for leg adjusted averages speed.
   if(mLegTime!=0) {
     mLegAverageSpeed = mLegDistanceComplete / mLegTime;
+    mLegAdjustedAverageSpeed=activeLeg->distance(internal)/mLegTime;
   } else {
     mLegAverageSpeed=0;
-    mLegAdjustedAverageSpeed=activeLeg->distance(internal)/mLegTime;    
+    mLegAdjustedAverageSpeed=0;
   }
   mLegSpeedDelta = mLegAverageSpeed - mLegAdjustedTargetSpeed;
   mLegTimeDelta=mLegTime-mLegTargetTime;
@@ -717,7 +717,7 @@ void raceData::raceCheckPoint(void) {
     Serial.println("clearing race checkpoint");
     sdCard.remove("orrc/system/race_checkpoint.yml");
   }
-  if(mLegInProgress!=true) {
+  if(mRaceInProgress!=true) {
     Serial.println("no race in progress");
     //doSPIUnlock();
     return;
