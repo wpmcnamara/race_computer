@@ -29,7 +29,7 @@
 //Neopixel line for the start/stop button
 #define KEYPAD_LED 14
 
-#define SDCARD_CS 1
+#define SDCARD_CS 28
 
 
 #define HWVERSTRUCTVER 1
@@ -66,7 +66,7 @@ void doReboot(void);
 uint8_t loadHardwareVersionStruct(void);
 bool storeHardwareVersionStruct(hardwareVersionStruct_t* hwVerPtr);
 
-#define SPI_SPEED 4000000
+#define SPI_SPEED 5000000
 
 
 

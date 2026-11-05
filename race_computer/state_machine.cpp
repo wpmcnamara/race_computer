@@ -1,11 +1,15 @@
 #include "state_machine.h"
 #include "keypad.h"
 #include "display.h"
-#include "race.h"
 #include "bsp.h"
 #include "menu.h"
 #include "storage.h"
 #include "math.h"
+#include "raceData.h"
+#include "raceDef.h"
+#include "raceLegDef.h"
+#include "racePoint.h"
+
 
 
 class stateMachine stateMachine;
@@ -85,10 +89,10 @@ void stateMachine::run(void) {
         Serial.print("from: stateSetLegTimeAdjust");
         break; 
       case stateSetOledBrightness:
-        Serial.print("from: stateDoFirmwareUpdate");
+        Serial.print("from: stateSetOledBrightness");
         break; 
       case stateSetScreenBlankTime:
-        Serial.print("from: stateSetOledBrightness");
+        Serial.print("from: stateSetScreenBlankTime");
         break; 
       case stateScreenBlank:
         Serial.print("from: stateScreenBlank");
@@ -155,7 +159,7 @@ void stateMachine::run(void) {
         break;
       case stateLoadRaceCheckPoint:
         Serial.println("  to: stateLoadRaceCheckPoint");
-        loadRaceCheckPoint();     
+        race.loadRaceCheckPoint();     
         break;
       case stateMainMenu:
         Serial.println("  to: stateMainMenu");
@@ -172,24 +176,23 @@ void stateMachine::run(void) {
         (*menuStack.back()).keypress(0);
         setAllButtonColor(COLOR_BLACK);
         ledDispFunc=ledDispDashes;
-        displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));
-      
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displayRaceInfo);
         break;
       case stateRaceStart:
         Serial.println("  to: stateRaceStart");
         displayTimeOutEnable=false;
         status.flags.startStopState=stateBreath;
-        prepRace();
+        race.prepRace();
         startStopStartsRace=true;
         ledDispFunc=LEDDisplayFuncs[LEDDisplayActive];
-        displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[0]]));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[1]]));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[2]]));
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[3]]));
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[0]]);
+        oledDisplay2.addContent(dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[1]]);
+        oledDisplay3.addContent(dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[2]]);
+        oledDisplay4.addContent(dispNA, dispNA, OLEDDisplayFuncs[OLEDDisplayActive[3]]);
         break;
       case stateDelayedStart:
         Serial.println("  to: stateDelayedStart");
@@ -202,27 +205,27 @@ void stateMachine::run(void) {
       case stateLegComplete:
         Serial.println("  to: stateLegComplete");
         startStopStartsRace=false;
-        updateRace();
-        raceCheckPoint();
+        race.updateRace();
+        race.raceCheckPoint();
         logRace(&race, 0);
         logRace(&race, 1);
         clearRacePoints(race.activeLeg);
         ledDispFunc=ledDispDashes;
-        displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayLegSummaryActual));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayLegSummaryAdjusted));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceSummary1));
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayRaceSummary2));        
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayLegSummaryActual);
+        oledDisplay2.addContent(dispNA, dispNA, displayLegSummaryAdjusted);
+        oledDisplay3.addContent(dispNA, dispNA, displayRaceSummary1);
+        oledDisplay4.addContent(dispNA, dispNA, displayRaceSummary2);        
         break;
       case stateRaceComplete:
         Serial.println("  to: stateRaceComplete");   
-        race.raceInProgress=false;
+        race.raceInProgress(false);
         if(race.activeRace!=NULL ) {
-          race.activeRace->inProgress=false;
+          race.activeRace->inProgress(false);
         }
         race.activeLeg=NULL;
         race.activeRace=NULL;
-        raceCheckPoint();
+        race.raceCheckPoint();
         break;
       case stateSelectRace:
         Serial.println("  to: stateSelectRace");
@@ -233,10 +236,10 @@ void stateMachine::run(void) {
         selectedRaceLeg=(*selectedRace)->raceLegs.begin();
         dispRace=(*selectedRace);
         dispRaceLeg=(*selectedRaceLeg);
-        displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));    
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displayRaceInfo);    
         break;
       case stateSelectRaceLeg:
         Serial.println("  to: stateSelectRaceLeg");
@@ -245,15 +248,15 @@ void stateMachine::run(void) {
         selectedRaceLeg=race.activeRace->raceLegs.begin();
         dispRace=(race.activeRace);
         dispRaceLeg=(*selectedRaceLeg);
-        displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayRaceInfo));              
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displayRaceInfo);              
         break;
       case stateSaveSelection:
         Serial.println("  to: stateSaveSelection");
-        setRace((*selectedRace));
-        setLeg((*selectedRaceLeg));
+        race.setRace((*selectedRace));
+        race.setLeg((*selectedRaceLeg));
         break;
       case stateCancelSelection:
         Serial.println("  to: stateCancelSelection");
@@ -264,7 +267,7 @@ void stateMachine::run(void) {
         selectedRaceLeg++;
         if(selectedRaceLeg != (*selectedRace)->raceLegs.end()) {
           race.activeLeg=(*selectedRaceLeg);
-          setLeg((*selectedRaceLeg));
+          race.setLeg((*selectedRaceLeg));
         } else {
           race.activeLeg=NULL;
         }
@@ -277,10 +280,10 @@ void stateMachine::run(void) {
         for (int idx=0; idx<4; idx++) {
           OLEDDisplaySelect[idx]=OLEDDisplayActive[idx];
         }
-        displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayDisplayConfig));
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displayDisplayConfig);
         break;
       case stateCheckFirmwareUpdate:
         Serial.println("  to: stateCheckFirmwareUpdate");
@@ -289,57 +292,60 @@ void stateMachine::run(void) {
         Serial.println("  to: stateConfirmFirmwareUpdate");
         setButtonColor(KEYPAD_KEY_ENTER, COLOR_GREEN);
         setButtonColor(KEYPAD_KEY_ESC, COLOR_RED);
-        displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayFirmwareConfirm));
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displayFirmwareConfirm);
         break;
       case stateDoFirmwareUpdate:
         setAllButtonColor(COLOR_BLACK);
-        displayList.erase(displayList.begin(), displayList.end());
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayFirmwareUpdate));        
+        
+        clearDisplays();
+        oledDisplay3.addContent(dispNA, dispNA, displayFirmwareUpdate);        
         Serial.println("  to: stateDoFirmwareUpdate");
         doFirmwareUpdate();
         break;
       case stateSetLedBrightness:
         Serial.println("  to: stateSetLedBrightness");
-        displayList.erase(displayList.begin(), displayList.end());
         ledBrightnessTmp=ledBrightness;
         ledDispFunc=ledDispEights;
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetLedBrightness));       
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displaySetLedBrightness); 
         break; 
       case stateSetOledBrightness:
         Serial.println("  to: stateSetOledBrightness");
-        displayList.erase(displayList.begin(), displayList.end());
+        
         oledBrightnessTmp=oledBrightness;
         ledDispFunc=ledDispDashes;
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetOledBrightness));               
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displaySetOledBrightness);               
         break; 
       case stateSetScreenBlankTime:
         Serial.println("  to: stateSetScreenBlankTime");
-        displayTimeoutTmp=displayTimeout;
-        displayList.erase(displayList.begin(), displayList.end());
+        displayTimeoutTmp=displayTimeout;              
         ledDispFunc=ledDispDashes;
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetDisplayTimeout));     
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displaySetDisplayTimeout); 
         break; 
       case stateSetLegTimeAdjust:
         Serial.println("  to: stateSetLegTimeAdjust");
         autoAdjustLegTimeSave=autoAdjustLegTime;
-        displayList.erase(displayList.begin(), displayList.end());
         ledDispFunc=ledDispDashes;
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetLegTimeAdjust));     
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displaySetLegTimeAdjust);     
         break; 
       case stateScreenBlank:
         Serial.println("  to: stateScreenBlank");
-        displayList.erase(displayList.begin(), displayList.end());
+        
+        clearDisplays();
         ledDispFunc=ledDispBlank;    
         keypadStartBreath();    
         break; 
@@ -361,12 +367,13 @@ void stateMachine::run(void) {
         //This is to pop any dummy menus of the stack and return us the the active menu tree.
         //If we weren't in a dummy menu, then this is a no op.
         (*menuStack.back()).keypress(0);
-        displayList.erase(displayList.begin(), displayList.end());
+        
         ledDispFunc=ledDispDashes;
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displayAdjustLeg1));     
-        displayList.push_back(new displayContent(oledDisp4, dispNA, dispNA, displayAdjustLeg2));   
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displayAdjustLeg1);     
+        oledDisplay4.addContent(dispNA, dispNA, displayAdjustLeg2);   
         break; 
       case stateAdjustLegTime:
         Serial.println("to: stateAdjustLegTime");
@@ -424,12 +431,12 @@ void stateMachine::run(void) {
         Serial.println("to: stateAdjustLegSave");
         //convert distance and speed from floating point miles and mph back to internal integer units.
         //Time carries through directly as milliseconds.
-        race.activeLeg->driveDistance=DISTANCE_MILES_TO_INTERNAL(legAdjustDist);
-        race.legAdjustedTargetSpeed=SPEED_MPH_TO_INTERNAL(legAdjustSpeed);
-        race.startMark=TIME_SECONDS_TO_INTERNAL((double)legAdjustMark);
+        race.activeLeg->driveDistance(legAdjustDist, imperial);
+        race.legAdjustedTargetSpeed(legAdjustSpeed, imperial);
+        race.startMark((double)legAdjustMark, seconds);
         //Since we change the parameters of a leg, we need to recalculate the whole race parameters.
         computeRace(race.activeRace);
-        race.legTargetTime=legAdjustTime;
+        race.legTargetTime(legAdjustTime, milliseconds);
         legAdjustMode=0;
         break;       
       case stateAdjustLegRestore:
@@ -449,30 +456,31 @@ void stateMachine::run(void) {
         //time is in milliseconds and can easily be manipulated that way.
         //We convert distance and speed to miles and mph to make the edit logic way, way
         //easier.
-        legAdjustDist=DISTANCE_INTERNAL_TO_MILES(race.activeLeg->driveDistance);
-        legAdjustSpeed=SPEED_INTERNAL_TO_MPH(race.legAdjustedTargetSpeed);
-        legAdjustTime=(int32_t)round(race.legTargetTime);
-        legAdjustMark=(int32_t)TIME_INTERNAL_TO_SECONDS(race.startMark);
+        legAdjustDist=race.activeLeg->driveDistance(imperial);
+        legAdjustSpeed=race.legAdjustedTargetSpeed(imperial);
+        legAdjustTime=(int32_t)round(race.legTargetTime(milliseconds));
+        legAdjustMark=(int32_t)race.startMark(seconds);
         break;
       case stateAdjustLegResetValues:
         //probably could just use stateSaveSelection as it is the same action, but if we need to do something
         //different, we won't need to split the states.
         Serial.println("to: stateAdjustLegResetValues");
-        setLeg((*selectedRaceLeg));
+        race.setLeg((*selectedRaceLeg));
         break;
       case stateShowSystemInfo:
         Serial.println("to: stateShowSystemInfo");      
-        displayList.erase(displayList.begin(), displayList.end());
+        
         ledDispFunc=ledDispDashes;
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySystemInfo));        
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displaySystemInfo);        
         break;     
       case stateSetHwVer:
         Serial.println("  to: stateSetHwVer");  
-        displayList.erase(displayList.begin(), displayList.end());
+        
         ledDispFunc=ledDispDashes;
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySystemInfo));                 
+        oledDisplay1.addContent(dispNA, dispNA, displaySystemInfo);                 
         break;             
       case stateResetAllSettings:
         Serial.println("  to: stateResetAllSettings");
@@ -485,11 +493,13 @@ void stateMachine::run(void) {
       case stateSpeedBandSource:
         Serial.println("  to: stateSpeedBandSource");
         speedBandSourceSave=speedBandSource;
-        displayList.erase(displayList.begin(), displayList.end());
+        
         ledDispFunc=ledDispDashes;
-        displayList.push_back(new displayContent(oledDisp1, dispNA, dispNA, displayMenuTitle));
-        displayList.push_back(new displayContent(oledDisp2, dispNA, dispNA, displayMenu));
-        displayList.push_back(new displayContent(oledDisp3, dispNA, dispNA, displaySetSpeedBandSource));            
+        clearDisplays();
+        oledDisplay1.addContent(dispNA, dispNA, displayMenuTitle);
+        oledDisplay2.addContent(dispNA, dispNA, displayMenu);
+        oledDisplay3.addContent(dispNA, dispNA, displaySetSpeedBandSource);         
+        break;   
       case stateUnknown:
         Serial.println("  to: stateUnknown");
         break;
@@ -519,9 +529,12 @@ void stateMachine::run(void) {
     case stateRaceStart:
       if(status.flags.delayedStart==true) {
         state=stateDelayedStart;
-      }
-      if(status.flags.legActive==true) {
-        state=stateLegActive;
+      } else {
+        //technically this should never be true when delayed start is true, but putting it
+        //the else block makes it impossible and will make any code analysis tools happy.
+        if(status.flags.legActive==true) {
+          state=stateLegActive;
+        }
       }
       break;
     case stateDelayedStart:
@@ -654,7 +667,7 @@ void stateMachine::run(void) {
           }
           break;
         case menuActionSelectRace:
-          if(!race.raceInProgress) {
+          if(!race.raceInProgress()) {
             state=stateSelectRace;
           } else {
             //we can't prevent entering the menu, but we don't want to go in there since there isn't a race 
@@ -664,7 +677,7 @@ void stateMachine::run(void) {
           }
           break;
         case menuActionSelectLeg:
-          if(race.activeRace!=NULL && !race.raceInProgress) {
+          if(race.activeRace!=NULL && !race.raceInProgress()) {
             state=stateSelectRaceLeg;
           } else {
             //we can't prevent entering the menu, but we don't want to go in there since there isn't a race 
@@ -966,7 +979,7 @@ void stateMachine::run(void) {
       }
       break; 
     case stateSetLegTimeAdjust:
-      menuAction=menuAutoAjustLegTime(keys);
+      menuAction=menuAutoAdjustLegTime(keys);
       switch(menuAction) {
         case 0:
           break;
@@ -1187,7 +1200,7 @@ void stateMachine::run(void) {
     }
   }
 
-  if(status.flags.buttonColor != lastStatus.flags.buttonColor && race.legInProgress) {
+  if(status.flags.buttonColor != lastStatus.flags.buttonColor && race.legInProgress()) {
     //Serial.printf("set all buttons: %d\n",status.flags.buttonColor);
     switch(status.flags.buttonColor) {
       case 0:

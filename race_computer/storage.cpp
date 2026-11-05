@@ -2,6 +2,7 @@
 #include "display.h"
 #include <ArduinoJson.h>
 #include "keypad.h"
+#include "time_date.h"
 //setup global objects on the board.
 // set up variables using the SD utility library functions:
 SdFat32 sdCard;
@@ -13,8 +14,9 @@ bool sdCardPresent;
 void storageSetup(void) {
   uint32_t size;
   uint32_t sizeMB;
-  doSPILock();
-  if (!sdCard.begin(SDCARD_CS, SPI_SPEED)) {  
+  //doSPILock();
+  if (!sdCard.begin(SdSpiConfig(SDCARD_CS, DEDICATED_SPI, SD_SCK_MHZ(8), &SPI1))) {
+  //if (!sdCard.begin(SDCARD_CS, SPI_SPEED)) {  
   //if (!sdCard.begin(SD_CONFIG)) {  
     sdCardPresent=false; 
     if (sdCard.card()->errorCode()) { 
@@ -24,17 +26,17 @@ void storageSetup(void) {
       Serial.println("* did you change the chipSelect pin to match your shield or module?");
       Serial.printf("errorCode: 0x%0X\n",int(sdCard.card()->errorCode()));
       Serial.printf("errorData: 0x%0X\n",int(sdCard.card()->errorData()));
-      doSPIUnlock();
+      //doSPIUnlock();
       return;
     }
-    Serial.println("Card successfully initialized.\n");
+    Serial.println("Card initialization failed.\n");
     if (sdCard.vol()->fatType() == 0) {
       Serial.println("Can't find a valid FAT16/FAT32/exFAT partition.\n");
-      doSPIUnlock();
+      //doSPIUnlock();
       return;
     }
     Serial.println("Can't determine error type\n");
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   } else {
    Serial.println("Wiring is correct and a card is present.");
@@ -44,7 +46,7 @@ void storageSetup(void) {
   size = sdCard.card()->sectorCount();
   if (size == 0) {
     Serial.println("Can't determine the card size.\n");
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }
   sizeMB = 0.000512 * size + 0.5;
@@ -64,10 +66,10 @@ void storageSetup(void) {
     Serial.println("\nThis card should be reformatted for best performance.");
     Serial.println("Use a cluster size of 32 KB for cards larger than 1 GB.");
     Serial.println("Only cards larger than 2 GB should be formatted FAT32.\n");
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }
-  doSPIUnlock();
+  //doSPIUnlock();
   return;
 }
 
@@ -80,12 +82,12 @@ void saveSettings(void) {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  //doSPILock();
   if(!sdCard.exists("orrc")) {
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }
-  doSPIUnlock();
+  //doSPIUnlock();
   Serial.println("Saving settings...");
   doc["displayTimeout"]=displayTimeout;
   doc["oledBrightness"]=oledBrightness;
@@ -98,7 +100,8 @@ void saveSettings(void) {
   doc["ledDisp"]=LEDDisplayActive;
   doc["adjustLegTime"]=autoAdjustLegTime;
   doc["speedBandSource"]=speedBandSource;
-  doSPILock();
+  doc["timezone"]=timeDateSettings.getTzIndex();
+  //doSPILock();
   if(sdCard.exists("orrc/system/settings.yml")) {
     Serial.println("clearing saved settings");
     sdCard.remove("orrc/system/settings.yml");
@@ -106,14 +109,14 @@ void saveSettings(void) {
   settings=sdCard.open("orrc/system/settings.yml", FILE_WRITE);
   if(!settings) {
     Serial.println("Settings open failed");
-    doSPIUnlock();
+    //doSPIUnlock();
     return;
   }
   serializeYml(doc, settings);
   serializeYml(doc, Serial);
   Serial.println();
   settings.close();
-  doSPIUnlock();
+  //doSPIUnlock();
 
 };
 
@@ -129,9 +132,9 @@ void loadSettings(void) {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  //doSPILock();
   if(!sdCard.exists("orrc/system/settings.yml")) {
-    doSPIUnlock();
+    //doSPIUnlock();
     Serial.println("No settings file found.");
     return;
   }  
@@ -147,7 +150,7 @@ void loadSettings(void) {
   len=settings.read(buffer, len);
   buffer[len]=0;
   settings.close();
-  doSPIUnlock();
+  //doSPIUnlock();
 
   error=deserializeYml(doc, (const char *)buffer);
   free(buffer);
@@ -193,9 +196,13 @@ void loadSettings(void) {
     Serial.printf("Auto Adjust Leg Time=%d\n", autoAdjustLegTime);
   }
   if(!doc["speedBandSource"].isNull()) {  
-    speedBandSource=doc["speedBandSource"].as<bool>();
+    speedBandSource=doc["speedBandSource"].as<int>();
     Serial.printf("Speed Band Comparison Source=%d\n", speedBandSource);
   }  
+  if(!doc["timezone"].isNull()) {
+    timeDateSettings.setTzIndex(doc["timezone"].as<int8_t>());
+    Serial.printf("timezone index=%d\n", timeDateSettings.getTzIndex());
+  }
 
 };
 
@@ -205,7 +212,7 @@ void logRace(raceData_t *race, uint8_t type) {
   char * buffer;
   char legStr[]="leg";
   char raceStr[]="race";
-  const char *descr=nullptr;
+  String descr="";
   char *entryType;
   float targetTime=0;
   float targetSpeed=0;
@@ -242,12 +249,12 @@ void logRace(raceData_t *race, uint8_t type) {
     return;
   }
   //disable display and GPS use of the SPI bus to prevent collisions
-  doSPILock();
+  //doSPILock();
   if(!sdCard.exists("orrc/logs")) {
     ret=sdCard.mkdir("orrc/logs");
     if(!ret) {
       Serial.println("error creating orrc/logs");
-      doSPIUnlock();
+      //doSPIUnlock();
       return;
     }
   }  
@@ -255,26 +262,26 @@ void logRace(raceData_t *race, uint8_t type) {
     writeHeader=true;
   }
   if(!logFile.open("orrc/logs/race_log.csv", O_WRITE | O_APPEND | O_CREAT)) {
-    doSPIUnlock();
+    //doSPIUnlock();
     Serial.println("Error opening log file");
     return;
   }
   if(writeHeader) {
     logFile.write("type,description,targetTime,targetSpeed,targetDistance,driveDistance,driveSpeed,adjustedTargetTime,adjustedDriveSpeed,EOL targetTime,EOL targetSpeed,EOL targetDistance,\
-      EOL driveDistance,EOL driveAvgSpeed,targetDistanceComplete,driveDistanceComplete,actualDistancceComplete,distanceComplete,distanceRemaining,EOL distanceRemainging,\
+      EOL driveDistance,EOL driveAvgSpeed,targetDistanceComplete,driveDistanceComplete,actualDistanceComplete,distanceComplete,distanceRemaining,EOL distanceRemaining,\
       targetTimeComplete,timeComplete,time,averageSpeed,adjustedAverageSpeed,speedDelta,EOL speedDelta,timeDelta,startTS,endTS\n");
   }
   
   if(type==0) {
     entryType=legStr;
-    descr=race->activeLeg->descr.c_str();
-    targetTime=TIME_INTERNAL_TO_SECONDS(race->activeLeg->targetTime);
-    targetSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->speed);
-    targetDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->distance);
-    driveDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->driveDistance);
-    driveSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->driveSpeed);
-    adjustedTargetTime=TIME_INTERNAL_TO_SECONDS(race->legTargetTime);
-    adjustedDriveSpeed=SPEED_INTERNAL_TO_MPH(race->legAdjustedTargetSpeed);
+    descr=race->activeLeg->descr();
+    targetTime=race->activeLeg->targetTime(seconds);
+    targetSpeed=race->activeLeg->speed(imperial);
+    targetDistance=race->activeLeg->distance(imperial);
+    driveDistance=race->activeLeg->driveDistance(imperial);
+    driveSpeed=race->activeLeg->driveSpeed(imperial);
+    adjustedTargetTime=race->legTargetTime(seconds);
+    adjustedDriveSpeed=race->legAdjustedTargetSpeed(imperial);
     eolTargetTime=targetTime;
     eolTargetSpeed=targetSpeed;
     eolTargetDistance=targetDistance;
@@ -282,56 +289,56 @@ void logRace(raceData_t *race, uint8_t type) {
     eolDriveAvgSpeed=driveSpeed;
     targetDistanceComplete=targetDistance;
     driveDistanceComplete=driveDistance;
-    actualDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->legDistanceComplete);
+    actualDistanceComplete=race->legDistanceComplete(imperial);
     distanceComplete=actualDistanceComplete;
-    distanceRemaining=DISTANCE_INTERNAL_TO_MILES(race->legDistanceRemaining);
+    distanceRemaining=race->legDistanceRemaining(imperial);
     eolDistanceRemaining=distanceRemaining;
-    time=TIME_INTERNAL_TO_SECONDS(race->legTime);
-    targetTimeComplete=TIME_INTERNAL_TO_SECONDS(race->activeLeg->targetTime);
+    time=race->legTime(seconds);
+    targetTimeComplete=race->activeLeg->targetTime(seconds);
     timeComplete=time;
-    averageSpeed=SPEED_INTERNAL_TO_MPH(race->legAverageSpeed);
-    adjustedAverageSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->distance/race->legTime);
-    speedDelta=SPEED_INTERNAL_TO_MPH(race->legSpeedDelta);
+    averageSpeed=race->legAverageSpeed(imperial);
+    adjustedAverageSpeed=race->legAdjustedAverageSpeed(imperial);
+    speedDelta=race->legSpeedDelta(imperial);
     eolSpeedDelta=speedDelta;
-    timeDelta=TIME_INTERNAL_TO_SECONDS(race->legTimeDelta);
-    startTs=TIME_INTERNAL_TO_SECONDS(race->startTs);
-    endTs=TIME_INTERNAL_TO_SECONDS(race->endTs);
+    timeDelta=race->legTimeDelta(seconds);
+    startTs=race->startTs(seconds);
+    endTs=race->endTs(seconds);
   } else {
     entryType=raceStr;
-    descr=race->activeRace->descr.c_str();
-    targetTime=TIME_INTERNAL_TO_SECONDS(race->activeRace->targetTime);
-    targetSpeed=SPEED_INTERNAL_TO_MPH(race->activeRace->speed);
-    targetDistance=DISTANCE_INTERNAL_TO_MILES(race->activeRace->distance);
-    driveDistance=DISTANCE_INTERNAL_TO_MILES(race->activeRace->driveDistance);
-    driveSpeed=SPEED_INTERNAL_TO_MPH(race->activeRace->driveSpeed);
+    descr=race->activeRace->descr;
+    targetTime=race->activeRace->targetTime(seconds);
+    targetSpeed=race->activeRace->speed(imperial);
+    targetDistance=race->activeRace->distance(imperial);
+    driveDistance=race->activeRace->driveDistance(imperial);
+    driveSpeed=race->activeRace->driveSpeed(imperial);
     adjustedTargetTime=targetTime;
     adjustedDriveSpeed=driveSpeed;
-    eolTargetTime=TIME_INTERNAL_TO_SECONDS(race->activeLeg->raceLegEndTargetTime);
-    eolTargetSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->raceLegEndAvgSpeed);
-    eolTargetDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->raceLegEndTargetDistance);
-    eolDriveDistance=DISTANCE_INTERNAL_TO_MILES(race->activeLeg->raceLegEndDriveDistance);
-    eolDriveAvgSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->raceLegEndDriveAvgSpeed);
-    targetDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->raceTargetDistanceComplete);
-    driveDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->raceDriveDistanceComplete);
-    actualDistanceComplete=DISTANCE_INTERNAL_TO_MILES(race->raceActualDistanceComplete);
-    distanceComplete=DISTANCE_INTERNAL_TO_MILES(race->raceDistanceComplete);
-    distanceRemaining=DISTANCE_INTERNAL_TO_MILES(race->raceDistanceRemaining);
-    eolDistanceRemaining=DISTANCE_INTERNAL_TO_MILES(race->raceLegEndDistanceRemaining);
-    time=TIME_INTERNAL_TO_SECONDS(race->raceTime);
-    targetTimeComplete=TIME_INTERNAL_TO_SECONDS(race->raceTargetTimeComplete);
-    timeComplete=TIME_INTERNAL_TO_SECONDS(race->raceTimeComplete);
-    averageSpeed=SPEED_INTERNAL_TO_MPH(race->raceAverageSpeed);
-    adjustedAverageSpeed=SPEED_INTERNAL_TO_MPH(race->activeLeg->raceLegEndTargetDistance/race->raceTime);
-    speedDelta=SPEED_INTERNAL_TO_MPH(race->raceSpeedDelta);
-    eolSpeedDelta=SPEED_INTERNAL_TO_MPH(race->raceLegEndSpeedDelta);
-    timeDelta=TIME_INTERNAL_TO_SECONDS(race->raceTimeDelta);
+    eolTargetTime=race->activeLeg->raceLegEndTargetTime(seconds);
+    eolTargetSpeed=race->activeLeg->raceLegEndAvgSpeed(imperial);
+    eolTargetDistance=race->activeLeg->raceLegEndTargetDistance(imperial);
+    eolDriveDistance=race->activeLeg->raceLegEndDriveDistance(imperial);
+    eolDriveAvgSpeed=race->activeLeg->raceLegEndDriveAvgSpeed(imperial);
+    targetDistanceComplete=race->raceTargetDistanceComplete(imperial);
+    driveDistanceComplete=race->raceDriveDistanceComplete(imperial);
+    actualDistanceComplete=race->raceActualDistanceComplete(imperial);
+    distanceComplete=race->raceDistanceComplete(imperial);
+    distanceRemaining=race->raceDistanceRemaining(imperial);
+    eolDistanceRemaining=race->raceLegEndDistanceRemaining(imperial);
+    time=race->raceTime(seconds);
+    targetTimeComplete=race->raceTargetTimeComplete(seconds);
+    timeComplete=race->raceTimeComplete(seconds);
+    averageSpeed=race->raceAverageSpeed(imperial);
+    adjustedAverageSpeed=race->raceAdjustedAverageSpeed(imperial);
+    speedDelta=race->raceSpeedDelta(imperial);
+    eolSpeedDelta=race->raceLegEndSpeedDelta(imperial);
+    timeDelta=race->raceTimeDelta(seconds);
     startTs=0;
     endTs=0;
   }
   buffer=(char *)malloc(384);
   snprintf(buffer, 384, "%s,%s,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f,%0.03f\n",
     entryType,
-    descr,
+    descr.c_str(),
     targetTime,
     targetSpeed,
     targetDistance,
@@ -365,7 +372,7 @@ void logRace(raceData_t *race, uint8_t type) {
   logFile.sync();
   logFile.close();
 
-  doSPIUnlock();
+  //doSPIUnlock();
   free(buffer);
 }
 
@@ -373,9 +380,9 @@ void resetSettings(void) {
   bool ret;
   if(sdCard.exists("orrc/system/settings.yml")) {
     Serial.println("clearing saved settings");
-    doSPILock();
+    //doSPILock();
     ret=sdCard.remove("orrc/system/settings.yml");
-    doSPIUnlock();
+    //doSPIUnlock();
     if(ret) {
       Serial.println("success");
     } else {

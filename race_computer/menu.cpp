@@ -25,7 +25,7 @@ std::vector<menuEntry_t> configMenuEntries={
     {"LED Brightness", menuActionLEDBrightness, &ledBrightMenu},
     {"OLED Brightness", menuActionOLEDBrightness, &oledBrightMenu},
     {"Screen Timeout", menuActionScreenTimeout, &screenTimeoutMenu},
-    {"Auto Adjust Leg Timing", menuActionAutoAdjustLeg, &autoAjustLegTimeMenu},
+    {"Auto Adjust Leg Timing", menuActionAutoAdjustLeg, &autoAdjustLegTimeMenu},
     {"Speed Band Compare Source", menuActionSpeedBandSource, &speedBandSourceMenu},
     {"Reset All Configuration Settings", menuActionMainMenu, &resetAllSettingsMenu}
 };
@@ -66,7 +66,7 @@ menu_t configDisplayMenu("Config Display", dummyMenuEntries, 0);
 menu_t ledBrightMenu("LED Brightness", dummyMenuEntries, 0);
 menu_t oledBrightMenu("OLED Brightness", dummyMenuEntries, 0);
 menu_t screenTimeoutMenu("Screen Timeout", dummyMenuEntries, 0);
-menu_t autoAjustLegTimeMenu("Leg Timing Adjust", dummyMenuEntries, 0);
+menu_t autoAdjustLegTimeMenu("Leg Timing Adjust", dummyMenuEntries, 0);
 menu_t speedBandSourceMenu("Speed Band Source", dummyMenuEntries, 0);
 menu_t resetAllSettingsMenu("Reset All Settings", settingsResetMenuEntries, 2);
 
@@ -86,7 +86,7 @@ menu_t adjustSaveMenu("Save Adjustments", dummyMenuEntries, 0);
 std::vector<menu_t*> menuStack = { &mainMenu };
 
 int legAdjustRow=0;
-int legAdjustColumn=0;
+int legAdjustColumn=-1;
 int legAdjustMode=0;
 int32_t legAdjustTime;
 int32_t legAdjustTimeTmp;
@@ -127,8 +127,11 @@ uint8_t menu::keypress(uint8_t key) {
     //to an action outside navigating the menu.  
     if(lines==0) {
         if(menuStack.size()>1) {
+            //This removes the dummy menu from the menu navigation stack.
             menuStack.pop_back();
-            //return (*menuStack.back()).keypress(key);
+            //Treat this as though we are re-entering the active menu.
+            //Need to look at the structures and see if we still need this in all cases or if we can 
+            //get rid of the dummyEntry in the menu structure.
             return((*menuStack.back()).entries[activeEntry].action);
         }        
         //This case shouldn't happen, but it it does, we reload the main menu and go there.
@@ -247,6 +250,8 @@ uint8_t menuSetLedBrightness(uint8_t key) {
             ledDisp.Set_Brightness(ledBrightness);      
             doSPIUnlock();      
             return 2;
+            //make analysis tools happy
+            break;
         default:
             break;
     }
@@ -295,6 +300,8 @@ uint8_t menuSetOledBrightness(uint8_t key) {
             oledDisp4.setContrast(oledBrightness);     
             doSPIUnlock();      
             return 2;
+            //make analysis tools happy
+            break;            
         default:
             break;
     }
@@ -322,6 +329,8 @@ uint8_t menuSetScreenTimeout(uint8_t key) {
             break;
         case KEYPAD_KEY_ESC:
             return 2;
+            //make analysis tools happy
+            break;            
         default:
             break;
     }
@@ -403,7 +412,7 @@ uint8_t menuAdjustLegTime(uint8_t key) {
                 }
                 //Time changed, so recalculate target speed.  Time is in milliseconds.
                 //Scale time to hours to calculate miles per hour.
-                legAdjustSpeed=legAdjustDist/(legAdjustTime*3600000.0);
+                legAdjustSpeed=legAdjustDist/(legAdjustTime/3600000.0);
             }
             ret=0;
             break;
@@ -479,6 +488,8 @@ uint8_t menuAdjustLegTime(uint8_t key) {
             } else {
                 ret=2;
             }
+            //make analysis tools happy
+            break;            
         default:
             break;
     }
@@ -607,6 +618,8 @@ uint8_t menuAdjustLegDistance(uint8_t key) {
             } else {
                 ret=2;
             }
+            //make analysis tools happy
+            break;            
         default:
             break;
     }
@@ -733,6 +746,8 @@ uint8_t menuAdjustLegSpeed(uint8_t key) {
             } else {
                 ret=2;
             }
+            //make analysis tools happy
+            break;            
         default:
             break;
     }
@@ -762,7 +777,7 @@ uint8_t menuAdjustLegMark(uint8_t key) {
             } else {
                 switch(legAdjustColumn) {
                     case 1:
-                        if(legAdjustMark>1) {
+                        if(legAdjustMark>0) {
                             legAdjustMark-=1;
                         }
                         break;
@@ -804,6 +819,7 @@ uint8_t menuAdjustLegMark(uint8_t key) {
             } else {
                 ret=2;
             }
+            break;
         default:
             break;
     }
@@ -835,7 +851,7 @@ uint8_t menuSetHwVer(uint8_t key) {
     return 0;
 }
 
-uint8_t menuAutoAjustLegTime(uint8_t key) {
+uint8_t menuAutoAdjustLegTime(uint8_t key) {
     switch (key) {
         case KEYPAD_KEY_START_STOP:
             return 0;

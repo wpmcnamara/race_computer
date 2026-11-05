@@ -2,6 +2,7 @@
 #define __MENU__
 #include <string>
 #include <vector>
+#include <cstdint>
 
 enum menuAction {
   menuActionNone=0,
@@ -71,7 +72,7 @@ extern std::vector<menuEntry_t> mainMenuEntries;
 extern std::vector<menuEntry_t> raceMenuEntries;
 extern std::vector<menuEntry_t> configMenuEntries;
 extern std::vector<menuEntry_t> systemMenuEntries;
-extern std::vector<menuEntry_t> settinsResetMenuEntries;
+extern std::vector<menuEntry_t> settingsResetMenuEntries;
 extern std::vector<menuEntry_t> dummyMenuEntries;
 
 extern menu_t mainMenu;
@@ -88,7 +89,7 @@ extern menu_t configDisplayMenu;
 extern menu_t ledBrightMenu;
 extern menu_t oledBrightMenu;
 extern menu_t screenTimeoutMenu;
-extern menu_t autoAjustLegTimeMenu;
+extern menu_t autoAdjustLegTimeMenu;
 extern menu_t resetAllSettingsMenu;
 extern menu_t speedBandSourceMenu;
 
@@ -133,7 +134,7 @@ uint8_t menuAdjustLegSpeed(uint8_t key);
 uint8_t menuAdjustLegMark(uint8_t key);
 uint8_t menuConfirmSettingsReset(uint8_t key);
 uint8_t menuSetHwVer(uint8_t key);
-uint8_t menuAutoAjustLegTime(uint8_t key);
+uint8_t menuAutoAdjustLegTime(uint8_t key);
 uint8_t menuSpeedBandSource(uint8_t key);
 
 #endif

@@ -34,11 +34,7 @@ void intervalTimerAddCallback(event_t *eventPtr) {
 }
 
 void intervalTimerDelCallback(event_t *eventPtr) {
-  for (std::list<event_t *>::iterator it=intervalTimerCallbackList.begin(); it != intervalTimerCallbackList.end(); ++it) {
-    if(*it==eventPtr) {
-      intervalTimerCallbackList.erase(it);
-    }
-  }  
+  intervalTimerCallbackList.remove(eventPtr);
 }
 
 //ppsInterrupt is driven from the GPS frequency output and internal counter compare 
@@ -96,7 +92,11 @@ double getTimeStamp(void) {
   if((timerCtrl & TMR_CSCTRL_TCF1)) {
     secondCapture++;
   }
-  timeStamp=(double)((secondCapture*1000)+milliCapture)-race.timerOffset;
+  //this can generate negative timestamps.  The time stamp returned is relative to the start of the 
+  //current leg.  We actually depend on the timestamp being negative, in the case of a delay start.
+  //The start countdown displays the timestamp, which is negative and counts to zero as the leg
+  //starts.
+  timeStamp=(double)(((double)secondCapture*1000.0)+milliCapture)-race.timerOffset(milliseconds);
   return timeStamp;
 }
   

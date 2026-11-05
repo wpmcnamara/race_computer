@@ -3,7 +3,7 @@
 #include "timer.h"
 #include <list>
 #include "event.h"
-#include "race.h"
+#include "raceData.h"
 #include "gps.h"
 #include "state_machine.h"
 #include "display.h"
@@ -204,7 +204,7 @@ void keyPressInt() {
 void startPressInt() {
   startPress=true;
   if(startStopStartsRace) {
-      if(!race.legInProgress) {
+      if(!race.legInProgress()) {
         TMRx->CH[2].CNTR = 0;
         TMRx->CH[2].CTRL = TMR_CTRL_CM(1) | TMR_CTRL_PCS(2) | TMR_CTRL_LENGTH;
         digitalWriteFast(GPS_INT, LOW);
